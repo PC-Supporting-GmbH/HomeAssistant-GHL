@@ -1,0 +1,130 @@
+name: Bug report
+description: Report a problem with the GHL integration for Home Assistant
+title: "[Bug] "
+labels:
+  - bug
+type: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem with the GHL integration.
+
+        Please provide as much information as possible so the issue can be reproduced and diagnosed.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: Describe the problem clearly and concisely.
+      placeholder: What went wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Describe the steps needed to reproduce the problem.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: false
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+    validations:
+      required: false
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: e.g. 2026.8.2
+    validations:
+      required: true
+
+  - type: input
+    id: ghl_device
+    attributes:
+      label: GHL device / model
+      placeholder: e.g. ProfiLux 4
+    validations:
+      required: true
+
+  - type: input
+    id: ghl_firmware
+    attributes:
+      label: GHL firmware version
+      placeholder: e.g. 7.52
+    validations:
+      required: true
+
+  - type: dropdown
+    id: access_mode
+    attributes:
+      label: GHL API access mode
+      options:
+        - Read only
+        - Read and write
+    validations:
+      required: true
+
+  - type: input
+    id: affected_entity
+    attributes:
+      label: Affected entity or function
+      placeholder: e.g. pH sensor, KH Director measurement button, setpoint editor
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Home Assistant logs
+      description: |
+        Paste relevant Home Assistant log entries here.
+
+        Remove passwords, IP addresses, serial numbers, tokens, and other sensitive information before submitting.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Add screenshots if they help explain the problem.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other information that may help reproduce or diagnose the problem.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues for the same problem.
+          required: true
+        - label: I have removed sensitive information from logs and screenshots.
+          required: true

@@ -1,0 +1,56 @@
+name: Feature request
+description: Suggest a new feature or improvement for the GHL integration
+title: "[Feature] "
+labels:
+  - feature request
+type: feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement to the GHL integration for Home Assistant.
+
+        Please describe the requested feature and its intended use as clearly as possible.
+
+  - type: textarea
+    id: feature
+    attributes:
+      label: Feature description
+      description: What feature or improvement would you like to see?
+      placeholder: Describe the requested feature or improvement.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: How would this feature be useful in Home Assistant?
+      placeholder: Describe how you would use this feature.
+    validations:
+      required: true
+
+  - type: input
+    id: ghl_device
+    attributes:
+      label: Related GHL device / model
+      description: If applicable, specify the GHL device or model related to this request.
+      placeholder: e.g. ProfiLux 4, KH Director, ION Director
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any additional information, screenshots, documentation references, or examples.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues and feature requests for the same suggestion.
+          required: true

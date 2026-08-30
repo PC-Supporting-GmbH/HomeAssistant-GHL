@@ -1,0 +1,368 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit GHL-Gerät verbinden",
+        "description": "Konfiguriere die Verbindung zu deinem GHL Aquariencomputer oder deiner GHL Leuchte.",
+        "data": {
+          "host": "IP-Adresse oder Hostname",
+          "port": "Port (Standard: 10002)",
+          "device_type": "Gerätetyp",
+          "access_mode": "API-Zugriffsmodus",
+          "api_enabled": "Ich bestätige, dass die GHL API auf dem Gerät aktiviert ist"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum GHL-Gerät konnte nicht hergestellt werden. Prüfe IP-Adresse, Port und Netzwerkverbindung.",
+      "api_not_enabled": "Die GHL API ist nicht aktiviert oder der Zugriff wurde verweigert. Aktiviere die API auf dem GHL-Gerät.",
+      "invalid_response": "Das Gerät hat eine unerwartete Antwort zurückgegeben."
+    },
+    "abort": {
+      "already_configured": "Dieses GHL-Gerät ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "GHL konfigurieren",
+        "menu_options": {
+          "general": "Allgemeine Einstellungen",
+          "sensors": "Sensoren konfigurieren"
+        }
+      },
+      "general": {
+        "title": "Allgemeine Einstellungen",
+        "description": "Passe die Verbindung zum GHL-Gerät und die Ressourcenerkennung an.",
+        "data": {
+          "host": "IP-Adresse oder Hostname",
+          "port": "Port",
+          "access_mode": "API-Zugriffsmodus",
+          "show_all_resources": "Alle verfügbaren Ressourcen anzeigen"
+        },
+        "data_description": {
+          "show_all_resources": "Auch GHL-Ressourcen integrieren, die anhand ihrer Konfiguration normalerweise als unbenutzt erkannt und ausgeblendet würden."
+        }
+      },
+      "sensor": {
+        "title": "Sensortyp zuordnen",
+        "description": "Wähle den **Sensortyp** für {sensor_name} (Sensor {sensor_number}).",
+        "data": {
+          "sensor_type": "Sensortyp"
+        }
+      },
+      "sensor_unit": {
+        "title": "Einheit auswählen",
+        "description": "Wähle die gewünschte **Einheit** für {sensor_name} (Sensor {sensor_number}).",
+        "data": {
+          "sensor_unit": "Einheit"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum GHL-Gerät konnte nicht hergestellt werden. Prüfe IP-Adresse, Port und Netzwerkverbindung.",
+      "api_not_enabled": "Die GHL API ist nicht aktiviert oder der Zugriff wurde verweigert. Aktiviere die API auf dem GHL-Gerät.",
+      "invalid_response": "Das Gerät hat eine unerwartete Antwort zurückgegeben.",
+      "already_configured": "Ein GHL-Gerät mit dieser IP-Adresse bzw. diesem Hostnamen und Port ist bereits konfiguriert."
+    },
+    "abort": {
+      "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen.",
+      "no_sensors": "Es wurden keine GHL-Sensoren gefunden."
+    }
+  },
+  "selector": {
+    "device_type": {
+      "options": {
+        "profilux_4": "ProfiLux 4",
+        "mitras_lx7": "Mitras LX7",
+        "mitras_lx8": "Mitras LX8"
+      }
+    },
+    "access_mode": {
+      "options": {
+        "read_only": "Nur lesen",
+        "full_access": "Lesen und schreiben"
+      }
+    },
+    "sensor_type": {
+      "options": {
+        "unknown": "Nicht festgelegt",
+        "hidden": "Verbergen",
+        "temperature": "Temperatur",
+        "ph": "pH",
+        "redox": "Redox",
+        "conductivity_freshwater": "Leitfähigkeit Süßwasser",
+        "conductivity_seawater": "Leitfähigkeit Meerwasser",
+        "oxygen": "Sauerstoff",
+        "humidity": "Luftfeuchtigkeit",
+        "air_temperature": "Lufttemperatur",
+        "voltage": "Spannung"
+      }
+    },
+    "sensor_unit": {
+      "options": {
+        "ms": "mS",
+        "psu": "PSU",
+        "kg_l": "kg/l"
+      }
+    }
+  },
+   "entity": {
+    "sensor": {
+      "sensor": {
+        "name": "Sensor {index}"
+      },
+      "system_time_absolute": {
+        "name": "Systemzeit absolut"
+      },
+      "last_update": {
+        "name": "Letzte Aktualisierung"
+      },
+      "sensor_setpoint": {
+        "name": "Sensor {index} Sollwert"
+      },
+      "sensor_setpoint_named": {
+        "name": "{name} Sollwert"
+      },
+      "khdirector_value": {
+        "name": "KH Director"
+      },
+      "khdirector_setpoint": {
+        "name": "KH Director Sollwert"
+      },
+      "switchchannel_current": {
+        "name": "Schaltkanal {index} Strom"
+      },
+      "switchchannel_current_named": {
+        "name": "{name} Strom"
+      },
+      "doser_filllevel": {
+        "name": "{name} Füllmenge"
+      },
+      "doser_filllevel_default": {
+        "name": "Dosierpumpe {index} Füllmenge"
+      },
+      "doser_capacity": {
+        "name": "{name} Kapazität"
+      },
+      "doser_capacity_default": {
+        "name": "Dosierpumpe {index} Kapazität"
+      },
+      "flowsensor_flow": {
+        "name": "{name} Durchfluss"
+      },
+      "flowsensor_flow_default": {
+        "name": "Durchflusssensor {index} Durchfluss"
+      },
+      "iondirector_calcium_value": {
+        "name": "ION Director Calcium"
+      },
+      "iondirector_calcium_setpoint": {
+        "name": "ION Director Calcium Sollwert"
+      },
+      "iondirector_magnesium_value": {
+        "name": "ION Director Magnesium"
+      },
+      "iondirector_magnesium_setpoint": {
+        "name": "ION Director Magnesium Sollwert"
+      },
+      "iondirector_potassium_value": {
+        "name": "ION Director Kalium"
+      },
+      "iondirector_potassium_setpoint": {
+        "name": "ION Director Kalium Sollwert"
+      },
+      "iondirector_sodium_value": {
+        "name": "ION Director Natrium"
+      },
+      "iondirector_sodium_setpoint": {
+        "name": "ION Director Natrium Sollwert"
+      },
+      "iondirector_nitrate_value": {
+        "name": "ION Director Nitrat"
+      },
+      "iondirector_nitrate_setpoint": {
+        "name": "ION Director Nitrat Sollwert"
+      },
+      "illumination": {
+        "name": "Beleuchtung {index}"
+      },
+      "illumination_masterbrightness": {
+        "name": "Gesamthelligkeit"
+      },
+      "system_firmware": {
+        "name": "Firmware"
+      },
+      "system_serialnumber": {
+        "name": "Seriennummer"
+      },
+      "system_time": {
+        "name": "Gerätezeit"
+      }
+    },
+    "binary_sensor": {
+      "switchchannel": {
+        "name": "Schaltkanal {index}"
+      },
+      "levelsensor": {
+        "name": "Niveau Sensor {index}"
+      }
+    },
+    "button": {
+      "feedpause_start": {
+        "name": "Futterpause {index} starten"
+      },
+      "feedpause_stop": {
+        "name": "Futterpause {index} beenden"
+      },
+      "maintenance_start": {
+        "name": "Wartung {index} starten"
+      },
+      "maintenance_stop": {
+        "name": "Wartung {index} beenden"
+      },
+      "thunderstorm_start": {
+        "name": "Gewitter starten"
+      },
+      "thunderstorm_stop": {
+        "name": "Gewitter beenden"
+      },
+      "lightscene_start": {
+        "name": "Lichtszene {index} starten"
+      },
+      "lightscene_stop": {
+        "name": "Lichtszene {index} beenden"
+      },
+      "description_write": {
+        "name": "Beschreibung schreiben"
+      },
+      "sensor_setpoint_write": {
+        "name": "Sollwert schreiben"
+      },
+      "khdirector_action_stop": {
+        "name": "KH Director Aktion stoppen"
+      },
+      "khdirector_action_measurement": {
+        "name": "KH Director Messung starten"
+      },
+      "khdirector_action_vent_reagent": {
+        "name": "KH Director Reagenzschlauch entlüften"
+      },
+      "khdirector_action_flush_cell": {
+        "name": "KH Director Messzelle spülen"
+      },
+      "khdirector_action_empty_cell": {
+        "name": "KH Director Messzelle leeren"
+      },
+      "iondirector_action_stop": {
+        "name": "ION Director Aktion stoppen"
+      },
+      "iondirector_action_measurement": {
+        "name": "ION Director Messung starten"
+      },
+      "iondirector_action_prepare_cell": {
+        "name": "ION Director Messzelle vorbereiten"
+      },
+      "iondirector_action_empty_cell": {
+        "name": "ION Director Messzelle vollständig leeren"
+      },
+      "iondirector_action_sensor_test": {
+        "name": "ION Director Sensortest starten"
+      },
+      "iondirector_action_prime_cell": {
+        "name": "ION Director Messzelle primen"
+      }
+    },
+    "number": {
+      "thunderstorm_duration": {
+        "name": "Gewitterdauer (min)"
+      },
+      "lightscene_fadetime": {
+        "name": "Lichtszene Überblendzeit (s)"
+      },
+      "sensor_setpoint_value": {
+        "name": "Sollwert"
+      },
+      "sensor_setpoint_value_unit": {
+        "name": "Sollwert ({unit})"
+      },
+      "sensor_setpoint_value_seawater": {
+        "name": "Sollwert – Eingabe in mS"
+      }
+    },
+    "select": {
+      "description_resource": {
+        "name": "GHL Element (für Bezeichnung)"
+      },
+      "description_resource_sensor": {
+        "name": "Sensor {index}"
+      },
+      "description_resource_switchchannel": {
+        "name": "Schaltkanal {index}"
+      },
+      "description_resource_illumination": {
+        "name": "Beleuchtung {index}"
+      },
+      "description_resource_timer": {
+        "name": "Timer {index}"
+      },
+      "description_resource_doser": {
+        "name": "Dosierpumpe {index}"
+      },
+      "description_resource_flowsensor": {
+        "name": "Durchflusssensor {index}"
+      },
+      "description_resource_levelsensor": {
+        "name": "Niveau Sensor {index}"
+      },
+      "sensor_setpoint_sensor": {
+        "name": "GHL Sensor (für Sollwert)"
+      }
+    },
+    "text": {
+      "description_text": {
+        "name": "Beschreibung"
+      }
+    }
+  },
+  "issues": {
+    "new_sensors": {
+      "title": "Neue GHL-Sensoren erkannt. Zur Konfiguration hier klicken",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Neue GHL-Sensoren konfigurieren",
+            "description": "Folgende neue Sensoren wurden erkannt und müssen konfiguriert werden: {sensor_names}."
+          },
+          "sensor": {
+            "title": "Neuen GHL-Sensor konfigurieren",
+            "description": "Wähle den **Sensortyp** für {sensor_name} (Sensor {sensor_number}).",
+            "data": {
+              "sensor_type": "Sensortyp"
+            }
+          },
+          "sensor_unit": {
+            "title": "Einheit auswählen",
+            "description": "Wähle die gewünschte **Einheit** für {sensor_name} (Sensor {sensor_number}).",
+            "data": {
+              "sensor_unit": "Einheit"
+            }
+          }
+        },
+        "abort": {
+          "entry_not_found": "Die zugehörige GHL-Integration wurde nicht gefunden.",
+          "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen.",
+          "no_new_sensors": "Es sind keine neuen, nicht konfigurierten GHL-Sensoren mehr vorhanden."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "command_communication_error": {
+      "message": "Der Befehl konnte nicht an das GHL-Gerät übermittelt werden."
+    },
+    "command_rejected": {
+      "message": "Das GHL-Gerät hat den Befehl abgelehnt."
+    }
+  }
+}
