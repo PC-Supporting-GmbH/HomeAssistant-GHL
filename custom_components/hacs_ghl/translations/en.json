@@ -10,6 +10,9 @@
           "device_type": "Device type",
           "access_mode": "API access mode",
           "api_enabled": "I confirm that the GHL API is enabled on the device"
+        },
+        "data_description": {
+          "api_enabled": "Initial setup may take several minutes, especially on ProfiLux devices, due to the large number of entities."
         }
       }
     },
@@ -42,6 +45,14 @@
         },
         "data_description": {
           "show_all_resources": "Also integrate GHL resources that would normally be detected as unused and hidden based on their configuration."
+        }
+      },
+      "initial_sensor_setup": {
+        "title": "Configurer GHL",
+        "description": "**Veuillez maintenant configurer vos capteurs.**\n\nLes capteurs ont été détectés sur l’appareil GHL, mais doivent encore être associés à leur type de capteur respectif.",
+        "menu_options": {
+          "general": "Paramètres généraux",
+          "sensors": "Configurer les capteurs"
         }
       },
       "sensor": {

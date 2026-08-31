@@ -10,6 +10,9 @@
           "device_type": "Gerätetyp",
           "access_mode": "API-Zugriffsmodus",
           "api_enabled": "Ich bestätige, dass die GHL API auf dem Gerät aktiviert ist"
+        },
+        "data_description": {
+          "api_enabled": "Die Erstinitialisierung kann, insbesondere beim ProfiLux, aufgrund der Vielzahl an Entitäten mehrere Minuten dauern."
         }
       }
     },
@@ -42,6 +45,14 @@
         },
         "data_description": {
           "show_all_resources": "Auch GHL-Ressourcen integrieren, die anhand ihrer Konfiguration normalerweise als unbenutzt erkannt und ausgeblendet würden."
+        }
+      },
+      "initial_sensor_setup": {
+        "title": "GHL konfigurieren",
+        "description": "**Bitte konfiguriere jetzt deine Sensoren.**\n\nDie Sensoren wurden vom GHL-Gerät erkannt, müssen aber noch ihrem jeweiligen Sensortyp zugeordnet werden.",
+        "menu_options": {
+          "general": "Allgemeine Einstellungen",
+          "sensors": "Sensoren konfigurieren"
         }
       },
       "sensor": {

@@ -221,7 +221,23 @@ class GHLDataUpdateCoordinator(
                     SENSOR_UNIT_MS,
                 )
 
-                if resource.features.get("ACTVALUE", False):
+                actvalue_unique_id = (
+                    f"{self.entry.entry_id}_sensor_"
+                    f"{resource.index}_actvalue"
+                )
+
+                desvalue_unique_id = (
+                    f"{self.entry.entry_id}_sensor_"
+                    f"{resource.index}_desvalue"
+                )
+
+                if (
+                    resource.features.get("ACTVALUE", False)
+                    and self._entity_is_enabled(
+                        "sensor",
+                        actvalue_unique_id,
+                    )
+                ):
                     value_index = 0
 
                     if sensor_type == SENSOR_TYPE_CONDUCTIVITY_SEAWATER:
@@ -254,7 +270,13 @@ class GHLDataUpdateCoordinator(
                                 value
                             )
 
-                if resource.features.get("DESVALUE", False):
+                if (
+                    resource.features.get("DESVALUE", False)
+                    and self._entity_is_enabled(
+                        "sensor",
+                        desvalue_unique_id,
+                    )
+                ):
                     desvalue_key = sensor_desvalue_key(
                         resource.index
                     )

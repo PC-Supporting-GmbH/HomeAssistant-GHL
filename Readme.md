@@ -39,6 +39,13 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 > - Illumination control
 > - Water change functionality
 
+> [!TIP]
+> 
+> If you find this integration useful and would like to support its development:
+>
+> <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="HA.GHL.Integration" data-color="#FFDD00" data-emoji=""  data-font="Arial" data-text="Buy me a Fish (or coffee)" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+
+
 ## Supported devices
 
 The following GHL device series are supported:

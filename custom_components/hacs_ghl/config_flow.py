@@ -260,6 +260,18 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
 
         self._sensor_index = 0
 
+        if (
+            self._sensors
+            and not self._sensor_types
+        ):
+            return self.async_show_menu(
+                step_id="initial_sensor_setup",
+                menu_options=[
+                    "general",
+                    "sensors",
+                ],
+            )
+
         return self.async_show_menu(
             step_id="init",
             menu_options=[
@@ -558,12 +570,6 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
 
             return await self.async_step_sensor()
 
-        sensor_name = (
-            sensor_resource.description
-            if sensor_resource.description is not None
-            else f"Sensor {sensor_resource.index + 1}"
-        )
-
         current_sensor_unit = self._sensor_units.get(
             sensor_key,
             SENSOR_UNIT_MS,
@@ -586,6 +592,12 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                     )
                 ),
             }
+        )
+
+        sensor_name = (
+            sensor_resource.description
+            if sensor_resource.description is not None
+            else f"Sensor {sensor_resource.index + 1}"
         )
 
         return self.async_show_form(
