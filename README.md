@@ -43,7 +43,8 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 > 
 > If you find this integration useful and would like to support its development:
 >
-> <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+ 
+<a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 
 ## Supported devices
