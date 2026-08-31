@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/logo.png" alt="GHL Home Assistant Integration" width="250">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/logo.png" alt="GHL Home Assistant Integration" width="250">
 </p>
 
 <h1 align="center">GHL</h1>
@@ -19,7 +19,7 @@ Depending on the connected device and the features provided by the GHL API, the 
 This allows GHL data and functions to be used in dashboards, automations and other Home Assistant features.
 
 <p align="center">
-  <img src="images/ghl-dashboard-example.png" alt="GHL integration in Home Assistant">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/ghl-dashboard-example.png" alt="GHL integration in Home Assistant">
 </p>
 
 ## Disclaimer
@@ -43,7 +43,7 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 > 
 > If you find this integration useful and would like to support its development:
 >
-> <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="HA.GHL.Integration" data-color="#FFDD00" data-emoji=""  data-font="Arial" data-text="Buy me a Fish (or coffee)" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+> <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 
 ## Supported devices
@@ -104,7 +104,7 @@ For full functionality of this integration, including functions that write value
 Read-only API access is also supported. However, functions that require write access, such as starting or stopping maintenance modes or feed pauses, will not be available when the API is configured for read-only access.
 
 <p align="center">
-  <img src="images/ghl-api-settings.png" alt="GHL API settings in GHL Control Center">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/ghl-api-settings.png" alt="GHL API settings in GHL Control Center">
 </p>
 
 After a firmware update, the GHL API may need to be enabled again. If the integration can no longer communicate with the device after updating its firmware, check this setting first.
