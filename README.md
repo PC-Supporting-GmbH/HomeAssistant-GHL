@@ -41,7 +41,7 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 
 > [!TIP]
 > 
-> If you find this integration useful and would like to support its development: https://www.buymeacoffee.com/HA.GHL.Integration
+> If you find this integration useful and would like to support its development
 >
  
 <p align="center">
