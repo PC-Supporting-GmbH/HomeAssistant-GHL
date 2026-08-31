@@ -264,16 +264,24 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             self._sensors
             and not self._sensor_types
         ):
-            return self.async_show_menu(
-                step_id="initial_sensor_setup",
-                menu_options=[
-                    "general",
-                    "sensors",
-                ],
-            )
+            return await self.async_step_initial_sensor_setup()
 
         return self.async_show_menu(
             step_id="init",
+            menu_options=[
+                "general",
+                "sensors",
+            ],
+        )
+
+    async def async_step_initial_sensor_setup(
+        self,
+        user_input=None,
+    ):
+        """Show the initial sensor setup menu."""
+
+        return self.async_show_menu(
+            step_id="initial_sensor_setup",
             menu_options=[
                 "general",
                 "sensors",
