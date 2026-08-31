@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/logo.png" alt="GHL Home Assistant Integration" width="250">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/images/logo.png" alt="GHL Home Assistant Integration" width="250">
 </p>
 
 <h1 align="center">GHL</h1>
@@ -19,7 +19,7 @@ Depending on the connected device and the features provided by the GHL API, the 
 This allows GHL data and functions to be used in dashboards, automations and other Home Assistant features.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/ghl-dashboard-example.png" alt="GHL integration in Home Assistant">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/images/ghl-dashboard-example.png" alt="GHL integration in Home Assistant">
 </p>
 
 ## Disclaimer
@@ -46,7 +46,7 @@ Current development focuses on:
 >
  
 <p align="center">
-  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/buymeacoffee.png" alt="GHL integration in Home Assistant"></a>
+  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/images/buymeacoffee.png" alt="GHL integration in Home Assistant"></a>
 </p>
 
 ## Supported devices
@@ -74,7 +74,7 @@ Support in this integration is limited to functionality made available by the GH
 
 The recommended installation method is through HACS.
 
-[![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PC-Supporting-GmbH&repository=HomeAssistant-HACS-GHL&category=integration)
+[![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PC-Supporting-GmbH&repository=HomeAssistant-GHL&category=integration)
 
 After adding the repository to HACS:
 
@@ -107,7 +107,7 @@ For full functionality of this integration, including functions that write value
 Read-only API access is also supported. However, functions that require write access, such as starting or stopping maintenance modes or feed pauses, will not be available when the API is configured for read-only access.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/ghl-api-settings.png" alt="GHL API settings in GHL Control Center">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/images/ghl-api-settings.png" alt="GHL API settings in GHL Control Center">
 </p>
 
 After a firmware update, the GHL API may need to be enabled again. If the integration can no longer communicate with the device after updating its firmware, check this setting first.
@@ -199,9 +199,9 @@ Currently known limitations include:
 If you find a problem or have an idea for improving the integration, please use the GitHub issue forms.
 
 **Bug reports:**  
-https://github.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/issues/new?template=bug_report.yml
+https://github.com/PC-Supporting-GmbH/HomeAssistant-GHL/issues/new?template=bug_report.yml
 
 **Feature requests:**  
-https://github.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/issues/new?template=feature_request.yml
+https://github.com/PC-Supporting-GmbH/HomeAssistant-GHL/issues/new?template=feature_request.yml
 
 Before opening a new issue, please check whether the same problem or request has already been reported.
