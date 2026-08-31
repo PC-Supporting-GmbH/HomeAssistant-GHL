@@ -44,7 +44,9 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 > If you find this integration useful and would like to support its development: https://www.buymeacoffee.com/HA.GHL.Integration
 >
  
-<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="HA.GHL.Integration" data-color="#FFDD00" data-emoji="☕"  data-font="Arial" data-text="Buy me a fish (or a coffee)" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+<p align="center">
+  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/buymeacoffee.png" alt="GHL integration in Home Assistant"></a>
+</p>
 
 ## Supported devices
 
