@@ -41,11 +41,10 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 
 > [!TIP]
 > 
-> If you find this integration useful and would like to support its development:
+> If you find this integration useful and would like to support its development: https://www.buymeacoffee.com/HA.GHL.Integration
 >
  
-<a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="HA.GHL.Integration" data-color="#FFDD00" data-emoji="☕"  data-font="Arial" data-text="Buy me a fish (or a coffee)" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
 
 ## Supported devices
 
