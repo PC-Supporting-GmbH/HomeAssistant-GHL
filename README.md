@@ -33,10 +33,12 @@ The integration can only expose functionality that is available through the offi
 For information about the GHL API and its capabilities, see: https://www.aquariumcomputer.com/software/ghl-api/
 
 > [!WARNING]
-> This integration is under development. Current development focuses on:
->  Illumination overviews
->  Illumination control
->  Water change functionality
+> This integration is under development. 
+
+Current development focuses on:
+-  Illumination overviews
+-  Illumination control
+-  Water change functionality
 
 > [!TIP]
 > 
