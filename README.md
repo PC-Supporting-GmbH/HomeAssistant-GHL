@@ -45,7 +45,7 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 >
  
 <p align="center">
-  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/buymeacoffee.png" alt="GHL integration in Home Assistant"></a>
+  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-HACS-GHL/master/images/buymeacoffee.png" alt="GHL integration in Home Assistant"></a>
 </p>
 
 ## Supported devices
