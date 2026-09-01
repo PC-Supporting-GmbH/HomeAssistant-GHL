@@ -1,0 +1,115 @@
+name: PCS Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. v1.1.2"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    if: github.actor == 'Stefan-PCS'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version: $VERSION"
+            echo "Expected format: v1.2.3"
+            exit 1
+          fi
+
+      - name: Check whether tag already exists
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists."
+            exit 1
+          fi
+
+      - name: Update manifest version
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          MANIFEST_VERSION="${VERSION#v}"
+          export MANIFEST_VERSION
+
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path("custom_components/hacs_ghl/manifest.json")
+          version = os.environ["MANIFEST_VERSION"]
+
+          data = json.loads(path.read_text(encoding="utf-8"))
+          data["version"] = version
+
+          path.write_text(
+              json.dumps(data, indent="\t", ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Commit manifest version
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add custom_components/hacs_ghl/manifest.json
+          git commit -m "Adapt manifest to Release Version"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Create tag
+        shell: bash
+        run: |
+          git tag "${{ inputs.version }}"
+          git push origin "${{ inputs.version }}"
+
+      - name: Create draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ inputs.version }}" \
+            --draft \
+            --title "${{ inputs.version }}" \
+            --verify-tag
+
+      - name: Show release link
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RELEASE_URL="$(gh release view "${{ inputs.version }}" --json url --jq '.url')"
+
+          echo ""
+          echo "Release preparation completed successfully."
+          echo "Please finalize the release and enter the release notes:"
+          echo "$RELEASE_URL"
+
+          {
+            echo "## Release preparation completed successfully"
+            echo ""
+            echo "Please finalize the release and enter the release notes:"
+            echo ""
+            echo "$RELEASE_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
