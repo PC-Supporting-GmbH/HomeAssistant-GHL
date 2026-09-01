@@ -3,9 +3,19 @@ name: aaa_PCS Create Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version, e.g. v1.1.2"
+      version_increment:
+        description: "Increase current latest version"
         required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+      release_version:
+        description: "Optional exact release version, e.g. v1.1.2"
+        required: false
         type: string
 
 permissions:
@@ -22,10 +32,61 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine release version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANUAL_VERSION: ${{ inputs.release_version }}
+          VERSION_INCREMENT: ${{ inputs.version_increment }}
+        run: |
+          if [[ -n "$MANUAL_VERSION" ]]; then
+            RELEASE_VERSION="$MANUAL_VERSION"
+            echo "Using manually specified version: $RELEASE_VERSION"
+          else
+            CURRENT_VERSION="$(gh release view --json tagName --jq '.tagName')"
+
+            if [[ ! "$CURRENT_VERSION" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              echo "Latest release has an invalid version format: $CURRENT_VERSION"
+              echo "Expected format: v1.2.3"
+              exit 1
+            fi
+
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+
+            case "$VERSION_INCREMENT" in
+              patch)
+                PATCH=$((PATCH + 1))
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              *)
+                echo "Invalid version increment: $VERSION_INCREMENT"
+                exit 1
+                ;;
+            esac
+
+            RELEASE_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+
+            echo "Current latest release: $CURRENT_VERSION"
+            echo "Version increment: $VERSION_INCREMENT"
+            echo "Calculated release version: $RELEASE_VERSION"
+          fi
+
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
+
       - name: Validate version
         shell: bash
         run: |
-          VERSION="${{ inputs.version }}"
+          VERSION="$RELEASE_VERSION"
 
           if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Invalid version: $VERSION"
@@ -36,7 +97,7 @@ jobs:
       - name: Check whether tag already exists
         shell: bash
         run: |
-          VERSION="${{ inputs.version }}"
+          VERSION="$RELEASE_VERSION"
 
           if git rev-parse "$VERSION" >/dev/null 2>&1; then
             echo "Tag $VERSION already exists."
@@ -46,7 +107,7 @@ jobs:
       - name: Update manifest version
         shell: bash
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ env.RELEASE_VERSION }}
         run: |
           MANIFEST_VERSION="${VERSION#v}"
           export MANIFEST_VERSION
@@ -81,17 +142,17 @@ jobs:
       - name: Create tag
         shell: bash
         run: |
-          git tag "${{ inputs.version }}"
-          git push origin "${{ inputs.version }}"
+          git tag "$RELEASE_VERSION"
+          git push origin "$RELEASE_VERSION"
 
       - name: Create draft release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ inputs.version }}" \
+          gh release create "$RELEASE_VERSION" \
             --draft \
-            --title "${{ inputs.version }}" \
+            --title "$RELEASE_VERSION" \
             --verify-tag
 
       - name: Show release link
@@ -99,7 +160,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          RELEASE_URL="$(gh release view "${{ inputs.version }}" --json url --jq '.url')"
+          RELEASE_URL="$(gh release view "$RELEASE_VERSION" --json url --jq '.url')"
 
           echo ""
           echo "Release preparation completed successfully."
@@ -108,6 +169,8 @@ jobs:
 
           {
             echo "## Release preparation completed successfully"
+            echo ""
+            echo "Prepared release: **$RELEASE_VERSION**"
             echo ""
             echo "Please finalize the release and enter the release notes:"
             echo ""
