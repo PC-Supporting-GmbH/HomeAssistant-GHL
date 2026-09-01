@@ -1,4 +1,4 @@
-name: PCS Create Release
+name: aaa_PCS Create Release
 
 on:
   workflow_dispatch:
