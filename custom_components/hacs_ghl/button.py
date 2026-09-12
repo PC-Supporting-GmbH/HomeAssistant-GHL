@@ -19,6 +19,8 @@ from .const import (
     CONF_DEVICE_TYPE,
     CONF_KNOWN_SENSORS,
     DESCRIPTION_TEXT_MAX_LENGTH,
+    DEVICE_TYPE_MITRAS_LX7,
+    DEVICE_TYPE_MITRAS_LX8,
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
 )
@@ -72,7 +74,11 @@ async def async_setup_entry(
     if entry.data[CONF_ACCESS_MODE] != ACCESS_MODE_FULL_ACCESS:
         return
 
-    if entry.data[CONF_DEVICE_TYPE] != DEVICE_TYPE_PROFILUX_4:
+    if entry.data[CONF_DEVICE_TYPE] not in (
+        DEVICE_TYPE_PROFILUX_4,
+        DEVICE_TYPE_MITRAS_LX7,
+        DEVICE_TYPE_MITRAS_LX8,
+    ):
         return
 
     entry_data = hass.data[DOMAIN][entry.entry_id]
@@ -111,24 +117,25 @@ async def async_setup_entry(
 
     entities: list[ButtonEntity] = []
 
-    for index in range(FEEDPAUSE_COUNT):
-        entities.append(
-            GHLFeedPauseButton(
-                api=api,
-                entry=entry,
-                index=index,
-                state=True,
+    if entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4:
+        for index in range(FEEDPAUSE_COUNT):
+            entities.append(
+                GHLFeedPauseButton(
+                    api=api,
+                    entry=entry,
+                    index=index,
+                    state=True,
+                )
             )
-        )
 
-        entities.append(
-            GHLFeedPauseButton(
-                api=api,
-                entry=entry,
-                index=index,
-                state=False,
+            entities.append(
+                GHLFeedPauseButton(
+                    api=api,
+                    entry=entry,
+                    index=index,
+                    state=False,
+                )
             )
-        )
 
     for index in range(MAINTENANCE_COUNT):
         entities.append(
@@ -187,6 +194,10 @@ async def async_setup_entry(
                 state=False,
             )
         )
+
+    if entry.data[CONF_DEVICE_TYPE] != DEVICE_TYPE_PROFILUX_4:
+        async_add_entities(entities)
+        return
 
     khdirector_exists = any(
         resource.resource == "KHDIRECTOR"

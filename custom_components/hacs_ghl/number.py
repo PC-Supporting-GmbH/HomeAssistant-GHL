@@ -25,6 +25,8 @@ from .const import (
     ACCESS_MODE_FULL_ACCESS,
     CONF_ACCESS_MODE,
     CONF_DEVICE_TYPE,
+    DEVICE_TYPE_MITRAS_LX7,
+    DEVICE_TYPE_MITRAS_LX8,
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
     SENSOR_TYPE_AIR_TEMPERATURE,
@@ -63,7 +65,11 @@ async def async_setup_entry(
     if entry.data[CONF_ACCESS_MODE] != ACCESS_MODE_FULL_ACCESS:
         return
 
-    if entry.data[CONF_DEVICE_TYPE] != DEVICE_TYPE_PROFILUX_4:
+    if entry.data[CONF_DEVICE_TYPE] not in (
+        DEVICE_TYPE_PROFILUX_4,
+        DEVICE_TYPE_MITRAS_LX7,
+        DEVICE_TYPE_MITRAS_LX8,
+    ):
         return
 
     entry_data = hass.data[DOMAIN][entry.entry_id]
@@ -101,7 +107,10 @@ async def async_setup_entry(
         ),
     ]
 
-    if sensor_setpoint_editor["resource_order"]:
+    if (
+        entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4
+        and sensor_setpoint_editor["resource_order"]
+    ):
         translations = await async_get_translations(
             hass,
             hass.config.language,
