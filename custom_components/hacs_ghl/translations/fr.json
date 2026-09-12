@@ -123,6 +123,9 @@
       "sensor": {
         "name": "Capteur {index}"
       },
+      "mitras_heatsink_temperature": {
+        "name": "Température du dissipateur thermique"
+      },
       "system_time_absolute": {
         "name": "Heure système absolue"
       },

@@ -58,6 +58,7 @@ from .coordinator import (
     khdirector_actvalue_key,
     khdirector_desvalue_key,
     last_update_key,
+    mitras_heatsink_temperature_key,
     sensor_desvalue_key,
     switchchannel_current_key,
     system_firmware_key,
@@ -104,6 +105,14 @@ async def async_setup_entry(
     for resource in resources:
         if resource.resource == "SENSOR":
             if resource.index is None:
+                if resource.features.get("ACTVALUE", False):
+                    entities.append(
+                        GHLMitrasHeatsinkTemperatureSensor(
+                            coordinator=coordinator,
+                            entry=entry,
+                        )
+                    )
+
                 continue
 
             sensor_key = str(resource.index)
@@ -346,6 +355,59 @@ async def async_setup_entry(
     )
 
     async_add_entities(entities)
+
+
+class GHLMitrasHeatsinkTemperatureSensor(
+    CoordinatorEntity[GHLDataUpdateCoordinator],
+    SensorEntity,
+):
+    """Representation of the Mitras heatsink temperature."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "mitras_heatsink_temperature"
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self,
+        coordinator: GHLDataUpdateCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the Mitras heatsink temperature sensor."""
+
+        super().__init__(coordinator)
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_mitras_heatsink_temperature"
+        )
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name=entry.title,
+            manufacturer="GHL",
+            configuration_url=f"http://{entry.data[CONF_HOST]}",
+        )
+
+    @property
+    def native_value(self):
+        """Return the cached Mitras heatsink temperature."""
+
+        return self.coordinator.data.get(
+            mitras_heatsink_temperature_key(),
+        )
+
+    @property
+    def available(self) -> bool:
+        """Return whether the sensor is available."""
+
+        key = mitras_heatsink_temperature_key()
+
+        return (
+            super().available
+            and key in self.coordinator.data
+            and self.coordinator.data[key] is not None
+        )
 
 
 class GHLSensor(

@@ -236,7 +236,10 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
         self._sensors = [
             resource
             for resource in entry_data["resources"]
-            if resource.resource == "SENSOR"
+            if (
+                resource.resource == "SENSOR"
+                and resource.index is not None
+            )
         ]
 
         self._sensor_types = dict(

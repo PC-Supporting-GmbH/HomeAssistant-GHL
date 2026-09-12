@@ -118,10 +118,13 @@
       }
     }
   },
-   "entity": {
+  "entity": {
     "sensor": {
       "sensor": {
         "name": "Sensor {index}"
+      },
+      "mitras_heatsink_temperature": {
+        "name": "Kühlkörpertemperatur"
       },
       "system_time_absolute": {
         "name": "Systemzeit absolut"

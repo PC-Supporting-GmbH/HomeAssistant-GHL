@@ -808,6 +808,7 @@ def _async_check_new_sensors(
         for resource in discovered_resources
         if (
             resource.resource == "SENSOR"
+            and resource.index is not None
             and str(resource.index) not in configured_sensor_types
         )
     ]

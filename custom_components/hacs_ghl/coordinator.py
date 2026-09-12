@@ -35,6 +35,12 @@ def sensor_desvalue_key(index: int) -> str:
     return f"sensor_{index}_desvalue"
 
 
+def mitras_heatsink_temperature_key() -> str:
+    """Return the coordinator key for the Mitras heatsink temperature."""
+
+    return "mitras_heatsink_temperature"
+
+
 def khdirector_actvalue_key() -> str:
     """Return the coordinator key for the KH Director value."""
 
@@ -205,6 +211,37 @@ class GHLDataUpdateCoordinator(
         for resource in self.resources:
             if resource.resource == "SENSOR":
                 if resource.index is None:
+                    if (
+                        resource.features.get("ACTVALUE", False)
+                        and self._entity_is_enabled(
+                            "sensor",
+                            f"{self.entry.entry_id}_mitras_heatsink_temperature",
+                        )
+                    ):
+                        key = mitras_heatsink_temperature_key()
+
+                        try:
+                            value = await self.api.async_get(
+                                "SENSOR",
+                                "ACTVALUE",
+                            )
+
+                        except GHLAPIError as err:
+                            _LOGGER.warning(
+                                "Unable to update GHL Mitras heatsink temperature: %s",
+                                err,
+                            )
+
+                            data[key] = None
+
+                        else:
+                            if value is None:
+                                data[key] = None
+                            else:
+                                data[key] = _convert_value(
+                                    value
+                                )
+
                     continue
 
                 sensor_key = str(resource.index)

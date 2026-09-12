@@ -123,6 +123,9 @@
       "sensor": {
         "name": "Sensor {index}"
       },
+      "mitras_heatsink_temperature": {
+        "name": "Temperatura del disipador"
+      },
       "system_time_absolute": {
         "name": "Hora absoluta del sistema"
       },
