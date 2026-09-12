@@ -42,6 +42,7 @@ from .const import (
 )
 from .coordinator import (
     GHLDataUpdateCoordinator,
+    illumination_masterbrightness_key,
     iondirector_desvalue_key,
     khdirector_desvalue_key,
     sensor_desvalue_key,
@@ -96,6 +97,29 @@ async def async_setup_entry(
         "sensor_setpoint_editor"
     ]
 
+    resources = entry_data[
+        "resources"
+    ]
+
+    masterbrightness_available = any(
+        resource.resource == "ILLUMINATION"
+        and resource.index is None
+        and resource.features.get(
+            "MASTERBRIGHTNESS",
+            False,
+        )
+        for resource in resources
+    )
+
+    masterbrightness_data = entry_data.setdefault(
+        "masterbrightness",
+        {
+            "value": coordinator.data.get(
+                illumination_masterbrightness_key()
+            ),
+        },
+    )
+
     entities: list[NumberEntity] = [
         GHLThunderstormDurationNumber(
             entry=entry,
@@ -106,6 +130,14 @@ async def async_setup_entry(
             lightscene_data=lightscene_data,
         ),
     ]
+
+    if masterbrightness_available:
+        entities.append(
+            GHLIlluminationMasterBrightnessNumber(
+                entry=entry,
+                masterbrightness_data=masterbrightness_data,
+            )
+        )
 
     if (
         entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4
@@ -154,6 +186,86 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
+
+
+class GHLIlluminationMasterBrightnessNumber(
+    NumberEntity,
+    RestoreEntity,
+):
+    """Representation of the GHL master brightness value to write."""
+
+    _attr_has_entity_name = True
+    _attr_native_min_value = 0
+    _attr_native_max_value = 100
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_mode = NumberMode.BOX
+    _attr_translation_key = "illumination_masterbrightness_value"
+    _attr_icon = "mdi:brightness-percent"
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        masterbrightness_data: dict,
+    ) -> None:
+        """Initialize the GHL master brightness value."""
+
+        self._entry = entry
+        self._masterbrightness_data = masterbrightness_data
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_illumination_"
+            f"masterbrightness_value"
+        )
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name=entry.title,
+            manufacturer="GHL",
+            configuration_url=f"http://{entry.data[CONF_HOST]}",
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the selected master brightness value."""
+
+        value = self._masterbrightness_data["value"]
+
+        if value is None:
+            return None
+
+        return float(value)
+
+    async def async_added_to_hass(self) -> None:
+        """Restore the previous master brightness value."""
+
+        await super().async_added_to_hass()
+
+        last_state = await self.async_get_last_state()
+
+        if last_state is None:
+            return
+
+        try:
+            value = int(float(last_state.state))
+
+        except (TypeError, ValueError):
+            return
+
+        if not 0 <= value <= 100:
+            return
+
+        self._masterbrightness_data["value"] = value
+
+    async def async_set_native_value(
+        self,
+        value: float,
+    ) -> None:
+        """Store the master brightness value used by the write button."""
+
+        self._masterbrightness_data["value"] = int(value)
+
+        self.async_write_ha_state()
 
 
 class GHLThunderstormDurationNumber(

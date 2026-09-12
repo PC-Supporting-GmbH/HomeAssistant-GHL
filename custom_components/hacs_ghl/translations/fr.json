@@ -285,6 +285,9 @@
       },
       "iondirector_action_prime_cell": {
         "name": "Amorcer la cellule de mesure de l’ION Director"
+      },
+      "illumination_masterbrightness_write": {
+        "name": "Écrire la luminosité principale"
       }
     },
     "number": {
@@ -302,6 +305,9 @@
       },
       "sensor_setpoint_value_seawater": {
         "name": "Consigne – saisir la valeur en mS"
+      },
+      "illumination_masterbrightness_value": {
+        "name": "Nouvelle valeur de luminosité principale (%)"
       }
     },
     "select": {

@@ -26,6 +26,7 @@ from .const import (
 )
 from .coordinator import (
     GHLDataUpdateCoordinator,
+    illumination_masterbrightness_key,
     iondirector_desvalue_key,
     khdirector_desvalue_key,
     sensor_desvalue_key,
@@ -115,7 +116,36 @@ async def async_setup_entry(
         "resources"
     ]
 
+    masterbrightness_available = any(
+        resource.resource == "ILLUMINATION"
+        and resource.index is None
+        and resource.features.get(
+            "MASTERBRIGHTNESS",
+            False,
+        )
+        for resource in resources
+    )
+
+    masterbrightness_data = entry_data.setdefault(
+        "masterbrightness",
+        {
+            "value": coordinator.data.get(
+                illumination_masterbrightness_key()
+            ),
+        },
+    )
+
     entities: list[ButtonEntity] = []
+
+    if masterbrightness_available:
+        entities.append(
+            GHLIlluminationMasterBrightnessWriteButton(
+                api=api,
+                coordinator=coordinator,
+                entry=entry,
+                masterbrightness_data=masterbrightness_data,
+            )
+        )
 
     if entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4:
         for index in range(FEEDPAUSE_COUNT):
@@ -249,6 +279,96 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
+
+
+class GHLIlluminationMasterBrightnessWriteButton(ButtonEntity):
+    """Representation of the GHL master brightness write action."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "illumination_masterbrightness_write"
+    _attr_icon = "mdi:brightness-percent"
+
+    def __init__(
+        self,
+        api: GHLAPI,
+        coordinator: GHLDataUpdateCoordinator,
+        entry: ConfigEntry,
+        masterbrightness_data: dict,
+    ) -> None:
+        """Initialize the GHL master brightness write button."""
+
+        self._api = api
+        self._coordinator = coordinator
+        self._entry = entry
+        self._masterbrightness_data = masterbrightness_data
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_illumination_"
+            f"masterbrightness_write"
+        )
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name=entry.title,
+            manufacturer="GHL",
+            configuration_url=f"http://{entry.data[CONF_HOST]}",
+        )
+
+    async def async_press(self) -> None:
+        """Write the selected GHL master brightness."""
+
+        value = self._masterbrightness_data["value"]
+
+        if value is None:
+            return
+
+        command = (
+            f"SET ILLUMINATION MASTERBRIGHTNESS "
+            f"{int(value)}"
+        )
+
+        try:
+            reply = await self._api.async_command(
+                command
+            )
+
+        except GHLAPIError as err:
+            _LOGGER.warning(
+                "Unable to execute GHL master brightness "
+                "command %s: %s",
+                command,
+                err,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_communication_error",
+            ) from err
+
+        if not reply.startswith("ACK"):
+            _LOGGER.warning(
+                "GHL master brightness command %s "
+                "returned unexpected response: %s",
+                command,
+                reply,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_rejected",
+            )
+
+        new_data = dict(
+            self._coordinator.data
+        )
+
+        new_data[
+            illumination_masterbrightness_key()
+        ] = float(value)
+
+        self._coordinator.async_set_updated_data(
+            new_data
+        )
 
 
 class GHLFeedPauseButton(ButtonEntity):

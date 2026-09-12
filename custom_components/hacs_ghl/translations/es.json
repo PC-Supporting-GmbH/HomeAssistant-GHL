@@ -285,6 +285,9 @@
       },
       "iondirector_action_prime_cell": {
         "name": "Cebar la celda de medición de ION Director"
+      },
+      "illumination_masterbrightness_write": {
+        "name": "Escribir brillo maestro"
       }
     },
     "number": {
@@ -302,6 +305,9 @@
       },
       "sensor_setpoint_value_seawater": {
         "name": "Valor objetivo – introduzca el valor en mS"
+      },
+      "illumination_masterbrightness_value": {
+        "name": "Nuevo valor de brillo maestro (%)"
       }
     },
     "select": {

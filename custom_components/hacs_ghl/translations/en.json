@@ -285,6 +285,9 @@
       },
       "iondirector_action_prime_cell": {
         "name": "Prime ION Director measuring cell"
+      },
+      "illumination_masterbrightness_write": {
+        "name": "Write master brightness"
       }
     },
     "number": {
@@ -302,6 +305,9 @@
       },
       "sensor_setpoint_value_seawater": {
         "name": "Setpoint – enter value in mS"
+      },
+      "illumination_masterbrightness_value": {
+        "name": "Master brightness new value (%)"
       }
     },
     "select": {

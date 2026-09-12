@@ -285,6 +285,9 @@
       },
       "iondirector_action_prime_cell": {
         "name": "ION Director Messzelle primen"
+      },
+      "illumination_masterbrightness_write": {
+        "name": "Master-Helligkeit schreiben"
       }
     },
     "number": {
@@ -302,6 +305,9 @@
       },
       "sensor_setpoint_value_seawater": {
         "name": "Sollwert – Eingabe in mS"
+      },
+      "illumination_masterbrightness_value": {
+        "name": "Master-Helligkeit neuer Wert (%)"
       }
     },
     "select": {
