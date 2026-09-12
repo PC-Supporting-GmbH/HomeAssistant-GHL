@@ -36,6 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 
 FEEDPAUSE_COUNT = 4
 MAINTENANCE_COUNT = 4
+WATERCHANGE_COUNT = 4
 LIGHTSCENE_COUNT = 8
 
 THUNDERSTORM_DEFAULT_DURATION = 5
@@ -185,6 +186,26 @@ async def async_setup_entry(
                 state=False,
             )
         )
+
+    if entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4:
+        for index in range(WATERCHANGE_COUNT):
+            entities.append(
+                GHLWaterChangeButton(
+                    api=api,
+                    entry=entry,
+                    index=index,
+                    state=True,
+                )
+            )
+
+            entities.append(
+                GHLWaterChangeButton(
+                    api=api,
+                    entry=entry,
+                    index=index,
+                    state=False,
+                )
+            )
 
     entities.append(
         GHLThunderstormButton(
@@ -533,6 +554,93 @@ class GHLMaintenanceButton(ButtonEntity):
         if not reply.startswith("ACK"):
             _LOGGER.warning(
                 "GHL maintenance %d command %s "
+                "returned unexpected response: %s",
+                self._index + 1,
+                command,
+                reply,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_rejected",
+            )
+
+
+class GHLWaterChangeButton(ButtonEntity):
+    """Representation of a GHL water change action."""
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        api: GHLAPI,
+        entry: ConfigEntry,
+        index: int,
+        state: bool,
+    ) -> None:
+        """Initialize the GHL water change button."""
+
+        self._api = api
+        self._entry = entry
+        self._index = index
+        self._state = state
+
+        action = "start" if state else "stop"
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_specialfunction_"
+            f"waterchange_{index}_{action}"
+        )
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name=entry.title,
+            manufacturer="GHL",
+            configuration_url=f"http://{entry.data[CONF_HOST]}",
+        )
+
+        if state:
+            self._attr_translation_key = "waterchange_start"
+
+        else:
+            self._attr_translation_key = "waterchange_stop"
+
+        self._attr_translation_placeholders = {
+            "index": str(index + 1),
+        }
+
+    async def async_press(self) -> None:
+        """Execute the GHL water change action."""
+
+        state_value = 1 if self._state else 0
+
+        command = (
+            f"SET SPECIALFUNCTION "
+            f"WATERCHANGE[{self._index}] {state_value}"
+        )
+
+        try:
+            reply = await self._api.async_command(
+                command
+            )
+
+        except GHLAPIError as err:
+            _LOGGER.warning(
+                "Unable to execute GHL water change %d "
+                "command %s: %s",
+                self._index + 1,
+                command,
+                err,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_communication_error",
+            ) from err
+
+        if not reply.startswith("ACK"):
+            _LOGGER.warning(
+                "GHL water change %d command %s "
                 "returned unexpected response: %s",
                 self._index + 1,
                 command,

@@ -251,6 +251,12 @@
       "maintenance_stop": {
         "name": "Wartung {index} beenden"
       },
+      "waterchange_start": {
+        "name": "Wasserwechsel {index} starten"
+      },
+      "waterchange_stop": {
+        "name": "Wasserwechsel {index} beenden"
+      },
       "thunderstorm_start": {
         "name": "Gewitter starten"
       },

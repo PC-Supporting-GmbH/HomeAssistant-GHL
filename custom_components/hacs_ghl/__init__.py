@@ -45,6 +45,7 @@ ISSUE_NEW_SENSORS_PREFIX = "new_sensors"
 
 FEEDPAUSE_COUNT = 4
 MAINTENANCE_COUNT = 4
+WATERCHANGE_COUNT = 4
 LIGHTSCENE_COUNT = 8
 
 DESCRIPTION_RESOURCE_TYPES = {
@@ -455,6 +456,27 @@ def _async_remove_write_entities(
             unique_id = (
                 f"{entry.entry_id}_specialfunction_"
                 f"maintenance_{index}_{action}"
+            )
+
+            entity_id = entity_registry.async_get_entity_id(
+                "button",
+                DOMAIN,
+                unique_id,
+            )
+
+            if entity_id is not None:
+                entity_registry.async_remove(
+                    entity_id
+                )
+
+    for index in range(WATERCHANGE_COUNT):
+        for action in (
+            "start",
+            "stop",
+        ):
+            unique_id = (
+                f"{entry.entry_id}_specialfunction_"
+                f"waterchange_{index}_{action}"
             )
 
             entity_id = entity_registry.async_get_entity_id(
