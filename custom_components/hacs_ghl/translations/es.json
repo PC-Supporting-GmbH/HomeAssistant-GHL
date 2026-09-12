@@ -9,10 +9,12 @@
           "port": "Puerto (predeterminado: 10002)",
           "device_type": "Tipo de dispositivo",
           "access_mode": "Modo de acceso a la API",
-          "api_enabled": "Confirmo que la API de GHL está habilitada en el dispositivo"
+          "api_enabled": "Confirmo que la API de GHL está habilitada en el dispositivo",
+          "import_historical_data": "Datos históricos: importar para sensores recién detectados"
         },
         "data_description": {
-          "api_enabled": "La configuración inicial puede tardar varios minutos, especialmente en dispositivos ProfiLux, debido al gran número de entidades."
+          "api_enabled": "La configuración inicial puede tardar varios minutos, especialmente en dispositivos ProfiLux, debido al gran número de entidades.",
+          "import_historical_data": "Los datos históricos se importan durante la configuración inicial para todas las fuentes compatibles detectadas como nuevas. Después, la importación automática solo se realiza para sensores o fuentes recién detectados."
         }
       }
     },
@@ -31,7 +33,8 @@
         "title": "Configurar GHL",
         "menu_options": {
           "general": "Ajustes generales",
-          "sensors": "Configurar sensores"
+          "sensors": "Configurar sensores",
+          "history_import": "Datos históricos: importar ahora"
         }
       },
       "general": {
@@ -41,10 +44,12 @@
           "host": "Dirección IP o nombre de host",
           "port": "Puerto",
           "access_mode": "Modo de acceso a la API",
-          "show_all_resources": "Mostrar todos los recursos disponibles"
+          "show_all_resources": "Mostrar todos los recursos disponibles",
+          "import_historical_data": "Datos históricos: importar para sensores recién detectados"
         },
         "data_description": {
-          "show_all_resources": "Integrar también los recursos GHL que normalmente se detectarían como no utilizados y se ocultarían según su configuración."
+          "show_all_resources": "Integrar también los recursos GHL que normalmente se detectarían como no utilizados y se ocultarían según su configuración.",
+          "import_historical_data": "Los datos históricos se importan automáticamente cuando se detecta un sensor o una fuente compatible por primera vez. Activar esta opción no importa retroactivamente las fuentes existentes; para ello está disponible la acción separada «Datos históricos: importar ahora»."
         }
       },
       "initial_sensor_setup": {
@@ -68,6 +73,14 @@
         "data": {
           "sensor_unit": "Unidad"
         }
+      },
+      "history_import": {
+        "title": "Datos históricos: importar ahora",
+        "description": "Los datos históricos de todos los sensores o fuentes compatibles disponibles actualmente se leen del dispositivo GHL y se importan en las estadísticas de Home Assistant. Los periodos estadísticos ya existentes no se añaden como duplicados adicionales."
+      },
+      "history_import_result": {
+        "title": "Datos históricos: resultado de la importación",
+        "description": "{summary}"
       }
     },
     "error": {
@@ -78,7 +91,10 @@
     },
     "abort": {
       "entry_not_loaded": "La integración GHL no está cargada actualmente.",
-      "no_sensors": "No se encontraron sensores GHL."
+      "no_sensors": "No se encontraron sensores GHL.",
+      "history_import_complete": "Los datos históricos se han importado.",
+      "history_import_incomplete": "No se pudieron importar completamente los datos históricos de todas las fuentes compatibles. Consulta el registro de Home Assistant para obtener más detalles.",
+      "no_history_sources": "No se pueden importar datos históricos porque actualmente no hay ninguna fuente compatible y configurada."
     }
   },
   "selector": {

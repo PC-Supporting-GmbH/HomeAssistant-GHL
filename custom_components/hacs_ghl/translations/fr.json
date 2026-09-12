@@ -9,10 +9,12 @@
           "port": "Port (par défaut : 10002)",
           "device_type": "Type d’appareil",
           "access_mode": "Mode d’accès à l’API",
-          "api_enabled": "Je confirme que l’API GHL est activée sur l’appareil"
+          "api_enabled": "Je confirme que l’API GHL est activée sur l’appareil",
+          "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés"
         },
         "data_description": {
-          "api_enabled": "La configuration initiale peut prendre plusieurs minutes, en particulier sur les appareils ProfiLux, en raison du grand nombre d’entités."
+          "api_enabled": "La configuration initiale peut prendre plusieurs minutes, en particulier sur les appareils ProfiLux, en raison du grand nombre d’entités.",
+          "import_historical_data": "Les données historiques sont importées lors de la configuration initiale pour toutes les sources prises en charge détectées comme nouvelles. Ensuite, l’import automatique ne s’effectue que pour les capteurs ou sources nouvellement détectés."
         }
       }
     },
@@ -31,7 +33,8 @@
         "title": "Configurer GHL",
         "menu_options": {
           "general": "Paramètres généraux",
-          "sensors": "Configurer les capteurs"
+          "sensors": "Configurer les capteurs",
+          "history_import": "Données historiques : importer maintenant"
         }
       },
       "general": {
@@ -41,10 +44,12 @@
           "host": "Adresse IP ou nom d’hôte",
           "port": "Port",
           "access_mode": "Mode d’accès à l’API",
-          "show_all_resources": "Afficher toutes les ressources disponibles"
+          "show_all_resources": "Afficher toutes les ressources disponibles",
+          "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés"
         },
         "data_description": {
-          "show_all_resources": "Intégrer également les ressources GHL qui seraient normalement détectées comme inutilisées et masquées en fonction de leur configuration."
+          "show_all_resources": "Intégrer également les ressources GHL qui seraient normalement détectées comme inutilisées et masquées en fonction de leur configuration.",
+          "import_historical_data": "Les données historiques sont importées automatiquement lorsqu’un capteur ou une source pris en charge est nouvellement détecté. L’activation de cette option n’importe pas rétroactivement les sources existantes ; utilisez pour cela l’action séparée « Données historiques : importer maintenant »."
         }
       },
       "initial_sensor_setup": {
@@ -68,6 +73,14 @@
         "data": {
           "sensor_unit": "Unité"
         }
+      },
+      "history_import": {
+        "title": "Données historiques : importer maintenant",
+        "description": "Les données historiques de tous les capteurs ou sources actuellement disponibles et pris en charge sont lues depuis l’appareil GHL et importées dans les statistiques Home Assistant. Les périodes statistiques déjà présentes ne sont pas ajoutées comme doublons supplémentaires."
+      },
+      "history_import_result": {
+        "title": "Données historiques : résultat de l’importation",
+        "description": "{summary}"
       }
     },
     "error": {
@@ -78,7 +91,10 @@
     },
     "abort": {
       "entry_not_loaded": "L’intégration GHL n’est actuellement pas chargée.",
-      "no_sensors": "Aucun capteur GHL n’a été trouvé."
+      "no_sensors": "Aucun capteur GHL n’a été trouvé.",
+      "history_import_complete": "Les données historiques ont été importées.",
+      "history_import_incomplete": "Les données historiques n’ont pas pu être importées complètement pour toutes les sources prises en charge. Consultez le journal Home Assistant pour plus de détails.",
+      "no_history_sources": "Les données historiques ne peuvent pas être importées car aucune source prise en charge et configurée n’est actuellement disponible."
     }
   },
   "selector": {
@@ -287,7 +303,7 @@
         "name": "Amorcer la cellule de mesure de l’ION Director"
       },
       "illumination_masterbrightness_write": {
-        "name": "Écrire la luminosité principale"
+        "name": "Écrire la luminosité générale"
       }
     },
     "number": {
@@ -307,7 +323,7 @@
         "name": "Consigne – saisir la valeur en mS"
       },
       "illumination_masterbrightness_value": {
-        "name": "Nouvelle valeur de luminosité principale (%)"
+        "name": "Nouvelle valeur de luminosité générale (%)"
       }
     },
     "select": {

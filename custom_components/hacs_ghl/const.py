@@ -18,6 +18,8 @@ CONF_SENSOR_UNIT = "sensor_unit"
 CONF_SENSOR_UNITS = "sensor_units"
 CONF_KNOWN_SENSORS = "known_sensors"
 CONF_SHOW_ALL_RESOURCES = "show_all_resources"
+CONF_IMPORT_HISTORICAL_DATA = "import_historical_data"
+CONF_HISTORY_PRESENT_RESOURCES = "history_present_resources"
 
 ACCESS_MODE_READ_ONLY = "read_only"
 ACCESS_MODE_FULL_ACCESS = "full_access"

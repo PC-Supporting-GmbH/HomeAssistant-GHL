@@ -18,6 +18,7 @@ from .const import (
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
     CONF_DEVICE_TYPE,
+    CONF_IMPORT_HISTORICAL_DATA,
     CONF_SENSOR_TYPE,
     CONF_SENSOR_TYPES,
     CONF_SENSOR_UNIT,
@@ -42,6 +43,12 @@ from .const import (
     SENSOR_UNIT_KG_L,
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
+)
+from .history import (
+    async_import_resource_history,
+    history_resource_map,
+    sensor_history_is_configured,
+    sensor_history_should_import,
 )
 
 
@@ -90,6 +97,21 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Start the options flow after the config entry was created."""
 
         config_entry = result["result"]
+
+        if CONF_IMPORT_HISTORICAL_DATA in config_entry.data:
+            new_data = dict(config_entry.data)
+            import_historical_data = new_data.pop(
+                CONF_IMPORT_HISTORICAL_DATA
+            )
+            new_options = dict(config_entry.options)
+            new_options[CONF_IMPORT_HISTORICAL_DATA] = (
+                import_historical_data
+            )
+            self.hass.config_entries.async_update_entry(
+                config_entry,
+                data=new_data,
+                options=new_options,
+            )
 
         options_result = await self.hass.config_entries.options.async_init(
             config_entry.entry_id,
@@ -141,6 +163,9 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             CONF_PORT: user_input[CONF_PORT],
                             CONF_ACCESS_MODE: user_input[CONF_ACCESS_MODE],
                             CONF_DEVICE_TYPE: user_input[CONF_DEVICE_TYPE],
+                            CONF_IMPORT_HISTORICAL_DATA: user_input[
+                                CONF_IMPORT_HISTORICAL_DATA
+                            ],
                         }
 
                         translations = await async_get_translations(
@@ -196,6 +221,10 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
+                vol.Required(
+                    CONF_IMPORT_HISTORICAL_DATA,
+                    default=True,
+                ): bool,
                 vol.Required("api_enabled", default=False): bool,
             }
         )
@@ -218,6 +247,7 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
         self._sensor_types = {}
         self._sensor_units = {}
         self._show_all_resources = False
+        self._import_historical_data = False
 
     async def async_step_init(self, user_input=None):
         """Initialize GHL options."""
@@ -261,6 +291,11 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             False,
         )
 
+        self._import_historical_data = self.config_entry.options.get(
+            CONF_IMPORT_HISTORICAL_DATA,
+            True,
+        )
+
         self._sensor_index = 0
 
         if (
@@ -274,6 +309,7 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             menu_options=[
                 "general",
                 "sensors",
+                "history_import",
             ],
         )
 
@@ -303,6 +339,9 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             show_all_resources = user_input[
                 CONF_SHOW_ALL_RESOURCES
             ]
+            import_historical_data = user_input[
+                CONF_IMPORT_HISTORICAL_DATA
+            ]
 
             old_host = self.config_entry.data[CONF_HOST]
             old_port = self.config_entry.data[CONF_PORT]
@@ -312,6 +351,12 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             old_show_all_resources = (
                 self.config_entry.options.get(
                     CONF_SHOW_ALL_RESOURCES,
+                    False,
+                )
+            )
+            old_import_historical_data = (
+                self.config_entry.options.get(
+                    CONF_IMPORT_HISTORICAL_DATA,
                     False,
                 )
             )
@@ -330,6 +375,8 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             options_changed = (
                 show_all_resources
                 != old_show_all_resources
+                or import_historical_data
+                != old_import_historical_data
             )
 
             if connection_changed:
@@ -413,6 +460,9 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                 self._show_all_resources = (
                     show_all_resources
                 )
+                self._import_historical_data = (
+                    import_historical_data
+                )
 
                 if data_changed and not options_changed:
                     self.hass.config_entries.async_schedule_reload(
@@ -426,6 +476,9 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                         CONF_SENSOR_UNITS: self._sensor_units,
                         CONF_SHOW_ALL_RESOURCES: (
                             self._show_all_resources
+                        ),
+                        CONF_IMPORT_HISTORICAL_DATA: (
+                            self._import_historical_data
                         ),
                     },
                 )
@@ -457,6 +510,10 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                     CONF_SHOW_ALL_RESOURCES,
                     default=self._show_all_resources,
                 ): bool,
+                vol.Required(
+                    CONF_IMPORT_HISTORICAL_DATA,
+                    default=self._import_historical_data,
+                ): bool,
             }
         )
 
@@ -464,6 +521,107 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             step_id="general",
             data_schema=data_schema,
             errors=errors,
+        )
+
+    async def async_step_history_import(self, user_input=None):
+        """Import historical data for all currently available sources."""
+
+        if user_input is None:
+            return self.async_show_form(
+                step_id="history_import",
+                data_schema=vol.Schema({}),
+            )
+
+        entry_data = (
+            self.hass.data
+            .get(DOMAIN, {})
+            .get(self.config_entry.entry_id)
+        )
+
+        if entry_data is None:
+            return self.async_abort(
+                reason="entry_not_loaded",
+            )
+
+        resources = history_resource_map(
+            entry_data["resources"]
+        )
+        eligible_resources = [
+            resource
+            for resource in resources.values()
+            if (
+                sensor_history_is_configured(
+                    self.config_entry,
+                    resource,
+                )
+                and sensor_history_should_import(
+                    self.config_entry,
+                    resource,
+                )
+            )
+        ]
+
+        if not eligible_resources:
+            return self.async_abort(
+                reason="no_history_sources",
+            )
+
+        failed = False
+        summary_lines: list[str] = []
+        records_label = {
+            "de": "Datensätze",
+            "en": "records",
+            "es": "registros",
+            "fr": "enregistrements",
+        }.get(self.hass.config.language, "records")
+
+        for resource in eligible_resources:
+            result = await async_import_resource_history(
+                hass=self.hass,
+                entry=self.config_entry,
+                api=entry_data["api"],
+                resource=resource,
+            )
+            resource_name = resource.description or (
+                resource.resource
+                if resource.index is None
+                else f"{resource.resource}[{resource.index}]"
+            )
+
+            if not result.success:
+                failed = True
+
+            summary_lines.append(
+                f"{resource_name}: {result.records_found} {records_label}"
+            )
+
+        self._history_import_failed = failed
+
+        return self.async_show_form(
+            step_id="history_import_result",
+            data_schema=vol.Schema({}),
+            description_placeholders={
+                "summary": "\n".join(summary_lines),
+            },
+        )
+
+    async def async_step_history_import_result(self, user_input=None):
+        """Show the result of a manual historical data import."""
+
+        if user_input is None:
+            return self.async_show_form(
+                step_id="history_import_result",
+                data_schema=vol.Schema({}),
+                description_placeholders={"summary": ""},
+            )
+
+        if getattr(self, "_history_import_failed", False):
+            return self.async_abort(
+                reason="history_import_incomplete",
+            )
+
+        return self.async_abort(
+            reason="history_import_complete",
         )
 
     async def async_step_sensors(self, user_input=None):
@@ -503,6 +661,9 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                         CONF_SENSOR_UNITS: self._sensor_units,
                         CONF_SHOW_ALL_RESOURCES: (
                             self._show_all_resources
+                        ),
+                        CONF_IMPORT_HISTORICAL_DATA: (
+                            self._import_historical_data
                         ),
                     },
                 )
@@ -575,6 +736,9 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                         CONF_SENSOR_UNITS: self._sensor_units,
                         CONF_SHOW_ALL_RESOURCES: (
                             self._show_all_resources
+                        ),
+                        CONF_IMPORT_HISTORICAL_DATA: (
+                            self._import_historical_data
                         ),
                     },
                 )

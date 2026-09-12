@@ -9,10 +9,12 @@
           "port": "Port (Standard: 10002)",
           "device_type": "Gerätetyp",
           "access_mode": "API-Zugriffsmodus",
-          "api_enabled": "Ich bestätige, dass die GHL API auf dem Gerät aktiviert ist"
+          "api_enabled": "Ich bestätige, dass die GHL API auf dem Gerät aktiviert ist",
+          "import_historical_data": "Historische Daten bei neu entdeckten Sensoren importieren"
         },
         "data_description": {
-          "api_enabled": "Die Erstinitialisierung kann, insbesondere beim ProfiLux, aufgrund der Vielzahl an Entitäten mehrere Minuten dauern."
+          "api_enabled": "Die Erstinitialisierung kann, insbesondere beim ProfiLux, aufgrund der Vielzahl an Entitäten mehrere Minuten dauern.",
+          "import_historical_data": "Historische Daten werden bei der Erstinitialisierung für alle unterstützten, neu erkannten Quellen importiert. Danach erfolgt der automatische Import nur noch bei neu entdeckten Sensoren bzw. Quellen."
         }
       }
     },
@@ -31,7 +33,8 @@
         "title": "GHL konfigurieren",
         "menu_options": {
           "general": "Allgemeine Einstellungen",
-          "sensors": "Sensoren konfigurieren"
+          "sensors": "Sensoren konfigurieren",
+          "history_import": "Historische Daten jetzt importieren"
         }
       },
       "general": {
@@ -41,10 +44,12 @@
           "host": "IP-Adresse oder Hostname",
           "port": "Port",
           "access_mode": "API-Zugriffsmodus",
-          "show_all_resources": "Alle verfügbaren Ressourcen anzeigen"
+          "show_all_resources": "Alle verfügbaren Ressourcen anzeigen",
+          "import_historical_data": "Historische Daten bei neu entdeckten Sensoren importieren"
         },
         "data_description": {
-          "show_all_resources": "Auch GHL-Ressourcen integrieren, die anhand ihrer Konfiguration normalerweise als unbenutzt erkannt und ausgeblendet würden."
+          "show_all_resources": "Auch GHL-Ressourcen integrieren, die anhand ihrer Konfiguration normalerweise als unbenutzt erkannt und ausgeblendet würden.",
+          "import_historical_data": "Historische Daten werden automatisch importiert, wenn ein unterstützter Sensor bzw. eine unterstützte Quelle neu entdeckt wird. Bereits vorhandene Quellen werden durch das Aktivieren dieser Option nicht rückwirkend importiert; dafür steht die separate Aktion „Historische Daten jetzt importieren“ zur Verfügung."
         }
       },
       "initial_sensor_setup": {
@@ -68,6 +73,14 @@
         "data": {
           "sensor_unit": "Einheit"
         }
+      },
+      "history_import": {
+        "title": "Historische Daten jetzt importieren",
+        "description": "Historische Daten aller aktuell vorhandenen und unterstützten Sensoren bzw. Quellen werden aus dem GHL-Gerät gelesen und in die Home-Assistant-Statistik importiert. Bereits vorhandene Statistikzeiträume werden nicht als zusätzliche Duplikate angelegt."
+      },
+      "history_import_result": {
+        "title": "Historische Daten: Importergebnis",
+        "description": "{summary}"
       }
     },
     "error": {
@@ -78,7 +91,10 @@
     },
     "abort": {
       "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen.",
-      "no_sensors": "Es wurden keine GHL-Sensoren gefunden."
+      "no_sensors": "Es wurden keine GHL-Sensoren gefunden.",
+      "history_import_complete": "Historische Daten wurden importiert.",
+      "history_import_incomplete": "Historische Daten konnten nicht für alle unterstützten Quellen vollständig importiert werden. Weitere Details stehen im Home-Assistant-Protokoll.",
+      "no_history_sources": "Historische Daten können nicht importiert werden, weil derzeit keine unterstützte und konfigurierte Quelle vorhanden ist."
     }
   },
   "selector": {
@@ -287,7 +303,7 @@
         "name": "ION Director Messzelle primen"
       },
       "illumination_masterbrightness_write": {
-        "name": "Master-Helligkeit schreiben"
+        "name": "Gesamthelligkeit schreiben"
       }
     },
     "number": {
@@ -307,7 +323,7 @@
         "name": "Sollwert – Eingabe in mS"
       },
       "illumination_masterbrightness_value": {
-        "name": "Master-Helligkeit neuer Wert (%)"
+        "name": "Gesamthelligkeit neuer Wert (%)"
       }
     },
     "select": {

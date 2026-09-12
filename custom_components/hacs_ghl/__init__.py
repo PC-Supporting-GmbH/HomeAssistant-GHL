@@ -11,6 +11,8 @@ from .const import (
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
     CONF_DEVICE_TYPE,
+    CONF_HISTORY_PRESENT_RESOURCES,
+    CONF_IMPORT_HISTORICAL_DATA,
     CONF_KNOWN_SENSORS,
     CONF_SENSOR_TYPES,
     CONF_SHOW_ALL_RESOURCES,
@@ -21,6 +23,13 @@ from .coordinator import GHLDataUpdateCoordinator
 from .discovery import (
     GHLDiscoveredResource,
     async_discover_resources,
+)
+from .history import (
+    async_import_resource_history,
+    history_entity_is_registered,
+    history_resource_map,
+    sensor_history_is_configured,
+    sensor_history_should_import,
 )
 
 PLATFORMS = [
@@ -92,6 +101,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ),
     )
 
+    discovered_history_resources = history_resource_map(
+        discovered_resources
+    )
+    previous_history_resources = set(
+        entry.data.get(
+            CONF_HISTORY_PRESENT_RESOURCES,
+            [],
+        )
+    )
+    current_history_resources = {
+        key
+        for key, resource in discovered_history_resources.items()
+        if sensor_history_is_configured(entry, resource)
+    }
+    history_resources_to_import = {
+        key
+        for key in current_history_resources
+        if (
+            key not in previous_history_resources
+            or (
+                sensor_history_should_import(
+                    entry,
+                    discovered_history_resources[key],
+                )
+                and not history_entity_is_registered(
+                    hass,
+                    entry,
+                    discovered_history_resources[key],
+                )
+            )
+        )
+    }
+
     discovered_resources = _merge_known_sensors(
         hass=hass,
         entry=entry,
@@ -131,6 +173,47 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry,
         PLATFORMS,
     )
+
+    failed_history_resources: set[str] = set()
+
+    if entry.options.get(
+        CONF_IMPORT_HISTORICAL_DATA,
+        False,
+    ):
+        for resource_key in sorted(history_resources_to_import):
+            resource = discovered_history_resources[resource_key]
+
+            if not sensor_history_should_import(entry, resource):
+                continue
+
+            history_result = await async_import_resource_history(
+                hass=hass,
+                entry=entry,
+                api=api,
+                resource=resource,
+            )
+            if not history_result.success:
+                failed_history_resources.add(resource_key)
+
+    history_resources_to_store = (
+        current_history_resources
+        - failed_history_resources
+    )
+
+    if set(
+        entry.data.get(
+            CONF_HISTORY_PRESENT_RESOURCES,
+            [],
+        )
+    ) != history_resources_to_store:
+        new_data = dict(entry.data)
+        new_data[CONF_HISTORY_PRESENT_RESOURCES] = sorted(
+            history_resources_to_store
+        )
+        hass.config_entries.async_update_entry(
+            entry,
+            data=new_data,
+        )
 
     return True
 
