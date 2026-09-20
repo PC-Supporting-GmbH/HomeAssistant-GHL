@@ -400,6 +400,9 @@
     }
   },
   "exceptions": {
+    "device_unreachable": {
+      "message": "No se puede acceder a {device}. La conexión se volverá a intentar automáticamente."
+    },
     "command_communication_error": {
       "message": "No se pudo enviar el comando al dispositivo GHL."
     },

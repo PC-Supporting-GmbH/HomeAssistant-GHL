@@ -1,12 +1,12 @@
 """GHL integration."""
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 
-from .api import GHLAPI
+from .api import GHLAPI, GHLConnectionError
 from .const import (
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
@@ -92,6 +92,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         host=entry.data[CONF_HOST],
         port=entry.data[CONF_PORT],
     )
+
+    try:
+        await api.async_check_connection()
+
+    except GHLConnectionError as err:
+        raise ConfigEntryNotReady(
+             translation_domain=DOMAIN,
+             translation_key="device_unreachable",
+             translation_placeholders={
+                 "device": entry.title,
+             },
+        ) from err
 
     discovered_resources = await async_discover_resources(
         api=api,

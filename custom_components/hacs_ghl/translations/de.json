@@ -400,6 +400,9 @@
     }
   },
   "exceptions": {
+    "device_unreachable": {
+      "message": "{device} ist nicht erreichbar. Die Verbindung wird automatisch erneut versucht."
+    },
     "command_communication_error": {
       "message": "Der Befehl konnte nicht an das GHL-Gerät übermittelt werden."
     },

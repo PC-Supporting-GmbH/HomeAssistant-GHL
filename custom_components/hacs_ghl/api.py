@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import asyncio
 
+from .const import (
+    SETUP_CONNECTION_ATTEMPTS,
+    SETUP_CONNECTION_RETRY_DELAY_SECONDS,
+    SETUP_CONNECTION_TIMEOUT_SECONDS,
+)
+
 
 class GHLAPIError(Exception):
     """Base exception for GHL API errors."""
@@ -26,7 +32,7 @@ class GHLAPI:
         self._writer: asyncio.StreamWriter | None = None
         self._lock = asyncio.Lock()
 
-    async def _async_connect(self) -> None:
+    async def _async_connect(self, timeout: float = 10) -> None:
         """Open the TCP connection to the GHL device."""
 
         if (
@@ -39,7 +45,7 @@ class GHLAPI:
         try:
             self._reader, self._writer = await asyncio.wait_for(
                 asyncio.open_connection(self.host, self.port),
-                timeout=10,
+                timeout=timeout,
             )
 
         except (OSError, asyncio.TimeoutError) as err:
@@ -49,6 +55,25 @@ class GHLAPI:
             raise GHLConnectionError(
                 f"Unable to connect to {self.host}:{self.port}"
             ) from err
+
+    async def async_check_connection(self) -> None:
+        """Check the connection to the GHL device."""
+
+        async with self._lock:
+            for attempt in range(SETUP_CONNECTION_ATTEMPTS):
+                try:
+                    await self._async_connect(
+                        timeout=SETUP_CONNECTION_TIMEOUT_SECONDS,
+                    )
+                    return
+
+                except GHLConnectionError:
+                    if attempt == SETUP_CONNECTION_ATTEMPTS - 1:
+                        raise
+
+                    await asyncio.sleep(
+                        SETUP_CONNECTION_RETRY_DELAY_SECONDS
+                    )
 
     async def _async_disconnect(self) -> None:
         """Close the TCP connection to the GHL device."""
