@@ -394,6 +394,9 @@
     }
   },
   "exceptions": {
+    "device_unreachable": {
+      "message": "No se pudo establecer la conexión con {device}. Comprueba que el dispositivo sea accesible."
+    },
     "command_execution_uncertain": {
       "message": "No se pudo confirmar la ejecución. Es posible que el comando ya se haya ejecutado. Comprueba el estado del dispositivo antes de repetir la acción."
     },

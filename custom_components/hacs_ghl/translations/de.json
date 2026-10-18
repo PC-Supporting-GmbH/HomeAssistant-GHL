@@ -394,6 +394,9 @@
     }
   },
   "exceptions": {
+    "device_unreachable": {
+      "message": "Verbindung zu {device} konnte nicht hergestellt werden. Prüfe die Erreichbarkeit des Geräts."
+    },
     "command_execution_uncertain": {
       "message": "Die Ausführung konnte nicht bestätigt werden. Der Befehl wurde möglicherweise bereits ausgeführt. Prüfe den Gerätezustand, bevor du die Aktion erneut ausführst."
     },

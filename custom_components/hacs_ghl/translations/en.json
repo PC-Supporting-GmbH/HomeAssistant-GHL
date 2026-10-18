@@ -394,6 +394,9 @@
     }
   },
   "exceptions": {
+    "device_unreachable": {
+      "message": "Could not connect to {device}. Check that the device is reachable."
+    },
     "command_execution_uncertain": {
       "message": "Execution could not be confirmed. The command may already have been executed. Check the device state before repeating the action."
     },
