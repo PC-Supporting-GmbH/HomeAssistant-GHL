@@ -326,7 +326,7 @@
         "name": "Setpoint – enter value in mS"
       },
       "illumination_masterbrightness_value": {
-        "name": "Master brightness new value (%)"
+        "name": "Master brightness (%)"
       }
     },
     "select": {

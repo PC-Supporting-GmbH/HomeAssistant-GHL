@@ -326,7 +326,7 @@
         "name": "Sollwert – Eingabe in mS"
       },
       "illumination_masterbrightness_value": {
-        "name": "Gesamthelligkeit neuer Wert (%)"
+        "name": "Gesamthelligkeit (%)"
       }
     },
     "select": {

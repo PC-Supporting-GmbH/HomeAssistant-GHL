@@ -326,7 +326,7 @@
         "name": "Valor objetivo – introduzca el valor en mS"
       },
       "illumination_masterbrightness_value": {
-        "name": "Nuevo valor de brillo maestro (%)"
+        "name": "Brillo maestro (%)"
       }
     },
     "select": {

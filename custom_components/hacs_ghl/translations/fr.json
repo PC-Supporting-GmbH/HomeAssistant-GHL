@@ -326,7 +326,7 @@
         "name": "Consigne – saisir la valeur en mS"
       },
       "illumination_masterbrightness_value": {
-        "name": "Nouvelle valeur de luminosité générale (%)"
+        "name": "Luminosité générale (%)"
       }
     },
     "select": {
