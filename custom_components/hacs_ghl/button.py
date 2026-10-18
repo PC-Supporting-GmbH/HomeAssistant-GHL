@@ -8,6 +8,7 @@ from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -24,13 +25,7 @@ from .const import (
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
 )
-from .coordinator import (
-    GHLDataUpdateCoordinator,
-    illumination_masterbrightness_key,
-    iondirector_desvalue_key,
-    khdirector_desvalue_key,
-    sensor_desvalue_key,
-)
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,6 +68,8 @@ async def async_setup_entry(
 ) -> None:
     """Set up GHL button entities from a config entry."""
 
+    _async_remove_obsolete_write_buttons(hass, entry)
+
     if entry.data[CONF_ACCESS_MODE] != ACCESS_MODE_FULL_ACCESS:
         return
 
@@ -86,10 +83,6 @@ async def async_setup_entry(
     entry_data = hass.data[DOMAIN][entry.entry_id]
 
     api: GHLAPI = entry_data["api"]
-
-    coordinator: GHLDataUpdateCoordinator = entry_data[
-        "coordinator"
-    ]
 
     thunderstorm_data = entry_data.setdefault(
         "thunderstorm",
@@ -109,44 +102,11 @@ async def async_setup_entry(
         "description_editor"
     ]
 
-    sensor_setpoint_editor = entry_data[
-        "sensor_setpoint_editor"
-    ]
-
     resources = entry_data[
         "resources"
     ]
 
-    masterbrightness_available = any(
-        resource.resource == "ILLUMINATION"
-        and resource.index is None
-        and resource.features.get(
-            "MASTERBRIGHTNESS",
-            False,
-        )
-        for resource in resources
-    )
-
-    masterbrightness_data = entry_data.setdefault(
-        "masterbrightness",
-        {
-            "value": coordinator.data.get(
-                illumination_masterbrightness_key()
-            ),
-        },
-    )
-
     entities: list[ButtonEntity] = []
-
-    if masterbrightness_available:
-        entities.append(
-            GHLIlluminationMasterBrightnessWriteButton(
-                api=api,
-                coordinator=coordinator,
-                entry=entry,
-                masterbrightness_data=masterbrightness_data,
-            )
-        )
 
     if entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4:
         for index in range(FEEDPAUSE_COUNT):
@@ -289,107 +249,28 @@ async def async_setup_entry(
             )
         )
 
-    if sensor_setpoint_editor["resource_order"]:
-        entities.append(
-            GHLSensorSetpointWriteButton(
-                api=api,
-                coordinator=coordinator,
-                entry=entry,
-                sensor_setpoint_editor=sensor_setpoint_editor,
-            )
-        )
-
     async_add_entities(entities)
 
 
-class GHLIlluminationMasterBrightnessWriteButton(ButtonEntity):
-    """Representation of the GHL master brightness write action."""
+def _async_remove_obsolete_write_buttons(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+) -> None:
+    """Remove the obsolete setpoint and master brightness write buttons."""
 
-    _attr_has_entity_name = True
-    _attr_translation_key = "illumination_masterbrightness_write"
-    _attr_icon = "mdi:brightness-percent"
+    registry = er.async_get(hass)
 
-    def __init__(
-        self,
-        api: GHLAPI,
-        coordinator: GHLDataUpdateCoordinator,
-        entry: ConfigEntry,
-        masterbrightness_data: dict,
-    ) -> None:
-        """Initialize the GHL master brightness write button."""
-
-        self._api = api
-        self._coordinator = coordinator
-        self._entry = entry
-        self._masterbrightness_data = masterbrightness_data
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_illumination_"
-            f"masterbrightness_write"
+    for suffix in (
+        "sensor_setpoint_write",
+        "illumination_masterbrightness_write",
+    ):
+        entity_id = registry.async_get_entity_id(
+            "button",
+            DOMAIN,
+            f"{entry.entry_id}_{suffix}",
         )
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
-
-    async def async_press(self) -> None:
-        """Write the selected GHL master brightness."""
-
-        value = self._masterbrightness_data["value"]
-
-        if value is None:
-            return
-
-        command = (
-            f"SET ILLUMINATION MASTERBRIGHTNESS "
-            f"{int(value)}"
-        )
-
-        try:
-            reply = await self._api.async_command(
-                command
-            )
-
-        except GHLAPIError as err:
-            _LOGGER.warning(
-                "Unable to execute GHL master brightness "
-                "command %s: %s",
-                command,
-                err,
-            )
-
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="command_communication_error",
-            ) from err
-
-        if not reply.startswith("ACK"):
-            _LOGGER.warning(
-                "GHL master brightness command %s "
-                "returned unexpected response: %s",
-                command,
-                reply,
-            )
-
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="command_rejected",
-            )
-
-        new_data = dict(
-            self._coordinator.data
-        )
-
-        new_data[
-            illumination_masterbrightness_key()
-        ] = float(value)
-
-        self._coordinator.async_set_updated_data(
-            new_data
-        )
+        if entity_id is not None:
+            registry.async_remove(entity_id)
 
 
 class GHLFeedPauseButton(ButtonEntity):
@@ -1175,136 +1056,4 @@ class GHLDescriptionWriteButton(ButtonEntity):
         await self.hass.config_entries.async_forward_entry_setups(
             self._entry,
             platforms,
-        )
-
-
-class GHLSensorSetpointWriteButton(ButtonEntity):
-    """Representation of the GHL sensor setpoint write action."""
-
-    _attr_has_entity_name = True
-    _attr_translation_key = "sensor_setpoint_write"
-
-    def __init__(
-        self,
-        api: GHLAPI,
-        coordinator: GHLDataUpdateCoordinator,
-        entry: ConfigEntry,
-        sensor_setpoint_editor: dict,
-    ) -> None:
-        """Initialize the GHL sensor setpoint write button."""
-
-        self._api = api
-        self._coordinator = coordinator
-        self._entry = entry
-        self._sensor_setpoint_editor = sensor_setpoint_editor
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_sensor_setpoint_write"
-        )
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
-
-    async def async_press(self) -> None:
-        """Write the selected GHL sensor setpoint."""
-
-        selected_key = self._sensor_setpoint_editor[
-            "selected_key"
-        ]
-
-        if selected_key is None:
-            return
-
-        resource = self._sensor_setpoint_editor[
-            "resources"
-        ][selected_key]
-
-        value = self._sensor_setpoint_editor[
-            "value"
-        ]
-
-        if value is None:
-            return
-
-        value_text = format(
-            float(value),
-            ".15g",
-        )
-
-        if resource.resource == "SENSOR":
-            command = (
-                f"SET SENSOR[{resource.index}] "
-                f"DESVALUE {value_text}"
-            )
-
-            data_key = sensor_desvalue_key(
-                resource.index
-            )
-
-        elif resource.resource == "KHDIRECTOR":
-            command = (
-                f"SET KHDIRECTOR "
-                f"DESVALUE {value_text}"
-            )
-
-            data_key = khdirector_desvalue_key()
-
-        elif resource.resource == "IONDIRECTOR":
-            command = (
-                f"SET IONDIRECTOR[{resource.index}] "
-                f"DESVALUE {value_text}"
-            )
-
-            data_key = iondirector_desvalue_key(
-                resource.index
-            )
-
-        else:
-            return
-
-        try:
-            reply = await self._api.async_command(
-                command
-            )
-
-        except GHLAPIError as err:
-            _LOGGER.warning(
-                "Unable to execute GHL setpoint "
-                "command %s: %s",
-                command,
-                err,
-            )
-
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="command_communication_error",
-            ) from err
-
-        if not reply.startswith("ACK"):
-            _LOGGER.warning(
-                "GHL setpoint command %s "
-                "returned unexpected response: %s",
-                command,
-                reply,
-            )
-
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="command_rejected",
-            )
-
-        new_data = dict(
-            self._coordinator.data
-        )
-
-        new_data[
-            data_key
-        ] = float(value)
-
-        self._coordinator.async_set_updated_data(
-            new_data
         )

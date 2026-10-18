@@ -272,9 +272,6 @@
       "description_write": {
         "name": "Écrire la description"
       },
-      "sensor_setpoint_write": {
-        "name": "Écrire la consigne"
-      },
       "khdirector_action_stop": {
         "name": "Arrêter l’action du KH Director"
       },
@@ -307,9 +304,6 @@
       },
       "iondirector_action_prime_cell": {
         "name": "Amorcer la cellule de mesure de l’ION Director"
-      },
-      "illumination_masterbrightness_write": {
-        "name": "Écrire la luminosité générale"
       }
     },
     "number": {
@@ -400,9 +394,6 @@
     }
   },
   "exceptions": {
-    "device_unreachable": {
-      "message": "{device} est inaccessible. Une nouvelle tentative de connexion sera effectuée automatiquement."
-    },
     "command_communication_error": {
       "message": "La commande n’a pas pu être envoyée à l’appareil GHL."
     },

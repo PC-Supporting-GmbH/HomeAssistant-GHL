@@ -272,9 +272,6 @@
       "description_write": {
         "name": "Write Description"
       },
-      "sensor_setpoint_write": {
-        "name": "Write Setpoint"
-      },
       "khdirector_action_stop": {
         "name": "Stop KH Director action"
       },
@@ -307,9 +304,6 @@
       },
       "iondirector_action_prime_cell": {
         "name": "Prime ION Director measuring cell"
-      },
-      "illumination_masterbrightness_write": {
-        "name": "Write master brightness"
       }
     },
     "number": {
@@ -400,9 +394,6 @@
     }
   },
   "exceptions": {
-    "device_unreachable": {
-      "message": "{device} is unreachable. The connection will be retried automatically."
-    },
     "command_communication_error": {
       "message": "The command could not be sent to the GHL device."
     },

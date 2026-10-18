@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.components.number import (
     NumberDeviceClass,
     NumberEntity,
@@ -16,11 +18,13 @@ from homeassistant.const import (
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.translation import async_get_translations
 
+from .api import GHLAPI, GHLAPIError
 from .const import (
     ACCESS_MODE_FULL_ACCESS,
     CONF_ACCESS_MODE,
@@ -47,6 +51,8 @@ from .coordinator import (
     khdirector_desvalue_key,
     sensor_desvalue_key,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 THUNDERSTORM_DEFAULT_DURATION = 5
 LIGHTSCENE_DEFAULT_FADETIME = 0
@@ -135,6 +141,8 @@ async def async_setup_entry(
         entities.append(
             GHLIlluminationMasterBrightnessNumber(
                 entry=entry,
+                api=entry_data["api"],
+                coordinator=coordinator,
                 masterbrightness_data=masterbrightness_data,
             )
         )
@@ -178,6 +186,7 @@ async def async_setup_entry(
             GHLSensorSetpointNumber(
                 coordinator=coordinator,
                 entry=entry,
+                api=entry_data["api"],
                 sensor_setpoint_editor=sensor_setpoint_editor,
                 name_default=name_default,
                 name_unit=name_unit,
@@ -207,11 +216,15 @@ class GHLIlluminationMasterBrightnessNumber(
         self,
         entry: ConfigEntry,
         masterbrightness_data: dict,
+        api: GHLAPI,
+        coordinator: GHLDataUpdateCoordinator,
     ) -> None:
         """Initialize the GHL master brightness value."""
 
         self._entry = entry
         self._masterbrightness_data = masterbrightness_data
+        self._api = api
+        self._coordinator = coordinator
 
         self._attr_unique_id = (
             f"{entry.entry_id}_illumination_"
@@ -237,35 +250,78 @@ class GHLIlluminationMasterBrightnessNumber(
         return float(value)
 
     async def async_added_to_hass(self) -> None:
-        """Restore the previous master brightness value."""
+        """Load the device value and listen for updates without writing."""
 
         await super().async_added_to_hass()
 
-        last_state = await self.async_get_last_state()
+        self.async_on_remove(
+            self._coordinator.async_add_listener(
+                self._handle_coordinator_update
+            )
+        )
+        self._handle_coordinator_update()
 
-        if last_state is None:
-            return
+    def _handle_coordinator_update(self) -> None:
+        """Update the displayed master brightness from device data."""
 
-        try:
-            value = int(float(last_state.state))
-
-        except (TypeError, ValueError):
-            return
-
-        if not 0 <= value <= 100:
-            return
-
-        self._masterbrightness_data["value"] = value
+        self._masterbrightness_data["value"] = self._coordinator.data.get(
+            illumination_masterbrightness_key()
+        )
+        self.async_write_ha_state()
 
     async def async_set_native_value(
         self,
         value: float,
     ) -> None:
-        """Store the master brightness value used by the write button."""
+        """Write the GHL master brightness immediately."""
 
-        self._masterbrightness_data["value"] = int(value)
+        command = (
+            f"SET ILLUMINATION MASTERBRIGHTNESS "
+            f"{int(value)}"
+        )
 
-        self.async_write_ha_state()
+        try:
+            reply = await self._api.async_command(
+                command
+            )
+
+        except GHLAPIError as err:
+            _LOGGER.warning(
+                "Unable to execute GHL master brightness "
+                "command %s: %s",
+                command,
+                err,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_communication_error",
+            ) from err
+
+        if not reply.startswith("ACK"):
+            _LOGGER.warning(
+                "GHL master brightness command %s "
+                "returned unexpected response: %s",
+                command,
+                reply,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_rejected",
+            )
+
+        new_data = dict(
+            self._coordinator.data
+        )
+
+        new_data[
+            illumination_masterbrightness_key()
+        ] = float(value)
+
+        self._coordinator.async_set_updated_data(
+            new_data
+        )
 
 
 class GHLThunderstormDurationNumber(
@@ -437,6 +493,7 @@ class GHLSensorSetpointNumber(NumberEntity):
         coordinator: GHLDataUpdateCoordinator,
         entry: ConfigEntry,
         sensor_setpoint_editor: dict,
+        api: GHLAPI,
         name_default: str,
         name_unit: str,
         name_seawater: str,
@@ -446,6 +503,7 @@ class GHLSensorSetpointNumber(NumberEntity):
         self._coordinator = coordinator
         self._entry = entry
         self._sensor_setpoint_editor = sensor_setpoint_editor
+        self._api = api
         self._name_default = name_default
         self._name_unit = name_unit
         self._name_seawater = name_seawater
@@ -629,13 +687,97 @@ class GHLSensorSetpointNumber(NumberEntity):
         self,
         value: float,
     ) -> None:
-        """Store the sensor setpoint to write."""
+        """Write the selected GHL sensor setpoint immediately."""
 
-        self._sensor_setpoint_editor[
-            "value"
+        selected_key = self._sensor_setpoint_editor[
+            "selected_key"
+        ]
+
+        if selected_key is None:
+            return
+
+        resource = self._sensor_setpoint_editor[
+            "resources"
+        ][selected_key]
+
+        value_text = format(
+            float(value),
+            ".15g",
+        )
+
+        if resource.resource == "SENSOR":
+            command = (
+                f"SET SENSOR[{resource.index}] "
+                f"DESVALUE {value_text}"
+            )
+
+            data_key = sensor_desvalue_key(
+                resource.index
+            )
+
+        elif resource.resource == "KHDIRECTOR":
+            command = (
+                f"SET KHDIRECTOR "
+                f"DESVALUE {value_text}"
+            )
+
+            data_key = khdirector_desvalue_key()
+
+        elif resource.resource == "IONDIRECTOR":
+            command = (
+                f"SET IONDIRECTOR[{resource.index}] "
+                f"DESVALUE {value_text}"
+            )
+
+            data_key = iondirector_desvalue_key(
+                resource.index
+            )
+
+        else:
+            return
+
+        try:
+            reply = await self._api.async_command(
+                command
+            )
+
+        except GHLAPIError as err:
+            _LOGGER.warning(
+                "Unable to execute GHL setpoint "
+                "command %s: %s",
+                command,
+                err,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_communication_error",
+            ) from err
+
+        if not reply.startswith("ACK"):
+            _LOGGER.warning(
+                "GHL setpoint command %s "
+                "returned unexpected response: %s",
+                command,
+                reply,
+            )
+
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_rejected",
+            )
+
+        new_data = dict(
+            self._coordinator.data
+        )
+
+        new_data[
+            data_key
         ] = float(value)
 
-        self.async_write_ha_state()
+        self._coordinator.async_set_updated_data(
+            new_data
+        )
 
     def refresh_from_selected_sensor(self) -> None:
         """Load the current setpoint of the selected sensor."""
