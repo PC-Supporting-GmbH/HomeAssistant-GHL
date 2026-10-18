@@ -132,15 +132,18 @@ After the initial setup, additional configuration options are available through:
 
 The integration provides additional options after the initial setup.
 
+> [!NOTE]
+> Some options are only available after a successful connection to the GHL device and once the integration has loaded.
+
 ### General settings
 
 The connection settings can be adjusted if required.
 
 The API access mode can also be changed between read-only and read/write access.
 
-### Show all available resources
+#### Show all available resources
 
-The **Show all available resources** option is available after the integration has been set up for the first time.
+This option is available after the integration has been set up for the first time.
 
 By default, the integration uses the device configuration to avoid exposing GHL resources that appear to be unused.
 
@@ -148,11 +151,26 @@ Enabling this option also exposes supported resources that would normally be det
 
 This can be useful if you intentionally want Home Assistant to expose all supported resources reported by the GHL device.
 
+#### Import historical data for new sensors
+
+Enable this option to automatically import historical data when supported sensors or sources are first discovered and configured. Enabling this option later does not automatically import data for sources that are already present.
+
 ### Sensor configuration
 
 Sensor types assigned during the initial setup can later be changed through the integration options.
 
 This allows the sensor configuration to be corrected or adjusted without removing and setting up the integration again.
+
+### Detect new sensors/devices
+
+After adding sensors or devices to your GHL system, select Detect new sensors/devices in the integration options.
+This reloads the integration and runs resource discovery again. Restarting Home Assistant is not required. Newly detected sensors may need to be assigned a sensor type.
+
+### Historical data import
+
+To manually import stored data for all currently available and supported sources, select **Historical data: import now** in the integration options.
+Sensors with no assigned type or configured as hidden are excluded. Duplicate detection helps prevent the same historical data from being imported more than once.
+Importing a large amount of stored data can take several minutes.
 
 ## Changing values from Home Assistant
 
