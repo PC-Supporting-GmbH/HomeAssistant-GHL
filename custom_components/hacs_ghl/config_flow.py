@@ -258,14 +258,13 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             .get(self.config_entry.entry_id)
         )
 
-        if entry_data is None:
-            return self.async_abort(
-                reason="entry_not_loaded",
-            )
-
         self._sensors = [
             resource
-            for resource in entry_data["resources"]
+            for resource in (
+                entry_data["resources"]
+                if entry_data is not None
+                else []
+            )
             if (
                 resource.resource == "SENSOR"
                 and resource.index is not None
@@ -297,6 +296,9 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
         )
 
         self._sensor_index = 0
+
+        if entry_data is None:
+            return await self.async_step_general()
 
         if (
             self._sensors
@@ -397,23 +399,6 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
 
                 if duplicate_entry is not None:
                     errors["base"] = "already_configured"
-
-                else:
-                    try:
-                        reply = await async_test_connection(
-                            host,
-                            port,
-                        )
-
-                    except (OSError, asyncio.TimeoutError):
-                        errors["base"] = "cannot_connect"
-
-                    else:
-                        if reply == "NACK (-105)":
-                            errors["base"] = "api_not_enabled"
-
-                        elif not reply.startswith("ACK"):
-                            errors["base"] = "invalid_response"
 
             if not errors:
                 new_data = dict(self.config_entry.data)
