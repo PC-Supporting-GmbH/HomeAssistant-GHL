@@ -34,7 +34,8 @@
         "menu_options": {
           "general": "General settings",
           "sensors": "Configure sensors",
-          "history_import": "Historical data: import now"
+          "history_import": "Historical data: import now",
+          "rediscover": "Detect new sensors/devices"
         }
       },
       "general": {
@@ -57,7 +58,8 @@
         "description": "**Veuillez maintenant configurer vos capteurs.**\n\nLes capteurs ont été détectés sur l’appareil GHL, mais doivent encore être associés à leur type de capteur respectif.",
         "menu_options": {
           "general": "Paramètres généraux",
-          "sensors": "Configurer les capteurs"
+          "sensors": "Configurer les capteurs",
+          "rediscover": "Detect new sensors/devices"
         }
       },
       "sensor": {
@@ -90,6 +92,7 @@
       "already_configured": "A GHL device with this IP address or hostname and port is already configured."
     },
     "abort": {
+      "rediscovery_started": "The integration is being reloaded to detect new sensors/devices.",
       "entry_not_loaded": "The GHL integration is currently not loaded.",
       "no_sensors": "No GHL sensors were found.",
       "history_import_complete": "Historical data has been imported.",

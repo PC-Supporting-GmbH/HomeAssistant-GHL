@@ -312,6 +312,7 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                 "general",
                 "sensors",
                 "history_import",
+                "rediscover",
             ],
         )
 
@@ -326,7 +327,19 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
             menu_options=[
                 "general",
                 "sensors",
+                "rediscover",
             ],
+        )
+
+    async def async_step_rediscover(self, user_input=None):
+        """Reload the entry to discover new sensors and devices."""
+
+        self.hass.config_entries.async_schedule_reload(
+            self.config_entry.entry_id
+        )
+
+        return self.async_abort(
+            reason="rediscovery_started",
         )
 
     async def async_step_general(self, user_input=None):
