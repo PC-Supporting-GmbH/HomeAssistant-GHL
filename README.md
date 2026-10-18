@@ -35,11 +35,6 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 > [!WARNING]
 > This integration is under development. 
 
-Current development focuses on:
--  Illumination overviews
--  Illumination control
--  Water change functionality
-
 > [!TIP]
 > 
 > If you find this integration useful and would like to support its development
