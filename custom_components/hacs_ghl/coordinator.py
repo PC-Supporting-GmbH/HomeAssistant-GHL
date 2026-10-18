@@ -207,6 +207,7 @@ class GHLDataUpdateCoordinator(
         )
 
         data: dict[int | str, float | str | bool | None] = {}
+        update_errors: list[str] = []
 
         for resource in self.resources:
             if resource.resource == "SENSOR":
@@ -227,9 +228,9 @@ class GHLDataUpdateCoordinator(
                             )
 
                         except GHLAPIError as err:
-                            _LOGGER.warning(
-                                "Unable to update GHL Mitras heatsink temperature: %s",
-                                err,
+                            update_errors.append(
+                                "Unable to update GHL Mitras heatsink temperature: %s"
+                                % (err,)
                             )
 
                             data[key] = None
@@ -291,10 +292,9 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
-                            "Unable to update GHL SENSOR[%d]: %s",
-                            resource.index,
-                            err,
+                        update_errors.append(
+                            "Unable to update GHL SENSOR[%d]: %s"
+                            % (resource.index, err,)
                         )
 
                         data[resource.index] = None
@@ -325,11 +325,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "SENSOR[%d] DESVALUE: %s",
-                            resource.index,
-                            err,
+                            "SENSOR[%d] DESVALUE: %s"
+                            % (resource.index, err,)
                         )
 
                         data[desvalue_key] = None
@@ -367,10 +366,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "KHDIRECTOR ACTVALUE: %s",
-                            err,
+                            "KHDIRECTOR ACTVALUE: %s"
+                            % (err,)
                         )
 
                         data[khdirector_actvalue_key()] = None
@@ -397,10 +396,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "KHDIRECTOR DESVALUE: %s",
-                            err,
+                            "KHDIRECTOR DESVALUE: %s"
+                            % (err,)
                         )
 
                         data[khdirector_desvalue_key()] = None
@@ -451,11 +450,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "IONDIRECTOR[%d] ACTVALUE: %s",
-                            resource.index,
-                            err,
+                            "IONDIRECTOR[%d] ACTVALUE: %s"
+                            % (resource.index, err,)
                         )
 
                         data[actvalue_key] = None
@@ -482,11 +480,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "IONDIRECTOR[%d] DESVALUE: %s",
-                            resource.index,
-                            err,
+                            "IONDIRECTOR[%d] DESVALUE: %s"
+                            % (resource.index, err,)
                         )
 
                         data[desvalue_key] = None
@@ -534,11 +531,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "SWITCHCHANNEL[%d] ACTSTATE: %s",
-                            resource.index,
-                            err,
+                            "SWITCHCHANNEL[%d] ACTSTATE: %s"
+                            % (resource.index, err,)
                         )
 
                         data[state_key] = None
@@ -562,11 +558,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "SWITCHCHANNEL[%d] ACTCURRENT: %s",
-                            resource.index,
-                            err,
+                            "SWITCHCHANNEL[%d] ACTCURRENT: %s"
+                            % (resource.index, err,)
                         )
 
                         data[current_key] = None
@@ -614,11 +609,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "DOSER[%d] FILLLEVEL: %s",
-                            resource.index,
-                            err,
+                            "DOSER[%d] FILLLEVEL: %s"
+                            % (resource.index, err,)
                         )
 
                         data[filllevel_key] = None
@@ -642,11 +636,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "DOSER[%d] CAPACITY: %s",
-                            resource.index,
-                            err,
+                            "DOSER[%d] CAPACITY: %s"
+                            % (resource.index, err,)
                         )
 
                         data[capacity_key] = None
@@ -685,11 +678,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "FLOWSENSOR[%d] ACTFLOW: %s",
-                            resource.index,
-                            err,
+                            "FLOWSENSOR[%d] ACTFLOW: %s"
+                            % (resource.index, err,)
                         )
 
                         data[flow_key] = None
@@ -728,11 +720,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "LEVELSENSOR[%d] ACTSTATE: %s",
-                            resource.index,
-                            err,
+                            "LEVELSENSOR[%d] ACTSTATE: %s"
+                            % (resource.index, err,)
                         )
 
                         data[state_key] = None
@@ -775,10 +766,10 @@ class GHLDataUpdateCoordinator(
                             )
 
                         except GHLAPIError as err:
-                            _LOGGER.warning(
+                            update_errors.append(
                                 "Unable to update GHL "
-                                "ILLUMINATION MASTERBRIGHTNESS: %s",
-                                err,
+                                "ILLUMINATION MASTERBRIGHTNESS: %s"
+                                % (err,)
                             )
 
                             data[masterbrightness_key] = None
@@ -819,11 +810,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "ILLUMINATION[%d] ACTBRIGHTNESS: %s",
-                            resource.index,
-                            err,
+                            "ILLUMINATION[%d] ACTBRIGHTNESS: %s"
+                            % (resource.index, err,)
                         )
 
                         data[brightness_key] = None
@@ -869,10 +859,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "SYSTEM FIRMWARE: %s",
-                            err,
+                            "SYSTEM FIRMWARE: %s"
+                            % (err,)
                         )
 
                         data[system_firmware_key()] = None
@@ -894,10 +884,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "SYSTEM SERIALNUMBER: %s",
-                            err,
+                            "SYSTEM SERIALNUMBER: %s"
+                            % (err,)
                         )
 
                         data[system_serialnumber_key()] = None
@@ -927,10 +917,10 @@ class GHLDataUpdateCoordinator(
                         )
 
                     except GHLAPIError as err:
-                        _LOGGER.warning(
+                        update_errors.append(
                             "Unable to update GHL "
-                            "SYSTEM UNIXTIME: %s",
-                            err,
+                            "SYSTEM UNIXTIME: %s"
+                            % (err,)
                         )
 
                         data[system_unixtime_key()] = None
@@ -942,6 +932,14 @@ class GHLDataUpdateCoordinator(
             data[last_update_key()] = datetime.now(
                 timezone.utc
             ).timestamp()
+
+        if update_errors:
+            _LOGGER.warning(
+                "GHL update for %s completed with %d failed queries: %s",
+                self.entry.title,
+                len(update_errors),
+                "; ".join(update_errors),
+            )
 
         _LOGGER.debug(
             "GHL coordinator update completed: %s",
