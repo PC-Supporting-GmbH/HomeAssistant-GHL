@@ -394,6 +394,9 @@
     }
   },
   "exceptions": {
+    "command_execution_uncertain": {
+      "message": "Die Ausführung konnte nicht bestätigt werden. Der Befehl wurde möglicherweise bereits ausgeführt. Prüfe den Gerätezustand, bevor du die Aktion erneut ausführst."
+    },
     "command_communication_error": {
       "message": "Der Befehl konnte nicht an das GHL-Gerät übermittelt werden."
     },

@@ -19,6 +19,10 @@ class GHLConnectionError(GHLAPIError):
     """Error communicating with the GHL device."""
 
 
+class GHLCommandUncertainError(GHLAPIError):
+    """A command may have been executed without confirmation."""
+
+
 class GHLAPI:
     """Client for the GHL TCP API."""
 
@@ -99,11 +103,20 @@ class GHLAPI:
         async with self._lock:
             await self._async_disconnect()
 
-    async def async_command(self, command: str) -> str:
+    async def async_command(
+        self,
+        command: str,
+        *,
+        retry_safe: bool = False,
+    ) -> str:
         """Send a command to the GHL device and return its reply."""
+
+        may_retry = command.startswith("GET ") or retry_safe
 
         async with self._lock:
             for attempt in range(2):
+                command_may_have_been_sent = False
+
                 try:
                     await self._async_connect()
 
@@ -112,7 +125,9 @@ class GHLAPI:
                             f"Unable to connect to {self.host}:{self.port}"
                         )
 
-                    self._writer.write((command + "\n").encode())
+                    payload = (command + "\n").encode()
+                    command_may_have_been_sent = True
+                    self._writer.write(payload)
                     await self._writer.drain()
 
                     reply = await asyncio.wait_for(
@@ -128,7 +143,19 @@ class GHLAPI:
 
                     await asyncio.sleep(0.1)
 
-                    return reply.decode("cp1252").strip()
+                    response = reply.decode("cp1252").strip()
+
+                    if (
+                        not may_retry
+                        and response != "ACK"
+                        and not response.startswith("NACK")
+                    ):
+                        await self._async_disconnect()
+                        raise GHLCommandUncertainError(
+                            f"Execution could not be confirmed for: {command}"
+                        )
+
+                    return response
 
                 except (
                     OSError,
@@ -137,6 +164,11 @@ class GHLAPI:
                     GHLConnectionError,
                 ) as err:
                     await self._async_disconnect()
+
+                    if command_may_have_been_sent and not may_retry:
+                        raise GHLCommandUncertainError(
+                            f"Execution could not be confirmed for: {command}"
+                        ) from err
 
                     if attempt == 0:
                         await asyncio.sleep(3)

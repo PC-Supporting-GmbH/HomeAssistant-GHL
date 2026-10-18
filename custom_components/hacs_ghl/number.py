@@ -282,7 +282,8 @@ class GHLIlluminationMasterBrightnessNumber(
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                retry_safe=True,
             )
 
         except GHLAPIError as err:
@@ -738,7 +739,8 @@ class GHLSensorSetpointNumber(NumberEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                retry_safe=True,
             )
 
         except GHLAPIError as err:

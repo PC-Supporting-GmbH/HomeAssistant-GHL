@@ -394,6 +394,9 @@
     }
   },
   "exceptions": {
+    "command_execution_uncertain": {
+      "message": "Execution could not be confirmed. The command may already have been executed. Check the device state before repeating the action."
+    },
     "command_communication_error": {
       "message": "The command could not be sent to the GHL device."
     },

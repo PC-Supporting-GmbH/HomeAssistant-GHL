@@ -394,6 +394,9 @@
     }
   },
   "exceptions": {
+    "command_execution_uncertain": {
+      "message": "L’exécution n’a pas pu être confirmée. La commande a peut-être déjà été exécutée. Vérifie l’état de l’appareil avant de répéter l’action."
+    },
     "command_communication_error": {
       "message": "La commande n’a pas pu être envoyée à l’appareil GHL."
     },

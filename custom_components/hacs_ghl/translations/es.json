@@ -394,6 +394,9 @@
     }
   },
   "exceptions": {
+    "command_execution_uncertain": {
+      "message": "No se pudo confirmar la ejecución. Es posible que el comando ya se haya ejecutado. Comprueba el estado del dispositivo antes de repetir la acción."
+    },
     "command_communication_error": {
       "message": "No se pudo enviar el comando al dispositivo GHL."
     },

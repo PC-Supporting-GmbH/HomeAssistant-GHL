@@ -13,7 +13,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .api import GHLAPI, GHLAPIError
+from .api import GHLAPI, GHLAPIError, GHLCommandUncertainError
 from .const import (
     ACCESS_MODE_FULL_ACCESS,
     CONF_ACCESS_MODE,
@@ -342,7 +342,11 @@ class GHLFeedPauseButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -429,7 +433,11 @@ class GHLMaintenanceButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -516,7 +524,11 @@ class GHLWaterChangeButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -604,7 +616,11 @@ class GHLThunderstormButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -697,7 +713,11 @@ class GHLLightSceneButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -780,7 +800,11 @@ class GHLKHDirectorActionButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -864,7 +888,11 @@ class GHLIONDirectorActionButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -941,7 +969,8 @@ class GHLDescriptionWriteButton(ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                retry_safe=True,
             )
 
         except GHLAPIError as err:
