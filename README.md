@@ -83,7 +83,7 @@ After adding the repository to HACS:
 
 Alternatively, download the latest version from GitHub.
 
-Copy the `hacs_ghl` folder from `custom_components` into the `custom_components` directory of your Home Assistant installation.
+Copy the `pcs_ghl` folder from `custom_components` into the `custom_components` directory of your Home Assistant installation.
 
 Restart Home Assistant afterwards and add the integration through:
 

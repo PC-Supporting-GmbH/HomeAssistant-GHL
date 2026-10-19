@@ -1,6 +1,6 @@
 """Constants for the GHL integration."""
 
-DOMAIN = "hacs_ghl"
+DOMAIN = "pcs_ghl"
 
 DEFAULT_PORT = 10002
 

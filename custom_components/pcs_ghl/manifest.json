@@ -1,5 +1,5 @@
 {
-	"domain": "hacs_ghl",
+	"domain": "pcs_ghl",
 	"name": "GHL",
 	"codeowners": [
 		"@Stefan-PCS"

@@ -113,7 +113,7 @@ jobs:
           import json
           from pathlib import Path
 
-          path = Path("custom_components/hacs_ghl/manifest.json")
+          path = Path("custom_components/pcs_ghl/manifest.json")
           data = json.loads(path.read_text(encoding="utf-8"))
 
           print(data["version"])
@@ -145,7 +145,7 @@ jobs:
           import os
           from pathlib import Path
 
-          path = Path("custom_components/hacs_ghl/manifest.json")
+          path = Path("custom_components/pcs_ghl/manifest.json")
           version = os.environ["MANIFEST_VERSION"]
 
           data = json.loads(path.read_text(encoding="utf-8"))
@@ -164,7 +164,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add custom_components/hacs_ghl/manifest.json
+          git add custom_components/pcs_ghl/manifest.json
           git commit -m "Adapt manifest to Release Version"
           git push origin HEAD:${{ github.ref_name }}
 
