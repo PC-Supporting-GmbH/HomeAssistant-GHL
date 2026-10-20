@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "invalid_description": {
+      "message": "Die Beschreibung darf höchstens 16 Zeichen enthalten. Doppelte Anführungszeichen und Steuerzeichen (z. B. Zeilenumbrüche oder Tabulatoren) sind nicht erlaubt."
+    },
     "device_unreachable": {
       "message": "Verbindung zu {device} konnte nicht hergestellt werden. Prüfe die Erreichbarkeit des Geräts."
     },

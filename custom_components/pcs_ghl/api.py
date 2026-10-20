@@ -10,6 +10,7 @@ from .const import (
     SETUP_CONNECTION_TIMEOUT_SECONDS,
 )
 
+from .functions import has_control_characters
 
 class GHLAPIError(Exception):
     """Base exception for GHL API errors."""
@@ -110,6 +111,11 @@ class GHLAPI:
         retry_safe: bool = False,
     ) -> str:
         """Send a command to the GHL device and return its reply."""
+
+        if has_control_characters(command):
+            raise GHLAPIError(
+                "GHL commands must not contain control characters"
+            )
 
         may_retry = command.startswith("GET ") or retry_safe
 

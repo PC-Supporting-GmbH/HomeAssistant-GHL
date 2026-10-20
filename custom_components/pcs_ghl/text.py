@@ -9,6 +9,7 @@ from homeassistant.components.text import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -20,6 +21,8 @@ from .const import (
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
 )
+
+from .functions import is_valid_description
 
 
 async def async_setup_entry(
@@ -106,6 +109,12 @@ class GHLDescriptionText(TextEntity):
         value: str,
     ) -> None:
         """Set the description to write."""
+
+        if not is_valid_description(value):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_description",
+            )
 
         self._description_editor[
             "text"

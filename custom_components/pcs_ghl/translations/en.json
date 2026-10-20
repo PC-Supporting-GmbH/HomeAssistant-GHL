@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "invalid_description": {
+      "message": "The description must contain no more than 16 characters. Double quotation marks and control characters (such as line breaks or tabs) are not allowed."
+    },
     "device_unreachable": {
       "message": "Could not connect to {device}. Check that the device is reachable."
     },

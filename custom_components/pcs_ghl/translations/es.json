@@ -2,102 +2,102 @@
   "config": {
     "step": {
       "user": {
-        "title": "Conectar con el dispositivo GHL",
-        "description": "Configure la conexión con su controlador de acuario o luminaria GHL.",
+        "title": "Connexion à l’appareil GHL",
+        "description": "Configurez la connexion à votre contrôleur d’aquarium ou luminaire GHL.",
         "data": {
-          "host": "Dirección IP o nombre de host",
-          "port": "Puerto (predeterminado: 10002)",
-          "device_type": "Tipo de dispositivo",
-          "access_mode": "Modo de acceso a la API",
-          "api_enabled": "Confirmo que la API de GHL está habilitada en el dispositivo",
-          "import_historical_data": "Datos históricos: importar para sensores recién detectados"
+          "host": "Adresse IP ou nom d’hôte",
+          "port": "Port (par défaut : 10002)",
+          "device_type": "Type d’appareil",
+          "access_mode": "Mode d’accès à l’API",
+          "api_enabled": "Je confirme que l’API GHL est activée sur l’appareil",
+          "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés"
         },
         "data_description": {
-          "api_enabled": "La configuración inicial puede tardar varios minutos, especialmente en dispositivos ProfiLux, debido al gran número de entidades.",
-          "import_historical_data": "Los datos históricos se importan durante la configuración inicial para todas las fuentes compatibles detectadas como nuevas. Después, la importación automática solo se realiza para sensores o fuentes recién detectados."
+          "api_enabled": "La configuration initiale peut prendre plusieurs minutes, en particulier sur les appareils ProfiLux, en raison du grand nombre d’entités.",
+          "import_historical_data": "Les données historiques sont importées lors de la configuration initiale pour toutes les sources prises en charge détectées comme nouvelles. Ensuite, l’import automatique ne s’effectue que pour les capteurs ou sources nouvellement détectés."
         }
       }
     },
     "error": {
-      "cannot_connect": "No se puede conectar con el dispositivo GHL. Compruebe la dirección IP, el puerto y la conexión de red.",
-      "api_not_enabled": "La API de GHL no está habilitada o se ha denegado el acceso. Habilite la API en el dispositivo GHL.",
-      "invalid_response": "El dispositivo devolvió una respuesta inesperada."
+      "cannot_connect": "Impossible de se connecter à l’appareil GHL. Vérifiez l’adresse IP, le port et la connexion réseau.",
+      "api_not_enabled": "L’API GHL n’est pas activée ou l’accès a été refusé. Activez l’API sur l’appareil GHL.",
+      "invalid_response": "L’appareil a renvoyé une réponse inattendue."
     },
     "abort": {
-      "already_configured": "Este dispositivo GHL ya está configurado."
+      "already_configured": "Cet appareil GHL est déjà configuré."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Configurar GHL",
+        "title": "Configurer GHL",
         "menu_options": {
-          "general": "Ajustes generales",
-          "sensors": "Configurar sensores",
-          "history_import": "Datos históricos: importar ahora",
-          "rediscover": "Detectar nuevos sensores/dispositivos"
+          "general": "Paramètres généraux",
+          "sensors": "Configurer les capteurs",
+          "history_import": "Données historiques : importer maintenant",
+          "rediscover": "Détecter de nouveaux capteurs/appareils"
         }
       },
       "general": {
-        "title": "Ajustes generales",
-        "description": "Ajuste la conexión con el dispositivo GHL y la detección de recursos.",
+        "title": "Paramètres généraux",
+        "description": "Ajustez la connexion à l’appareil GHL et la détection des ressources.",
         "data": {
-          "host": "Dirección IP o nombre de host",
-          "port": "Puerto",
-          "access_mode": "Modo de acceso a la API",
-          "show_all_resources": "Mostrar todos los recursos disponibles",
-          "import_historical_data": "Datos históricos: importar para sensores recién detectados"
+          "host": "Adresse IP ou nom d’hôte",
+          "port": "Port",
+          "access_mode": "Mode d’accès à l’API",
+          "show_all_resources": "Afficher toutes les ressources disponibles",
+          "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés"
         },
         "data_description": {
-          "show_all_resources": "Integrar también los recursos GHL que normalmente se detectarían como no utilizados y se ocultarían según su configuración.",
-          "import_historical_data": "Los datos históricos se importan automáticamente cuando se detecta un sensor o una fuente compatible por primera vez. Activar esta opción no importa retroactivamente las fuentes existentes; para ello está disponible la acción separada «Datos históricos: importar ahora»."
+          "show_all_resources": "Intégrer également les ressources GHL qui seraient normalement détectées comme inutilisées et masquées en fonction de leur configuration.",
+          "import_historical_data": "Les données historiques sont importées automatiquement lorsqu’un capteur ou une source pris en charge est nouvellement détecté. L’activation de cette option n’importe pas rétroactivement les sources existantes ; utilisez pour cela l’action séparée « Données historiques : importer maintenant »."
         }
       },
       "initial_sensor_setup": {
-        "title": "Configurar GHL",
-        "description": "**Configure ahora sus sensores.**\n\nLos sensores se han detectado en el dispositivo GHL, pero todavía deben asignarse a sus respectivos tipos de sensor.",
+        "title": "Configurer GHL",
+        "description": "**Veuillez maintenant configurer vos capteurs.**\n\nLes capteurs ont été détectés sur l’appareil GHL, mais doivent encore être associés à leur type de capteur respectif.",
         "menu_options": {
-          "general": "Ajustes generales",
-          "sensors": "Configurar sensores",
-          "rediscover": "Detectar nuevos sensores/dispositivos"
+          "general": "Paramètres généraux",
+          "sensors": "Configurer les capteurs",
+          "rediscover": "Détecter de nouveaux capteurs/appareils"
         }
       },
       "sensor": {
-        "title": "Asignar tipo de sensor",
-        "description": "Seleccione el **tipo de sensor** para {sensor_name} (Sensor {sensor_number}).",
+        "title": "Attribuer le type de capteur",
+        "description": "Sélectionnez le **type de capteur** pour {sensor_name} (Capteur {sensor_number}).",
         "data": {
-          "sensor_type": "Tipo de sensor"
+          "sensor_type": "Type de capteur"
         }
       },
       "sensor_unit": {
-        "title": "Seleccionar unidad",
-        "description": "Seleccione la **unidad** deseada para {sensor_name} (Sensor {sensor_number}).",
+        "title": "Sélectionner l’unité",
+        "description": "Sélectionnez l’**unité** souhaitée pour {sensor_name} (Capteur {sensor_number}).",
         "data": {
-          "sensor_unit": "Unidad"
+          "sensor_unit": "Unité"
         }
       },
       "history_import": {
-        "title": "Datos históricos: importar ahora",
-        "description": "Los datos históricos de todos los sensores o fuentes compatibles disponibles actualmente se leen del dispositivo GHL y se importan en las estadísticas de Home Assistant. Los periodos estadísticos ya existentes no se añaden como duplicados adicionales."
+        "title": "Données historiques : importer maintenant",
+        "description": "Les données historiques de tous les capteurs ou sources actuellement disponibles et pris en charge sont lues depuis l’appareil GHL et importées dans les statistiques Home Assistant. Les périodes statistiques déjà présentes ne sont pas ajoutées comme doublons supplémentaires."
       },
       "history_import_result": {
-        "title": "Datos históricos: resultado de la importación",
+        "title": "Données historiques : résultat de l’importation",
         "description": "{summary}"
       }
     },
     "error": {
-      "cannot_connect": "No se puede conectar con el dispositivo GHL. Compruebe la dirección IP, el puerto y la conexión de red.",
-      "api_not_enabled": "La API de GHL no está habilitada o se ha denegado el acceso. Habilite la API en el dispositivo GHL.",
-      "invalid_response": "El dispositivo devolvió una respuesta inesperada.",
-      "already_configured": "Ya está configurado un dispositivo GHL con esta dirección IP o nombre de host y puerto."
+      "cannot_connect": "Impossible de se connecter à l’appareil GHL. Vérifiez l’adresse IP, le port et la connexion réseau.",
+      "api_not_enabled": "L’API GHL n’est pas activée ou l’accès a été refusé. Activez l’API sur l’appareil GHL.",
+      "invalid_response": "L’appareil a renvoyé une réponse inattendue.",
+      "already_configured": "Un appareil GHL avec cette adresse IP ou ce nom d’hôte et ce port est déjà configuré."
     },
     "abort": {
-      "rediscovery_started": "La integración se está recargando para detectar nuevos sensores/dispositivos.",
-      "entry_not_loaded": "La integración GHL no está cargada actualmente.",
-      "no_sensors": "No se encontraron sensores GHL.",
-      "history_import_complete": "Los datos históricos se han importado.",
-      "history_import_incomplete": "No se pudieron importar completamente los datos históricos de todas las fuentes compatibles. Consulta el registro de Home Assistant para obtener más detalles.",
-      "no_history_sources": "No se pueden importar datos históricos porque actualmente no hay ninguna fuente compatible y configurada."
+      "rediscovery_started": "L’intégration est en cours de rechargement pour détecter de nouveaux capteurs/appareils.",
+      "entry_not_loaded": "L’intégration GHL n’est actuellement pas chargée.",
+      "no_sensors": "Aucun capteur GHL n’a été trouvé.",
+      "history_import_complete": "Les données historiques ont été importées.",
+      "history_import_incomplete": "Les données historiques n’ont pas pu être importées complètement pour toutes les sources prises en charge. Consultez le journal Home Assistant pour plus de détails.",
+      "no_history_sources": "Les données historiques ne peuvent pas être importées car aucune source prise en charge et configurée n’est actuellement disponible."
     }
   },
   "selector": {
@@ -110,23 +110,23 @@
     },
     "access_mode": {
       "options": {
-        "read_only": "Solo lectura",
-        "full_access": "Lectura y escritura"
+        "read_only": "Lecture seule",
+        "full_access": "Lecture et écriture"
       }
     },
     "sensor_type": {
       "options": {
-        "unknown": "No especificado",
-        "hidden": "Ocultar",
-        "temperature": "Temperatura",
+        "unknown": "Non spécifié",
+        "hidden": "Masquer",
+        "temperature": "Température",
         "ph": "pH",
         "redox": "Redox / ORP",
-        "conductivity_freshwater": "Conductividad de agua dulce",
-        "conductivity_seawater": "Conductividad de agua de mar",
-        "oxygen": "Oxígeno",
-        "humidity": "Humedad",
-        "air_temperature": "Temperatura del aire",
-        "voltage": "Tensión"
+        "conductivity_freshwater": "Conductivité eau douce",
+        "conductivity_seawater": "Conductivité eau de mer",
+        "oxygen": "Oxygène",
+        "humidity": "Humidité",
+        "air_temperature": "Température de l’air",
+        "voltage": "Tension"
       }
     },
     "sensor_unit": {
@@ -140,274 +140,277 @@
   "entity": {
     "sensor": {
       "sensor": {
-        "name": "Sensor {index}"
+        "name": "Capteur {index}"
       },
       "mitras_heatsink_temperature": {
-        "name": "Temperatura del disipador"
+        "name": "Température du dissipateur thermique"
       },
       "system_time_absolute": {
-        "name": "Hora absoluta del sistema"
+        "name": "Heure système absolue"
       },
       "last_update": {
-        "name": "Última actualización"
+        "name": "Dernière actualisation"
       },
       "sensor_setpoint": {
-        "name": "Valor objetivo del sensor {index}"
+        "name": "Consigne du capteur {index}"
       },
       "sensor_setpoint_named": {
-        "name": "Valor objetivo de {name}"
+        "name": "Consigne de {name}"
       },
       "khdirector_value": {
         "name": "KH Director"
       },
       "khdirector_setpoint": {
-        "name": "Valor objetivo de KH Director"
+        "name": "Consigne KH Director"
       },
       "switchchannel_current": {
-        "name": "Corriente del canal de conmutación {index}"
+        "name": "Courant du canal commutable {index}"
       },
       "switchchannel_current_named": {
-        "name": "Corriente de {name}"
+        "name": "Courant de {name}"
       },
       "doser_filllevel": {
-        "name": "Nivel de llenado de {name}"
+        "name": "Niveau de remplissage de {name}"
       },
       "doser_filllevel_default": {
-        "name": "Nivel de llenado de la bomba dosificadora {index}"
+        "name": "Niveau de remplissage de la pompe doseuse {index}"
       },
       "doser_capacity": {
-        "name": "Capacidad de {name}"
+        "name": "Capacité de {name}"
       },
       "doser_capacity_default": {
-        "name": "Capacidad de la bomba dosificadora {index}"
+        "name": "Capacité de la pompe doseuse {index}"
       },
       "flowsensor_flow": {
-        "name": "Caudal de {name}"
+        "name": "Débit de {name}"
       },
       "flowsensor_flow_default": {
-        "name": "Caudal del sensor de flujo {index}"
+        "name": "Débit du capteur de débit {index}"
       },
       "iondirector_calcium_value": {
-        "name": "ION Director Calcio"
+        "name": "ION Director Calcium"
       },
       "iondirector_calcium_setpoint": {
-        "name": "Valor objetivo de calcio ION Director"
+        "name": "Consigne calcium ION Director"
       },
       "iondirector_magnesium_value": {
-        "name": "ION Director Magnesio"
+        "name": "ION Director Magnésium"
       },
       "iondirector_magnesium_setpoint": {
-        "name": "Valor objetivo de magnesio ION Director"
+        "name": "Consigne magnésium ION Director"
       },
       "iondirector_potassium_value": {
-        "name": "ION Director Potasio"
+        "name": "ION Director Potassium"
       },
       "iondirector_potassium_setpoint": {
-        "name": "Valor objetivo de potasio ION Director"
+        "name": "Consigne potassium ION Director"
       },
       "iondirector_sodium_value": {
-        "name": "ION Director Sodio"
+        "name": "ION Director Sodium"
       },
       "iondirector_sodium_setpoint": {
-        "name": "Valor objetivo de sodio ION Director"
+        "name": "Consigne sodium ION Director"
       },
       "iondirector_nitrate_value": {
-        "name": "ION Director Nitrato"
+        "name": "ION Director Nitrate"
       },
       "iondirector_nitrate_setpoint": {
-        "name": "Valor objetivo de nitrato ION Director"
+        "name": "Consigne nitrate ION Director"
       },
       "illumination": {
-        "name": "Iluminación {index}"
+        "name": "Éclairage {index}"
       },
       "illumination_masterbrightness": {
-        "name": "Brillo maestro"
+        "name": "Luminosité générale"
       },
       "system_firmware": {
         "name": "Firmware"
       },
       "system_serialnumber": {
-        "name": "Número de serie"
+        "name": "Numéro de série"
       },
       "system_time": {
-        "name": "Hora del dispositivo"
+        "name": "Heure de l’appareil"
       }
     },
     "binary_sensor": {
       "switchchannel": {
-        "name": "Cambiar canal {index}"
+        "name": "Canal commutable {index}"
       },
       "levelsensor": {
-        "name": "Sensor de nivel {index}"
+        "name": "Capteur de niveau {index}"
       }
     },
     "button": {
       "feedpause_start": {
-        "name": "Iniciar pausa de alimentación {index}"
+        "name": "Démarrer la pause d’alimentation {index}"
       },
       "feedpause_stop": {
-        "name": "Detener pausa de alimentación {index}"
+        "name": "Arrêter la pause d’alimentation {index}"
       },
       "maintenance_start": {
-        "name": "Iniciar mantenimiento {index}"
+        "name": "Démarrer la maintenance {index}"
       },
       "maintenance_stop": {
-        "name": "Detener mantenimiento {index}"
+        "name": "Arrêter la maintenance {index}"
       },
       "waterchange_start": {
-        "name": "Iniciar cambio de agua {index}"
+        "name": "Démarrer le changement d’eau {index}"
       },
       "waterchange_stop": {
-        "name": "Detener cambio de agua {index}"
+        "name": "Arrêter le changement d’eau {index}"
       },
       "thunderstorm_start": {
-        "name": "Iniciar tormenta"
+        "name": "Démarrer l’orage"
       },
       "thunderstorm_stop": {
-        "name": "Detener tormenta"
+        "name": "Arrêter l’orage"
       },
       "lightscene_start": {
-        "name": "Iniciar escena de iluminación {index}"
+        "name": "Démarrer la scène lumineuse {index}"
       },
       "lightscene_stop": {
-        "name": "Detener escena de iluminación {index}"
+        "name": "Arrêter la scène lumineuse {index}"
       },
       "description_write": {
-        "name": "Escribir descripción"
+        "name": "Écrire la description"
       },
       "khdirector_action_stop": {
-        "name": "Detener acción de KH Director"
+        "name": "Arrêter l’action du KH Director"
       },
       "khdirector_action_measurement": {
-        "name": "Iniciar medición de KH Director"
+        "name": "Démarrer la mesure du KH Director"
       },
       "khdirector_action_vent_reagent": {
-        "name": "Purgar el tubo de reactivo de KH Director"
+        "name": "Purger le tube de réactif du KH Director"
       },
       "khdirector_action_flush_cell": {
-        "name": "Enjuagar la celda de medición de KH Director"
+        "name": "Rincer la cellule de mesure du KH Director"
       },
       "khdirector_action_empty_cell": {
-        "name": "Vaciar la celda de medición de KH Director"
+        "name": "Vider la cellule de mesure du KH Director"
       },
       "iondirector_action_stop": {
-        "name": "Detener acción de ION Director"
+        "name": "Arrêter l’action de l’ION Director"
       },
       "iondirector_action_measurement": {
-        "name": "Iniciar medición de ION Director"
+        "name": "Démarrer la mesure de l’ION Director"
       },
       "iondirector_action_prepare_cell": {
-        "name": "Preparar la celda de medición de ION Director"
+        "name": "Préparer la cellule de mesure de l’ION Director"
       },
       "iondirector_action_empty_cell": {
-        "name": "Vaciar completamente la celda de medición de ION Director"
+        "name": "Vider complètement la cellule de mesure de l’ION Director"
       },
       "iondirector_action_sensor_test": {
-        "name": "Iniciar prueba de sensores de ION Director"
+        "name": "Démarrer le test des capteurs de l’ION Director"
       },
       "iondirector_action_prime_cell": {
-        "name": "Cebar la celda de medición de ION Director"
+        "name": "Amorcer la cellule de mesure de l’ION Director"
       }
     },
     "number": {
       "thunderstorm_duration": {
-        "name": "Duración de la tormenta (min)"
+        "name": "Durée de l’orage (min)"
       },
       "lightscene_fadetime": {
-        "name": "Tiempo de transición de la escena de iluminación (s)"
+        "name": "Durée de transition de la scène lumineuse (s)"
       },
       "sensor_setpoint_value": {
-        "name": "Valor objetivo"
+        "name": "Consigne"
       },
       "sensor_setpoint_value_unit": {
-        "name": "Valor objetivo ({unit})"
+        "name": "Consigne ({unit})"
       },
       "sensor_setpoint_value_seawater": {
-        "name": "Valor objetivo – introduzca el valor en mS"
+        "name": "Consigne – saisir la valeur en mS"
       },
       "illumination_masterbrightness_value": {
-        "name": "Brillo maestro (%)"
+        "name": "Luminosité générale (%)"
       }
     },
     "select": {
       "description_resource": {
-        "name": "Elemento GHL (para la descripción)"
+        "name": "Élément GHL (pour la description)"
       },
       "description_resource_sensor": {
-        "name": "Sensor {index}"
+        "name": "Capteur {index}"
       },
       "description_resource_switchchannel": {
-        "name": "Cambiar canal {index}"
+        "name": "Canal commutable {index}"
       },
       "description_resource_illumination": {
-        "name": "Iluminación {index}"
+        "name": "Éclairage {index}"
       },
       "description_resource_timer": {
-        "name": "Temporizador {index}"
+        "name": "Minuteur {index}"
       },
       "description_resource_doser": {
-        "name": "Bomba dosificadora {index}"
+        "name": "Pompe doseuse {index}"
       },
       "description_resource_flowsensor": {
-        "name": "Sensor de flujo {index}"
+        "name": "Capteur de débit {index}"
       },
       "description_resource_levelsensor": {
-        "name": "Sensor de nivel {index}"
+        "name": "Capteur de niveau {index}"
       },
       "sensor_setpoint_sensor": {
-        "name": "Sensor GHL (para el valor objetivo)"
+        "name": "Capteur GHL (pour la consigne)"
       }
     },
     "text": {
       "description_text": {
-        "name": "Descripción"
+        "name": "Description"
       }
     }
   },
   "issues": {
     "new_sensors": {
-      "title": "Se han detectado nuevos sensores GHL. Haga clic aquí para configurarlos",
+      "title": "De nouveaux capteurs GHL ont été détectés. Cliquez ici pour les configurer",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Configurar nuevos sensores GHL",
-            "description": "Se han detectado los siguientes sensores nuevos y deben configurarse: {sensor_names}."
+            "title": "Configurer les nouveaux capteurs GHL",
+            "description": "Les nouveaux capteurs suivants ont été détectés et doivent être configurés : {sensor_names}."
           },
           "sensor": {
-            "title": "Configurar nuevo sensor GHL",
-            "description": "Seleccione el **tipo de sensor** para {sensor_name} (Sensor {sensor_number}).",
+            "title": "Configurer le nouveau capteur GHL",
+            "description": "Sélectionnez le **type de capteur** pour {sensor_name} (Capteur {sensor_number}).",
             "data": {
-              "sensor_type": "Tipo de sensor"
+              "sensor_type": "Type de capteur"
             }
           },
           "sensor_unit": {
-            "title": "Seleccionar unidad",
-            "description": "Seleccione la **unidad** deseada para {sensor_name} (Sensor {sensor_number}).",
+            "title": "Sélectionner l’unité",
+            "description": "Sélectionnez l’**unité** souhaitée pour {sensor_name} (Capteur {sensor_number}).",
             "data": {
-              "sensor_unit": "Unidad"
+              "sensor_unit": "Unité"
             }
           }
         },
         "abort": {
-          "entry_not_found": "No se pudo encontrar la integración GHL asociada.",
-          "entry_not_loaded": "La integración GHL no está cargada actualmente.",
-          "no_new_sensors": "No hay nuevos sensores GHL sin configurar."
+          "entry_not_found": "L’intégration GHL associée est introuvable.",
+          "entry_not_loaded": "L’intégration GHL n’est actuellement pas chargée.",
+          "no_new_sensors": "Il n’y a aucun nouveau capteur GHL non configuré."
         }
       }
     }
   },
   "exceptions": {
+    "invalid_description": {
+      "message": "La description ne doit pas dépasser 16 caractères. Les guillemets doubles et les caractères de contrôle (comme les sauts de ligne ou les tabulations) ne sont pas autorisés."
+    },
     "device_unreachable": {
-      "message": "No se pudo establecer la conexión con {device}. Comprueba que el dispositivo sea accesible."
+      "message": "Impossible de se connecter à {device}. Vérifie que l’appareil est accessible."
     },
     "command_execution_uncertain": {
-      "message": "No se pudo confirmar la ejecución. Es posible que el comando ya se haya ejecutado. Comprueba el estado del dispositivo antes de repetir la acción."
+      "message": "L’exécution n’a pas pu être confirmée. La commande a peut-être déjà été exécutée. Vérifie l’état de l’appareil avant de répéter l’action."
     },
     "command_communication_error": {
-      "message": "No se pudo enviar el comando al dispositivo GHL."
+      "message": "La commande n’a pas pu être envoyée à l’appareil GHL."
     },
     "command_rejected": {
-      "message": "El dispositivo GHL rechazó el comando."
+      "message": "L’appareil GHL a rejeté la commande."
     }
   }
 }

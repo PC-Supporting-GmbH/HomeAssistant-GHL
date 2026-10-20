@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -25,6 +25,8 @@ from .const import (
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
 )
+
+from .functions import is_valid_description
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -956,6 +958,12 @@ class GHLDescriptionWriteButton(ButtonEntity):
         description = self._description_editor[
             "text"
         ]
+
+        if not is_valid_description(description):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_description",
+            )
 
         padded_description = description.ljust(
             DESCRIPTION_TEXT_MAX_LENGTH
