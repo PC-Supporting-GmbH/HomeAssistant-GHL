@@ -1,6 +1,9 @@
 {
 	"domain": "pcs_ghl",
 	"name": "GHL",
+	"categories": [
+		"pets"
+	],
 	"codeowners": [
 		"@Stefan-PCS"
 	],
