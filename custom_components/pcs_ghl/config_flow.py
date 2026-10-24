@@ -1,4 +1,5 @@
 """Config flow for the GHL integration."""
+# pyright: reportMissingImports=false
 
 from __future__ import annotations
 
@@ -6,7 +7,7 @@ import asyncio
 
 import voluptuous as vol
 
-from homeassistant import config_entries
+from homeassistant import config_entries 
 from homeassistant.config_entries import ConfigFlowResult, FlowType
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import callback

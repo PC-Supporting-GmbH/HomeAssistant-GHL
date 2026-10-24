@@ -1,4 +1,5 @@
 """Button platform for the GHL integration."""
+# pyright: reportMissingImports=false
 
 from __future__ import annotations
 

@@ -1,4 +1,5 @@
 """GHL integration."""
+# pyright: reportMissingImports=false
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import CONF_HOST, CONF_PORT
