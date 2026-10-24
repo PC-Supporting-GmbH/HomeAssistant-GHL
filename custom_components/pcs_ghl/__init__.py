@@ -228,6 +228,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             data=new_data,
         )
 
+    entry_title = entry.title
+
+    async def async_reload_on_title_change(
+        hass: HomeAssistant,
+        updated_entry: ConfigEntry,
+    ) -> None:
+        """Reload the integration when its config entry is renamed."""
+        nonlocal entry_title
+
+        if updated_entry.title == entry_title:
+            return
+
+        entry_title = updated_entry.title
+        await hass.config_entries.async_reload(updated_entry.entry_id)
+
+    entry.async_on_unload(
+        entry.add_update_listener(async_reload_on_title_change)
+    )
+
     return True
 
 
