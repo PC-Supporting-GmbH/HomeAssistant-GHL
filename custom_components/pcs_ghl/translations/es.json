@@ -151,17 +151,8 @@
       "last_update": {
         "name": "Dernière actualisation"
       },
-      "sensor_setpoint": {
-        "name": "Consigne du capteur {index}"
-      },
-      "sensor_setpoint_named": {
-        "name": "Consigne de {name}"
-      },
       "khdirector_value": {
         "name": "KH Director"
-      },
-      "khdirector_setpoint": {
-        "name": "Consigne KH Director"
       },
       "switchchannel_current": {
         "name": "Courant du canal commutable {index}"
@@ -190,32 +181,17 @@
       "iondirector_calcium_value": {
         "name": "ION Director Calcium"
       },
-      "iondirector_calcium_setpoint": {
-        "name": "Consigne calcium ION Director"
-      },
       "iondirector_magnesium_value": {
         "name": "ION Director Magnésium"
-      },
-      "iondirector_magnesium_setpoint": {
-        "name": "Consigne magnésium ION Director"
       },
       "iondirector_potassium_value": {
         "name": "ION Director Potassium"
       },
-      "iondirector_potassium_setpoint": {
-        "name": "Consigne potassium ION Director"
-      },
       "iondirector_sodium_value": {
         "name": "ION Director Sodium"
       },
-      "iondirector_sodium_setpoint": {
-        "name": "Consigne sodium ION Director"
-      },
       "iondirector_nitrate_value": {
         "name": "ION Director Nitrate"
-      },
-      "iondirector_nitrate_setpoint": {
-        "name": "Consigne nitrate ION Director"
       },
       "illumination": {
         "name": "Éclairage {index}"
@@ -310,20 +286,35 @@
       }
     },
     "number": {
+      "sensor_setpoint": {
+        "name": "Consigne du capteur {index}"
+      },
+      "sensor_setpoint_named": {
+        "name": "Consigne de {name}"
+      },
+      "khdirector_setpoint": {
+        "name": "Consigne KH Director"
+      },
+      "iondirector_calcium_setpoint": {
+        "name": "Consigne calcium ION Director"
+      },
+      "iondirector_magnesium_setpoint": {
+        "name": "Consigne magnésium ION Director"
+      },
+      "iondirector_potassium_setpoint": {
+        "name": "Consigne potassium ION Director"
+      },
+      "iondirector_sodium_setpoint": {
+        "name": "Consigne sodium ION Director"
+      },
+      "iondirector_nitrate_setpoint": {
+        "name": "Consigne nitrate ION Director"
+      },
       "thunderstorm_duration": {
         "name": "Durée de l’orage (min)"
       },
       "lightscene_fadetime": {
         "name": "Durée de transition de la scène lumineuse (s)"
-      },
-      "sensor_setpoint_value": {
-        "name": "Consigne"
-      },
-      "sensor_setpoint_value_unit": {
-        "name": "Consigne ({unit})"
-      },
-      "sensor_setpoint_value_seawater": {
-        "name": "Consigne – saisir la valeur en mS"
       },
       "illumination_masterbrightness_value": {
         "name": "Luminosité générale (%)"
@@ -353,9 +344,6 @@
       },
       "description_resource_levelsensor": {
         "name": "Capteur de niveau {index}"
-      },
-      "sensor_setpoint_sensor": {
-        "name": "Capteur GHL (pour la consigne)"
       }
     },
     "text": {
@@ -397,6 +385,9 @@
     }
   },
   "exceptions": {
+    "setpoint_read_only": {
+      "message": "No se puede cambiar el valor. Activa el acceso de escritura en tu dispositivo GHL y en la integración."
+    },
     "invalid_description": {
       "message": "La description ne doit pas dépasser 16 caractères. Les guillemets doubles et les caractères de contrôle (comme les sauts de ligne ou les tabulations) ne sont pas autorisés."
     },

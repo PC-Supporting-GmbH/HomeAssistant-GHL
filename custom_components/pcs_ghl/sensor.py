@@ -55,12 +55,9 @@ from .coordinator import (
     illumination_brightness_key,
     illumination_masterbrightness_key,
     iondirector_actvalue_key,
-    iondirector_desvalue_key,
     khdirector_actvalue_key,
-    khdirector_desvalue_key,
     last_update_key,
     mitras_heatsink_temperature_key,
-    sensor_desvalue_key,
     switchchannel_current_key,
     system_firmware_key,
     system_serialnumber_key,
@@ -128,25 +125,12 @@ async def async_setup_entry(
                 f"{resource.index}_actvalue"
             )
 
-            desvalue_unique_id = (
-                f"{entry.entry_id}_sensor_"
-                f"{resource.index}_desvalue"
-            )
 
             if sensor_type == SENSOR_TYPE_HIDDEN:
                 entity_id = entity_registry.async_get_entity_id(
                     "sensor",
                     DOMAIN,
                     actvalue_unique_id,
-                )
-
-                if entity_id is not None:
-                    entity_registry.async_remove(entity_id)
-
-                entity_id = entity_registry.async_get_entity_id(
-                    "sensor",
-                    DOMAIN,
-                    desvalue_unique_id,
                 )
 
                 if entity_id is not None:
@@ -170,16 +154,6 @@ async def async_setup_entry(
                     )
                 )
 
-            if resource.features.get("DESVALUE", False):
-                entities.append(
-                    GHLSensorSetpoint(
-                        coordinator=coordinator,
-                        entry=entry,
-                        resource=resource,
-                        sensor_type=sensor_type,
-                        sensor_unit=sensor_unit,
-                    )
-                )
 
             continue
 
@@ -192,13 +166,6 @@ async def async_setup_entry(
                     )
                 )
 
-            if resource.features.get("DESVALUE", False):
-                entities.append(
-                    GHLKHDirectorSetpointSensor(
-                        coordinator=coordinator,
-                        entry=entry,
-                    )
-                )
 
             continue
 
@@ -223,15 +190,6 @@ async def async_setup_entry(
                     )
                 )
 
-            if resource.features.get("DESVALUE", False):
-                entities.append(
-                    GHLIONDirectorSetpointSensor(
-                        coordinator=coordinator,
-                        entry=entry,
-                        resource=resource,
-                        parameter_key=parameter_key,
-                    )
-                )
 
             continue
 
@@ -543,142 +501,6 @@ class GHLSensor(
             return
 
 
-class GHLSensorSetpoint(
-    CoordinatorEntity[GHLDataUpdateCoordinator],
-    SensorEntity,
-):
-    """Representation of a GHL sensor setpoint."""
-
-    _attr_has_entity_name = True
-
-    def __init__(
-        self,
-        coordinator: GHLDataUpdateCoordinator,
-        entry: ConfigEntry,
-        resource: GHLDiscoveredResource,
-        sensor_type: str,
-        sensor_unit: str,
-    ) -> None:
-        """Initialize the GHL sensor setpoint."""
-
-        super().__init__(coordinator)
-
-        self._entry = entry
-        self._resource = resource
-        self._sensor_type = sensor_type
-        self._sensor_unit = sensor_unit
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_sensor_{resource.index}_desvalue"
-        )
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
-
-        if resource.description is not None:
-            self._attr_translation_key = "sensor_setpoint_named"
-            self._attr_translation_placeholders = {
-                "name": resource.description,
-            }
-
-        else:
-            self._attr_translation_key = "sensor_setpoint"
-            self._attr_translation_placeholders = {
-                "index": str(resource.index + 1),
-            }
-
-        self._configure_sensor_type()
-
-    @property
-    def native_value(self):
-        """Return the cached GHL sensor setpoint."""
-
-        return self.coordinator.data.get(
-            sensor_desvalue_key(
-                self._resource.index
-            )
-        )
-
-    @property
-    def available(self) -> bool:
-        """Return whether the sensor setpoint is available."""
-
-        key = sensor_desvalue_key(
-            self._resource.index
-        )
-
-        return (
-            super().available
-            and key in self.coordinator.data
-            and self.coordinator.data[key] is not None
-        )
-
-    def _configure_sensor_type(self) -> None:
-        """Configure device class and unit."""
-
-        self._attr_device_class = None
-        self._attr_native_unit_of_measurement = None
-        self._attr_icon = None
-
-        if self._sensor_type == SENSOR_TYPE_UNKNOWN:
-            return
-
-        if self._sensor_type in (
-            SENSOR_TYPE_TEMPERATURE,
-            SENSOR_TYPE_AIR_TEMPERATURE,
-        ):
-            self._attr_device_class = SensorDeviceClass.TEMPERATURE
-            self._attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
-            return
-
-        if self._sensor_type == SENSOR_TYPE_PH:
-            self._attr_device_class = SensorDeviceClass.PH
-            return
-
-        if self._sensor_type == SENSOR_TYPE_REDOX:
-            self._attr_native_unit_of_measurement = (
-                UnitOfElectricPotential.MILLIVOLT
-            )
-            self._attr_icon = "mdi:water-opacity"
-            return
-
-        if self._sensor_type == SENSOR_TYPE_CONDUCTIVITY_FRESHWATER:
-            self._attr_native_unit_of_measurement = "µS"
-            self._attr_icon = "mdi:water-sync"
-            return
-
-        if self._sensor_type == SENSOR_TYPE_CONDUCTIVITY_SEAWATER:
-            self._attr_icon = "mdi:water-sync"
-
-            if self._sensor_unit == SENSOR_UNIT_PSU:
-                self._attr_native_unit_of_measurement = "PSU"
-                return
-
-            if self._sensor_unit == SENSOR_UNIT_KG_L:
-                self._attr_native_unit_of_measurement = "kg/l"
-                return
-
-            self._attr_native_unit_of_measurement = "mS"
-            return
-
-        if self._sensor_type == SENSOR_TYPE_OXYGEN:
-            self._attr_native_unit_of_measurement = "mg/l"
-            self._attr_icon = "mdi:molecule-co2"
-            return
-
-        if self._sensor_type == SENSOR_TYPE_HUMIDITY:
-            self._attr_device_class = SensorDeviceClass.HUMIDITY
-            self._attr_native_unit_of_measurement = PERCENTAGE
-            return
-
-        if self._sensor_type == SENSOR_TYPE_VOLTAGE:
-            self._attr_device_class = SensorDeviceClass.VOLTAGE
-            self._attr_native_unit_of_measurement = UnitOfElectricPotential.VOLT
-            return
 
 
 class GHLKHDirectorValueSensor(
@@ -736,58 +558,6 @@ class GHLKHDirectorValueSensor(
         )
 
 
-class GHLKHDirectorSetpointSensor(
-    CoordinatorEntity[GHLDataUpdateCoordinator],
-    SensorEntity,
-):
-    """Representation of the GHL KH Director setpoint."""
-
-    _attr_has_entity_name = True
-    _attr_native_unit_of_measurement = "°dKH"
-
-    def __init__(
-        self,
-        coordinator: GHLDataUpdateCoordinator,
-        entry: ConfigEntry,
-    ) -> None:
-        """Initialize the GHL KH Director setpoint sensor."""
-
-        super().__init__(coordinator)
-
-        self._entry = entry
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_khdirector_desvalue"
-        )
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
-
-        self._attr_translation_key = "khdirector_setpoint"
-
-    @property
-    def native_value(self):
-        """Return the cached KH Director setpoint."""
-
-        return self.coordinator.data.get(
-            khdirector_desvalue_key()
-        )
-
-    @property
-    def available(self) -> bool:
-        """Return whether the KH Director setpoint is available."""
-
-        key = khdirector_desvalue_key()
-
-        return (
-            super().available
-            and key in self.coordinator.data
-            and self.coordinator.data[key] is not None
-        )
 
 
 class GHLIONDirectorValueSensor(
@@ -856,69 +626,6 @@ class GHLIONDirectorValueSensor(
         )
 
 
-class GHLIONDirectorSetpointSensor(
-    CoordinatorEntity[GHLDataUpdateCoordinator],
-    SensorEntity,
-):
-    """Representation of a GHL ION Director setpoint."""
-
-    _attr_has_entity_name = True
-    _attr_native_unit_of_measurement = "mg/l"
-
-    def __init__(
-        self,
-        coordinator: GHLDataUpdateCoordinator,
-        entry: ConfigEntry,
-        resource: GHLDiscoveredResource,
-        parameter_key: str,
-    ) -> None:
-        """Initialize the GHL ION Director setpoint."""
-
-        super().__init__(coordinator)
-
-        self._entry = entry
-        self._resource = resource
-        self._parameter_key = parameter_key
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_iondirector_"
-            f"{resource.index}_desvalue"
-        )
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
-
-        self._attr_translation_key = (
-            f"iondirector_{parameter_key}_setpoint"
-        )
-
-    @property
-    def native_value(self):
-        """Return the cached ION Director setpoint."""
-
-        return self.coordinator.data.get(
-            iondirector_desvalue_key(
-                self._resource.index
-            )
-        )
-
-    @property
-    def available(self) -> bool:
-        """Return whether the ION Director setpoint is available."""
-
-        key = iondirector_desvalue_key(
-            self._resource.index
-        )
-
-        return (
-            super().available
-            and key in self.coordinator.data
-            and self.coordinator.data[key] is not None
-        )
 
 
 class GHLSwitchChannelCurrentSensor(

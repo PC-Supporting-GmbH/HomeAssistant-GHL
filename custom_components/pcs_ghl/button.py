@@ -43,6 +43,7 @@ LIGHTSCENE_DEFAULT_FADETIME = 0
 DESCRIPTION_UPDATE_PLATFORMS = {
     "SENSOR": [
         "sensor",
+        "number",
     ],
     "SWITCHCHANNEL": [
         "sensor",

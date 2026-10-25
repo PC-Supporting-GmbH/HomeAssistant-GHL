@@ -19,17 +19,19 @@ from homeassistant.const import (
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.translation import async_get_translations
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import GHLAPI, GHLAPIError
 from .const import (
     ACCESS_MODE_FULL_ACCESS,
     CONF_ACCESS_MODE,
     CONF_DEVICE_TYPE,
+    CONF_SENSOR_TYPES,
     DEVICE_TYPE_MITRAS_LX7,
     DEVICE_TYPE_MITRAS_LX8,
     DEVICE_TYPE_PROFILUX_4,
@@ -38,6 +40,7 @@ from .const import (
     SENSOR_TYPE_CONDUCTIVITY_FRESHWATER,
     SENSOR_TYPE_CONDUCTIVITY_SEAWATER,
     SENSOR_TYPE_HUMIDITY,
+    SENSOR_TYPE_HIDDEN,
     SENSOR_TYPE_OXYGEN,
     SENSOR_TYPE_PH,
     SENSOR_TYPE_REDOX,
@@ -45,6 +48,7 @@ from .const import (
     SENSOR_TYPE_UNKNOWN,
     SENSOR_TYPE_VOLTAGE,
 )
+from .discovery import GHLDiscoveredResource
 from .coordinator import (
     GHLDataUpdateCoordinator,
     illumination_masterbrightness_key,
@@ -69,6 +73,45 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up GHL number entities from a config entry."""
+
+    if entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4:
+        entry_data = hass.data[DOMAIN][entry.entry_id]
+        sensor_types = entry.options.get(CONF_SENSOR_TYPES, {})
+        registry = er.async_get(hass)
+        setpoint_entities: list[NumberEntity] = []
+
+        for resource in entry_data["resources"]:
+            if resource.resource == "SENSOR":
+                if resource.index is None:
+                    continue
+                if sensor_types.get(str(resource.index)) == SENSOR_TYPE_HIDDEN:
+                    entity_id = registry.async_get_entity_id(
+                        "number",
+                        DOMAIN,
+                        f"{entry.entry_id}_sensor_{resource.index}_desvalue",
+                    )
+                    if entity_id is not None:
+                        registry.async_remove(entity_id)
+                    continue
+            elif resource.resource == "IONDIRECTOR":
+                if resource.index not in range(5):
+                    continue
+            elif resource.resource != "KHDIRECTOR":
+                continue
+
+            if not resource.features.get("DESVALUE", False):
+                continue
+
+            setpoint_entities.append(
+                GHLSensorSetpointNumber(
+                    coordinator=entry_data["coordinator"],
+                    entry=entry,
+                    resource=resource,
+                    api=entry_data["api"],
+                )
+            )
+
+        async_add_entities(setpoint_entities)
 
     if entry.data[CONF_ACCESS_MODE] != ACCESS_MODE_FULL_ACCESS:
         return
@@ -99,10 +142,6 @@ async def async_setup_entry(
             "fadetime": LIGHTSCENE_DEFAULT_FADETIME,
         },
     )
-
-    sensor_setpoint_editor = entry_data[
-        "sensor_setpoint_editor"
-    ]
 
     resources = entry_data[
         "resources"
@@ -145,53 +184,6 @@ async def async_setup_entry(
                 api=entry_data["api"],
                 coordinator=coordinator,
                 masterbrightness_data=masterbrightness_data,
-            )
-        )
-
-    if (
-        entry.data[CONF_DEVICE_TYPE] == DEVICE_TYPE_PROFILUX_4
-        and sensor_setpoint_editor["resource_order"]
-    ):
-        translations = await async_get_translations(
-            hass,
-            hass.config.language,
-            "entity",
-            {DOMAIN},
-        )
-
-        name_default = translations.get(
-            (
-                f"component.{DOMAIN}.entity.number."
-                f"sensor_setpoint_value.name"
-            ),
-            "Setpoint",
-        )
-
-        name_unit = translations.get(
-            (
-                f"component.{DOMAIN}.entity.number."
-                f"sensor_setpoint_value_unit.name"
-            ),
-            "Setpoint ({unit})",
-        )
-
-        name_seawater = translations.get(
-            (
-                f"component.{DOMAIN}.entity.number."
-                f"sensor_setpoint_value_seawater.name"
-            ),
-            "Setpoint - enter value in mS",
-        )
-
-        entities.append(
-            GHLSensorSetpointNumber(
-                coordinator=coordinator,
-                entry=entry,
-                api=entry_data["api"],
-                sensor_setpoint_editor=sensor_setpoint_editor,
-                name_default=name_default,
-                name_unit=name_unit,
-                name_seawater=name_seawater,
             )
         )
 
@@ -480,8 +472,11 @@ class GHLLightSceneFadeTimeNumber(
         self.async_write_ha_state()
 
 
-class GHLSensorSetpointNumber(NumberEntity):
-    """Edit the setpoint of the selected GHL sensor."""
+class GHLSensorSetpointNumber(
+    CoordinatorEntity[GHLDataUpdateCoordinator],
+    NumberEntity,
+):
+    """Represent the setpoint of one GHL sensor or Director parameter."""
 
     _attr_has_entity_name = True
     _attr_native_min_value = SENSOR_SETPOINT_MIN_VALUE
@@ -494,25 +489,44 @@ class GHLSensorSetpointNumber(NumberEntity):
         self,
         coordinator: GHLDataUpdateCoordinator,
         entry: ConfigEntry,
-        sensor_setpoint_editor: dict,
+        resource: GHLDiscoveredResource,
         api: GHLAPI,
-        name_default: str,
-        name_unit: str,
-        name_seawater: str,
     ) -> None:
-        """Initialize the GHL sensor setpoint number."""
+        """Initialize the number for a fixed setpoint resource."""
+        super().__init__(coordinator)
 
         self._coordinator = coordinator
         self._entry = entry
-        self._sensor_setpoint_editor = sensor_setpoint_editor
+        self._resource = resource
         self._api = api
-        self._name_default = name_default
-        self._name_unit = name_unit
-        self._name_seawater = name_seawater
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_sensor_setpoint_value"
+        self._sensor_type = entry.options.get(CONF_SENSOR_TYPES, {}).get(
+            str(resource.index), SENSOR_TYPE_UNKNOWN
         )
+
+        if resource.resource == "SENSOR":
+            self._attr_unique_id = (
+                f"{entry.entry_id}_sensor_{resource.index}_desvalue"
+            )
+            self._data_key = sensor_desvalue_key(resource.index)
+            if resource.description is not None:
+                self._attr_translation_key = "sensor_setpoint_named"
+                self._attr_translation_placeholders = {"name": resource.description}
+            else:
+                self._attr_translation_key = "sensor_setpoint"
+                self._attr_translation_placeholders = {"index": str(resource.index + 1)}
+        elif resource.resource == "KHDIRECTOR":
+            self._attr_unique_id = f"{entry.entry_id}_khdirector_desvalue"
+            self._data_key = khdirector_desvalue_key()
+            self._attr_translation_key = "khdirector_setpoint"
+        else:
+            parameter_key = (
+                "calcium", "magnesium", "potassium", "sodium", "nitrate"
+            )[resource.index]
+            self._attr_unique_id = (
+                f"{entry.entry_id}_iondirector_{resource.index}_desvalue"
+            )
+            self._data_key = iondirector_desvalue_key(resource.index)
+            self._attr_translation_key = f"iondirector_{parameter_key}_setpoint"
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
@@ -521,101 +535,24 @@ class GHLSensorSetpointNumber(NumberEntity):
             configuration_url=f"http://{entry.data[CONF_HOST]}",
         )
 
-    async def async_added_to_hass(self) -> None:
-        """Register the setpoint number entity."""
-
-        await super().async_added_to_hass()
-
-        self._sensor_setpoint_editor[
-            "number_entity"
-        ] = self
-
-        self.async_on_remove(
-            self._coordinator.async_add_listener(
-                self._handle_coordinator_update
-            )
-        )
-
-        if self._sensor_setpoint_editor[
-            "selected_key"
-        ] is not None:
-            self.refresh_from_selected_sensor()
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Remove the setpoint number entity from shared data."""
-
-        if (
-            self._sensor_setpoint_editor.get(
-                "number_entity"
-            )
-            is self
-        ):
-            self._sensor_setpoint_editor.pop(
-                "number_entity",
-                None,
-            )
-
-        await super().async_will_remove_from_hass()
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated coordinator data."""
-
-        if self._sensor_setpoint_editor[
-            "selected_key"
-        ] is None:
-            return
-
-        self.refresh_from_selected_sensor()
-
-    @property
-    def name(self) -> str:
-        """Return the dynamic setpoint field name."""
-
-        resource = self._selected_resource()
-
-        if (
-            resource is not None
-            and resource.resource == "KHDIRECTOR"
-        ):
-            return self._name_unit.format(
-                unit="°dKH",
-            )
-
-        sensor_type = self._selected_sensor_type()
-
-        if (
-            sensor_type
-            == SENSOR_TYPE_CONDUCTIVITY_SEAWATER
-        ):
-            return self._name_seawater
-
-        unit = self.native_unit_of_measurement
-
-        if unit is None:
-            return self._name_default
-
-        return self._name_unit.format(
-            unit=unit,
-        )
-
     @property
     def native_value(self) -> float | None:
-        """Return the currently entered sensor setpoint."""
+        """Return the setpoint read from the device."""
+        return self.coordinator.data.get(self._data_key)
 
-        value = self._sensor_setpoint_editor[
-            "value"
-        ]
-
-        if value is None:
-            return None
-
-        return float(value)
+    @property
+    def available(self) -> bool:
+        """Return whether this setpoint is available."""
+        return (
+            super().available
+            and self.coordinator.data.get(self._data_key) is not None
+        )
 
     @property
     def device_class(self):
         """Return the dynamic number device class."""
 
-        resource = self._selected_resource()
+        resource = self._resource
 
         if (
             resource is not None
@@ -626,7 +563,7 @@ class GHLSensorSetpointNumber(NumberEntity):
         ):
             return None
 
-        sensor_type = self._selected_sensor_type()
+        sensor_type = self._sensor_type
 
         if sensor_type in (
             SENSOR_TYPE_TEMPERATURE,
@@ -640,7 +577,7 @@ class GHLSensorSetpointNumber(NumberEntity):
     def native_unit_of_measurement(self) -> str | None:
         """Return the native unit for the selected sensor."""
 
-        resource = self._selected_resource()
+        resource = self._resource
 
         if (
             resource is not None
@@ -654,7 +591,7 @@ class GHLSensorSetpointNumber(NumberEntity):
         ):
             return "mg/l"
 
-        sensor_type = self._selected_sensor_type()
+        sensor_type = self._sensor_type
 
         if sensor_type in (
             SENSOR_TYPE_TEMPERATURE,
@@ -689,18 +626,15 @@ class GHLSensorSetpointNumber(NumberEntity):
         self,
         value: float,
     ) -> None:
-        """Write the selected GHL sensor setpoint immediately."""
+        """Write this GHL sensor setpoint immediately."""
 
-        selected_key = self._sensor_setpoint_editor[
-            "selected_key"
-        ]
+        if self._entry.data[CONF_ACCESS_MODE] != ACCESS_MODE_FULL_ACCESS:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="setpoint_read_only",
+            )
 
-        if selected_key is None:
-            return
-
-        resource = self._sensor_setpoint_editor[
-            "resources"
-        ][selected_key]
+        resource = self._resource
 
         value_text = format(
             float(value),
@@ -757,6 +691,12 @@ class GHLSensorSetpointNumber(NumberEntity):
                 translation_key="command_communication_error",
             ) from err
 
+        if reply.replace(" ", "").startswith("NACK(-105)"):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="setpoint_read_only",
+            )
+
         if not reply.startswith("ACK"):
             _LOGGER.warning(
                 "GHL setpoint command %s "
@@ -782,80 +722,3 @@ class GHLSensorSetpointNumber(NumberEntity):
             new_data
         )
 
-    def refresh_from_selected_sensor(self) -> None:
-        """Load the current setpoint of the selected sensor."""
-
-        resource = self._selected_resource()
-
-        if resource is None:
-            return
-
-        if resource.resource == "SENSOR":
-            value = self._coordinator.data.get(
-                sensor_desvalue_key(
-                    resource.index
-                )
-            )
-
-        elif resource.resource == "KHDIRECTOR":
-            value = self._coordinator.data.get(
-                khdirector_desvalue_key()
-            )
-
-        elif resource.resource == "IONDIRECTOR":
-            value = self._coordinator.data.get(
-                iondirector_desvalue_key(
-                    resource.index
-                )
-            )
-
-        else:
-            return
-
-        if value is None:
-            self._sensor_setpoint_editor[
-                "value"
-            ] = None
-
-            self.async_write_ha_state()
-            return
-
-        self._sensor_setpoint_editor[
-            "value"
-        ] = float(value)
-
-        self.async_write_ha_state()
-
-    def _selected_resource(self):
-        """Return the selected GHL sensor resource."""
-
-        selected_key = self._sensor_setpoint_editor[
-            "selected_key"
-        ]
-
-        if selected_key is None:
-            return None
-
-        return self._sensor_setpoint_editor[
-            "resources"
-        ].get(
-            selected_key
-        )
-
-    def _selected_sensor_type(self) -> str:
-        """Return the configured type of the selected sensor."""
-
-        resource = self._selected_resource()
-
-        if resource is None:
-            return SENSOR_TYPE_UNKNOWN
-
-        if resource.resource != "SENSOR":
-            return SENSOR_TYPE_UNKNOWN
-
-        return self._sensor_setpoint_editor[
-            "sensor_types"
-        ].get(
-            str(resource.index),
-            SENSOR_TYPE_UNKNOWN,
-        )

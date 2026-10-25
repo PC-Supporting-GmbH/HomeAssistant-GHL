@@ -171,24 +171,17 @@ Importing a large amount of stored data can take several minutes.
 
 Some values and descriptions exposed by the GHL API can be changed directly from the Home Assistant user interface.
 
-An **Entities card** is recommended for these controls. Setpoints and master brightness are written when the new value is submitted in Home Assistant. Descriptions still require the write button.
+Changing values requires write access on both the GHL device and the integration. In read-only mode, sensor setpoints are displayed, but changes are rejected with a corresponding message. The master brightness control is not available in read-only mode.
+
+An **Entities card** is recommended for these controls.
 
 ### Sensor setpoints
 
-To change a sensor setpoint:
-
-1. Select the desired GHL sensor.
-2. Enter and submit the new setpoint.
-
-The new value is sent directly to the GHL device. No separate write button or Home Assistant automation is required. This also applies to supported KH Director and ION Director setpoints.
-
-Selecting a sensor or refreshing device data does not write a value.
+Change the value in the desired sensor's setpoint field. The value is sent directly to the GHL device. This also applies to supported KH Director and ION Director setpoints.
 
 ### Master brightness
 
-Enter and submit the desired master brightness (0–100%). The value is sent directly to the GHL device without a separate write button.
-
-Changing setpoints and master brightness requires read/write access. These controls are not available in read-only mode.
+Change the master brightness value (0–100%). The value is sent directly to the GHL device.
 
 ### Descriptions
 

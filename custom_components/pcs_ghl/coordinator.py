@@ -311,7 +311,7 @@ class GHLDataUpdateCoordinator(
                 if (
                     resource.features.get("DESVALUE", False)
                     and self._entity_is_enabled(
-                        "sensor",
+                        "number",
                         desvalue_unique_id,
                     )
                 ):
@@ -386,7 +386,7 @@ class GHLDataUpdateCoordinator(
                 if (
                     resource.features.get("DESVALUE", False)
                     and self._entity_is_enabled(
-                        "sensor",
+                        "number",
                         desvalue_unique_id,
                     )
                 ):
@@ -470,7 +470,7 @@ class GHLDataUpdateCoordinator(
                 if (
                     resource.features.get("DESVALUE", False)
                     and self._entity_is_enabled(
-                        "sensor",
+                        "number",
                         desvalue_unique_id,
                     )
                 ):

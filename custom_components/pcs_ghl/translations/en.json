@@ -151,17 +151,8 @@
       "last_update": {
         "name": "Last update"
       },
-      "sensor_setpoint": {
-        "name": "Sensor {index} Setpoint"
-      },
-      "sensor_setpoint_named": {
-        "name": "{name} Setpoint"
-      },
       "khdirector_value": {
         "name": "KH Director"
-      },
-      "khdirector_setpoint": {
-        "name": "KH Director Setpoint"
       },
       "switchchannel_current": {
         "name": "Switch Channel {index} Current"
@@ -190,32 +181,17 @@
       "iondirector_calcium_value": {
         "name": "ION Director Calcium"
       },
-      "iondirector_calcium_setpoint": {
-        "name": "ION Director Calcium Setpoint"
-      },
       "iondirector_magnesium_value": {
         "name": "ION Director Magnesium"
-      },
-      "iondirector_magnesium_setpoint": {
-        "name": "ION Director Magnesium Setpoint"
       },
       "iondirector_potassium_value": {
         "name": "ION Director Potassium"
       },
-      "iondirector_potassium_setpoint": {
-        "name": "ION Director Potassium Setpoint"
-      },
       "iondirector_sodium_value": {
         "name": "ION Director Sodium"
       },
-      "iondirector_sodium_setpoint": {
-        "name": "ION Director Sodium Setpoint"
-      },
       "iondirector_nitrate_value": {
         "name": "ION Director Nitrate"
-      },
-      "iondirector_nitrate_setpoint": {
-        "name": "ION Director Nitrate Setpoint"
       },
       "illumination": {
         "name": "Illumination {index}"
@@ -310,20 +286,35 @@
       }
     },
     "number": {
+      "sensor_setpoint": {
+        "name": "Sensor {index} Setpoint"
+      },
+      "sensor_setpoint_named": {
+        "name": "{name} Setpoint"
+      },
+      "khdirector_setpoint": {
+        "name": "KH Director Setpoint"
+      },
+      "iondirector_calcium_setpoint": {
+        "name": "ION Director Calcium Setpoint"
+      },
+      "iondirector_magnesium_setpoint": {
+        "name": "ION Director Magnesium Setpoint"
+      },
+      "iondirector_potassium_setpoint": {
+        "name": "ION Director Potassium Setpoint"
+      },
+      "iondirector_sodium_setpoint": {
+        "name": "ION Director Sodium Setpoint"
+      },
+      "iondirector_nitrate_setpoint": {
+        "name": "ION Director Nitrate Setpoint"
+      },
       "thunderstorm_duration": {
         "name": "Thunderstorm Duration (min)"
       },
       "lightscene_fadetime": {
         "name": "Light Scenario Fade Time (s)"
-      },
-      "sensor_setpoint_value": {
-        "name": "Setpoint"
-      },
-      "sensor_setpoint_value_unit": {
-        "name": "Setpoint ({unit})"
-      },
-      "sensor_setpoint_value_seawater": {
-        "name": "Setpoint – enter value in mS"
       },
       "illumination_masterbrightness_value": {
         "name": "Master brightness (%)"
@@ -353,9 +344,6 @@
       },
       "description_resource_levelsensor": {
         "name": "Level Sensor {index}"
-      },
-      "sensor_setpoint_sensor": {
-        "name": "GHL Sensor (for Setpoint)"
       }
     },
     "text": {
@@ -397,6 +385,9 @@
     }
   },
   "exceptions": {
+    "setpoint_read_only": {
+      "message": "The value cannot be changed. Enable write access on your GHL device and in the integration."
+    },
     "invalid_description": {
       "message": "The description must contain no more than 16 characters. Double quotation marks and control characters (such as line breaks or tabs) are not allowed."
     },

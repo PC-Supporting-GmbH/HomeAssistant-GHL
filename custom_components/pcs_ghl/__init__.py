@@ -161,6 +161,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         resources=discovered_resources,
     )
 
+    _async_remove_obsolete_setpoint_entities(hass, entry)
+
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})
@@ -170,10 +172,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "coordinator": coordinator,
         "description_editor": _create_description_editor_data(
             discovered_resources
-        ),
-        "sensor_setpoint_editor": _create_sensor_setpoint_editor_data(
-            entry=entry,
-            resources=discovered_resources,
         ),
     }
 
@@ -355,100 +353,36 @@ def _create_description_editor_data(
     }
 
 
-def _create_sensor_setpoint_editor_data(
+
+
+def _async_remove_obsolete_setpoint_entities(
+    hass: HomeAssistant,
     entry: ConfigEntry,
-    resources: list[GHLDiscoveredResource],
-) -> dict:
-    """Create shared data for the GHL sensor setpoint editor."""
-
-    sensor_types = dict(
-        entry.options.get(
-            CONF_SENSOR_TYPES,
-            {},
+) -> None:
+    """Remove the shared editor and the replaced read-only setpoint sensors."""
+    registry = er.async_get(hass)
+    for platform, suffix in (
+        ("number", "sensor_setpoint_value"),
+        ("select", "sensor_setpoint_sensor"),
+    ):
+        entity_id = registry.async_get_entity_id(
+            platform, DOMAIN, f"{entry.entry_id}_{suffix}"
         )
-    )
+        if entity_id is not None:
+            registry.async_remove(entity_id)
 
-    setpoint_resources = [
-        resource
-        for resource in resources
-        if (
-            (
-                resource.resource == "SENSOR"
-                and resource.index is not None
-                and resource.features.get(
-                    "DESVALUE",
-                    False,
-                )
-                and sensor_types.get(
-                    str(resource.index)
-                ) != SENSOR_TYPE_HIDDEN
-            )
-            or (
-                resource.resource == "KHDIRECTOR"
-                and resource.features.get(
-                    "DESVALUE",
-                    False,
-                )
-            )
-            or (
-                resource.resource == "IONDIRECTOR"
-                and resource.index is not None
-                and resource.features.get(
-                    "DESVALUE",
-                    False,
-                )
-            )
-        )
-    ]
-
-    setpoint_resources.sort(
-        key=lambda resource: (
-            0
-            if resource.resource == "SENSOR"
-            else (
-                1
-                if resource.resource == "KHDIRECTOR"
-                else 2
-            ),
-            resource.index
-            if resource.index is not None
-            else 0,
-        )
-    )
-
-    resource_map: dict[str, GHLDiscoveredResource] = {}
-    resource_order: list[str] = []
-
-    for resource in setpoint_resources:
-        if resource.resource == "SENSOR":
-            resource_key = (
-                f"SENSOR:{resource.index}"
-            )
-
-        elif resource.resource == "KHDIRECTOR":
-            resource_key = "KHDIRECTOR"
-
-        else:
-            resource_key = (
-                f"IONDIRECTOR:{resource.index}"
-            )
-
-        resource_map[resource_key] = resource
-        resource_order.append(resource_key)
-
-    selected_key = (
-        resource_order[0]
-        if resource_order
-        else None
-    )
-
-    return {
-        "resource_order": resource_order,
-        "resources": resource_map,
-        "selected_key": selected_key,
-        "sensor_types": sensor_types,
-        "value": None,
-    }
+    for registry_entry in list(er.async_entries_for_config_entry(registry, entry.entry_id)):
+        if registry_entry.domain != "sensor" or registry_entry.platform != DOMAIN:
+            continue
+        unique_id = registry_entry.unique_id
+        if unique_id == f"{entry.entry_id}_khdirector_desvalue" or (
+            unique_id.startswith((
+                f"{entry.entry_id}_sensor_",
+                f"{entry.entry_id}_iondirector_",
+            ))
+            and unique_id.endswith("_desvalue")
+        ):
+            registry.async_remove(registry_entry.entity_id)
 
 
 def _async_remove_write_entities(

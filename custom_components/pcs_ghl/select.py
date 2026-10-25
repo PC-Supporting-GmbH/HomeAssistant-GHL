@@ -39,13 +39,6 @@ DESCRIPTION_RESOURCE_FALLBACKS = {
     "LEVELSENSOR": "Level Sensor {index}",
 }
 
-IONDIRECTOR_NAMES = {
-    0: "Calcium",
-    1: "Magnesium",
-    2: "Potassium",
-    3: "Sodium",
-    4: "Nitrate",
-}
 
 
 async def async_setup_entry(
@@ -65,10 +58,6 @@ async def async_setup_entry(
 
     description_editor = entry_data[
         "description_editor"
-    ]
-
-    sensor_setpoint_editor = entry_data[
-        "sensor_setpoint_editor"
     ]
 
     translations = await async_get_translations(
@@ -106,65 +95,6 @@ async def async_setup_entry(
                 entry=entry,
                 description_editor=description_editor,
                 resource_templates=resource_templates,
-            )
-        )
-
-    if sensor_setpoint_editor["resource_order"]:
-        full_translation_key = (
-            f"component.{DOMAIN}."
-            f"entity.select."
-            f"description_resource_sensor.name"
-        )
-
-        sensor_template = translations.get(
-            full_translation_key,
-            "Sensor {index}",
-        )
-
-        iondirector_templates = {
-            0: translations.get(
-                (
-                    f"component.{DOMAIN}.entity.sensor."
-                    f"iondirector_calcium_value.name"
-                ),
-                "ION Director Calcium",
-            ),
-            1: translations.get(
-                (
-                    f"component.{DOMAIN}.entity.sensor."
-                    f"iondirector_magnesium_value.name"
-                ),
-                "ION Director Magnesium",
-            ),
-            2: translations.get(
-                (
-                    f"component.{DOMAIN}.entity.sensor."
-                    f"iondirector_potassium_value.name"
-                ),
-                "ION Director Potassium",
-            ),
-            3: translations.get(
-                (
-                    f"component.{DOMAIN}.entity.sensor."
-                    f"iondirector_sodium_value.name"
-                ),
-                "ION Director Sodium",
-            ),
-            4: translations.get(
-                (
-                    f"component.{DOMAIN}.entity.sensor."
-                    f"iondirector_nitrate_value.name"
-                ),
-                "ION Director Nitrate",
-            ),
-        }
-
-        entities.append(
-            GHLSensorSetpointSelect(
-                entry=entry,
-                sensor_setpoint_editor=sensor_setpoint_editor,
-                sensor_template=sensor_template,
-                iondirector_templates=iondirector_templates,
             )
         )
 
@@ -324,120 +254,3 @@ class GHLDescriptionResourceSelect(SelectEntity):
         self.async_write_ha_state()
 
 
-class GHLSensorSetpointSelect(SelectEntity):
-    """Select a GHL sensor whose setpoint should be edited."""
-
-    _attr_has_entity_name = True
-    _attr_translation_key = "sensor_setpoint_sensor"
-
-    def __init__(
-        self,
-        entry: ConfigEntry,
-        sensor_setpoint_editor: dict,
-        sensor_template: str,
-        iondirector_templates: dict[int, str],
-    ) -> None:
-        """Initialize the GHL sensor setpoint select."""
-
-        self._entry = entry
-        self._sensor_setpoint_editor = sensor_setpoint_editor
-        self._sensor_template = sensor_template
-        self._iondirector_templates = iondirector_templates
-
-        self._option_to_key: dict[str, str] = {}
-        self._key_to_option: dict[str, str] = {}
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_sensor_setpoint_sensor"
-        )
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
-
-        self._rebuild_options()
-
-    def _rebuild_options(self) -> None:
-        """Build the sensor select options."""
-
-        options: list[str] = []
-        option_to_key: dict[str, str] = {}
-        key_to_option: dict[str, str] = {}
-
-        for resource_key in self._sensor_setpoint_editor[
-            "resource_order"
-        ]:
-            resource = self._sensor_setpoint_editor[
-                "resources"
-            ][resource_key]
-
-            if resource.resource == "SENSOR":
-                option = self._sensor_template.format(
-                    index=resource.index + 1,
-                )
-
-                if resource.description is not None:
-                    option = (
-                        f"{option} - "
-                        f"{resource.description}"
-                    )
-
-            elif resource.resource == "KHDIRECTOR":
-                option = "KH Director"
-
-            elif resource.resource == "IONDIRECTOR":
-                option = self._iondirector_templates[
-                    resource.index
-                ]
-
-            else:
-                continue
-
-            options.append(option)
-            option_to_key[option] = resource_key
-            key_to_option[resource_key] = option
-
-        self._option_to_key = option_to_key
-        self._key_to_option = key_to_option
-        self._attr_options = options
-
-    @property
-    def current_option(self) -> str | None:
-        """Return the currently selected sensor."""
-
-        selected_key = self._sensor_setpoint_editor[
-            "selected_key"
-        ]
-
-        if selected_key is None:
-            return None
-
-        return self._key_to_option.get(
-            selected_key
-        )
-
-    async def async_select_option(
-        self,
-        option: str,
-    ) -> None:
-        """Select a GHL sensor."""
-
-        resource_key = self._option_to_key[
-            option
-        ]
-
-        self._sensor_setpoint_editor[
-            "selected_key"
-        ] = resource_key
-
-        number_entity = self._sensor_setpoint_editor.get(
-            "number_entity"
-        )
-
-        if number_entity is not None:
-            number_entity.refresh_from_selected_sensor()
-
-        self.async_write_ha_state()

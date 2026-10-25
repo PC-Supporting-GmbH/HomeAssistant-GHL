@@ -151,17 +151,8 @@
       "last_update": {
         "name": "Letzte Aktualisierung"
       },
-      "sensor_setpoint": {
-        "name": "Sensor {index} Sollwert"
-      },
-      "sensor_setpoint_named": {
-        "name": "{name} Sollwert"
-      },
       "khdirector_value": {
         "name": "KH Director"
-      },
-      "khdirector_setpoint": {
-        "name": "KH Director Sollwert"
       },
       "switchchannel_current": {
         "name": "Schaltkanal {index} Strom"
@@ -190,32 +181,17 @@
       "iondirector_calcium_value": {
         "name": "ION Director Calcium"
       },
-      "iondirector_calcium_setpoint": {
-        "name": "ION Director Calcium Sollwert"
-      },
       "iondirector_magnesium_value": {
         "name": "ION Director Magnesium"
-      },
-      "iondirector_magnesium_setpoint": {
-        "name": "ION Director Magnesium Sollwert"
       },
       "iondirector_potassium_value": {
         "name": "ION Director Kalium"
       },
-      "iondirector_potassium_setpoint": {
-        "name": "ION Director Kalium Sollwert"
-      },
       "iondirector_sodium_value": {
         "name": "ION Director Natrium"
       },
-      "iondirector_sodium_setpoint": {
-        "name": "ION Director Natrium Sollwert"
-      },
       "iondirector_nitrate_value": {
         "name": "ION Director Nitrat"
-      },
-      "iondirector_nitrate_setpoint": {
-        "name": "ION Director Nitrat Sollwert"
       },
       "illumination": {
         "name": "Beleuchtung {index}"
@@ -310,20 +286,35 @@
       }
     },
     "number": {
+      "sensor_setpoint": {
+        "name": "Sensor {index} Sollwert"
+      },
+      "sensor_setpoint_named": {
+        "name": "{name} Sollwert"
+      },
+      "khdirector_setpoint": {
+        "name": "KH Director Sollwert"
+      },
+      "iondirector_calcium_setpoint": {
+        "name": "ION Director Calcium Sollwert"
+      },
+      "iondirector_magnesium_setpoint": {
+        "name": "ION Director Magnesium Sollwert"
+      },
+      "iondirector_potassium_setpoint": {
+        "name": "ION Director Kalium Sollwert"
+      },
+      "iondirector_sodium_setpoint": {
+        "name": "ION Director Natrium Sollwert"
+      },
+      "iondirector_nitrate_setpoint": {
+        "name": "ION Director Nitrat Sollwert"
+      },
       "thunderstorm_duration": {
         "name": "Gewitterdauer (min)"
       },
       "lightscene_fadetime": {
         "name": "Lichtszene Überblendzeit (s)"
-      },
-      "sensor_setpoint_value": {
-        "name": "Sollwert"
-      },
-      "sensor_setpoint_value_unit": {
-        "name": "Sollwert ({unit})"
-      },
-      "sensor_setpoint_value_seawater": {
-        "name": "Sollwert – Eingabe in mS"
       },
       "illumination_masterbrightness_value": {
         "name": "Gesamthelligkeit (%)"
@@ -353,9 +344,6 @@
       },
       "description_resource_levelsensor": {
         "name": "Niveau Sensor {index}"
-      },
-      "sensor_setpoint_sensor": {
-        "name": "GHL Sensor (für Sollwert)"
       }
     },
     "text": {
@@ -397,6 +385,9 @@
     }
   },
   "exceptions": {
+    "setpoint_read_only": {
+      "message": "Der Wert kann nicht geändert werden. Aktiviere den Schreibmodus in deinem GHL-Gerät sowie in der Integration."
+    },
     "invalid_description": {
       "message": "Die Beschreibung darf höchstens 16 Zeichen enthalten. Doppelte Anführungszeichen und Steuerzeichen (z. B. Zeilenumbrüche oder Tabulatoren) sind nicht erlaubt."
     },
