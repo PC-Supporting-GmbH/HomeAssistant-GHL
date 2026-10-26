@@ -1,6 +1,8 @@
 """GHL integration."""
 # pyright: reportMissingImports=false
 
+from copy import deepcopy
+
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
@@ -228,22 +230,38 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
     entry_title = entry.title
+    entry_options = deepcopy(dict(entry.options))
+    connection_data = tuple(
+        entry.data.get(key)
+        for key in (CONF_HOST, CONF_PORT, CONF_ACCESS_MODE)
+    )
 
-    async def async_reload_on_title_change(
+    async def async_reload_on_config_change(
         hass: HomeAssistant,
         updated_entry: ConfigEntry,
     ) -> None:
-        """Reload the integration when its config entry is renamed."""
-        nonlocal entry_title
+        """Reload for names, options or connection settings, not internal data."""
+        nonlocal entry_title, entry_options, connection_data
 
-        if updated_entry.title == entry_title:
+        updated_options = deepcopy(dict(updated_entry.options))
+        updated_connection_data = tuple(
+            updated_entry.data.get(key)
+            for key in (CONF_HOST, CONF_PORT, CONF_ACCESS_MODE)
+        )
+        if (
+            updated_entry.title == entry_title
+            and updated_options == entry_options
+            and updated_connection_data == connection_data
+        ):
             return
 
         entry_title = updated_entry.title
-        await hass.config_entries.async_reload(updated_entry.entry_id)
+        entry_options = updated_options
+        connection_data = updated_connection_data
+        hass.config_entries.async_schedule_reload(updated_entry.entry_id)
 
     entry.async_on_unload(
-        entry.add_update_listener(async_reload_on_title_change)
+        entry.add_update_listener(async_reload_on_config_change)
     )
 
     return True

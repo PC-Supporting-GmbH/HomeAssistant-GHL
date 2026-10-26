@@ -171,10 +171,6 @@ class GHLNewSensorsRepairFlow(RepairsFlow):
                     options=new_options,
                 )
 
-                await self.hass.config_entries.async_reload(
-                    self._entry.entry_id,
-                )
-
                 return self.async_create_entry(
                     title="",
                     data={},
@@ -247,10 +243,6 @@ class GHLNewSensorsRepairFlow(RepairsFlow):
                 self.hass.config_entries.async_update_entry(
                     self._entry,
                     options=new_options,
-                )
-
-                await self.hass.config_entries.async_reload(
-                    self._entry.entry_id,
                 )
 
                 return self.async_create_entry(

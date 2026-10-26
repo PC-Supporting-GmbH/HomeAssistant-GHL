@@ -237,7 +237,7 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
+class GHLOptionsFlow(config_entries.OptionsFlow):
     """Handle GHL options."""
 
     def __init__(self) -> None:
@@ -463,7 +463,10 @@ class GHLOptionsFlow(config_entries.OptionsFlowWithReload):
                     import_historical_data
                 )
 
-                if data_changed and not options_changed:
+                if (
+                    (data_changed or options_changed)
+                    and not self.config_entry.update_listeners
+                ):
                     self.hass.config_entries.async_schedule_reload(
                         self.config_entry.entry_id
                     )
