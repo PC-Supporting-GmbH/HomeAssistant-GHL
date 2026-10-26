@@ -1,6 +1,9 @@
 """GHL integration."""
 # pyright: reportMissingImports=false
 
+import logging
+from time import perf_counter
+
 from copy import deepcopy
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
@@ -34,6 +37,8 @@ from .history import (
     sensor_history_is_configured,
     sensor_history_should_import,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [
     "sensor",
@@ -91,10 +96,16 @@ async def async_migrate_entry(
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up GHL from a config entry."""
 
+    setup_started = perf_counter()
+    _LOGGER.debug("GHL setup [%s]: started", entry.entry_id)
+
     api = GHLAPI(
         host=entry.data[CONF_HOST],
         port=entry.data[CONF_PORT],
     )
+
+    phase_started = perf_counter()
+    _LOGGER.debug("GHL setup [%s]: connection check started", entry.entry_id)
 
     try:
         await api.async_check_connection()
@@ -108,6 +119,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
              },
         ) from err
 
+    _LOGGER.debug(
+        "GHL setup [%s]: connection check completed in %.3f s",
+        entry.entry_id, perf_counter() - phase_started,
+    )
+
+    phase_started = perf_counter()
+    _LOGGER.debug("GHL setup [%s]: resource discovery started", entry.entry_id)
+
     discovered_resources = await async_discover_resources(
         api=api,
         device_type=entry.data[CONF_DEVICE_TYPE],
@@ -115,6 +134,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             CONF_SHOW_ALL_RESOURCES,
             False,
         ),
+    )
+
+    _LOGGER.debug(
+        "GHL setup [%s]: resource discovery completed in %.3f s",
+        entry.entry_id, perf_counter() - phase_started,
     )
 
     discovered_history_resources = history_resource_map(
@@ -165,7 +189,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _async_remove_obsolete_setpoint_entities(hass, entry)
 
+    phase_started = perf_counter()
+    _LOGGER.debug("GHL setup [%s]: first data refresh started", entry.entry_id)
+
     await coordinator.async_config_entry_first_refresh()
+
+    _LOGGER.debug(
+        "GHL setup [%s]: first data refresh completed in %.3f s",
+        entry.entry_id, perf_counter() - phase_started,
+    )
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {
@@ -183,9 +215,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         discovered_resources=discovered_resources,
     )
 
+    phase_started = perf_counter()
+    _LOGGER.debug("GHL setup [%s]: platform setup started", entry.entry_id)
+
     await hass.config_entries.async_forward_entry_setups(
         entry,
         PLATFORMS,
+    )
+
+    _LOGGER.debug(
+        "GHL setup [%s]: platform setup completed in %.3f s",
+        entry.entry_id, perf_counter() - phase_started,
+    )
+
+    phase_started = perf_counter()
+    _LOGGER.debug("GHL setup [%s]: historical import phase started", entry.entry_id)
+
+    _LOGGER.debug(
+        "GHL setup [%s]: historical import enabled=%s, candidates=%d",
+        entry.entry_id, entry.options.get(CONF_IMPORT_HISTORICAL_DATA, False),
+        len(history_resources_to_import),
     )
 
     failed_history_resources: set[str] = set()
@@ -200,14 +249,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             if not sensor_history_should_import(entry, resource):
                 continue
 
+            history_started = perf_counter()
+            _LOGGER.debug(
+                "GHL setup [%s]: historical import %s started",
+                entry.entry_id, resource_key,
+            )
             history_result = await async_import_resource_history(
                 hass=hass,
                 entry=entry,
                 api=api,
                 resource=resource,
             )
+            _LOGGER.debug(
+                "GHL setup [%s]: historical import %s completed in %.3f s (success=%s)",
+                entry.entry_id, resource_key, perf_counter() - history_started,
+                history_result.success,
+            )
             if not history_result.success:
                 failed_history_resources.add(resource_key)
+
+    _LOGGER.debug(
+        "GHL setup [%s]: historical import phase completed in %.3f s",
+        entry.entry_id, perf_counter() - phase_started,
+    )
 
     history_resources_to_store = (
         current_history_resources
@@ -262,6 +326,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(
         entry.add_update_listener(async_reload_on_config_change)
+    )
+
+    _LOGGER.debug(
+        "GHL setup [%s]: completed in %.3f s",
+        entry.entry_id, perf_counter() - setup_started,
     )
 
     return True

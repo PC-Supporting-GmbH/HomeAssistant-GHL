@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import asyncio
 
+import logging
+from time import perf_counter
+
 from .const import (
     SETUP_CONNECTION_ATTEMPTS,
     SETUP_CONNECTION_RETRY_DELAY_SECONDS,
@@ -11,6 +14,9 @@ from .const import (
 )
 
 from .functions import has_control_characters
+
+_LOGGER = logging.getLogger(__name__)
+
 
 class GHLAPIError(Exception):
     """Base exception for GHL API errors."""
@@ -117,10 +123,22 @@ class GHLAPI:
                 "GHL commands must not contain control characters"
             )
 
+        command_started = perf_counter()
+        _LOGGER.debug("GHL API %s:%s: command %r queued", self.host, self.port, command)
+
         may_retry = command.startswith("GET ") or retry_safe
 
         async with self._lock:
+            _LOGGER.debug(
+                "GHL API %s:%s: command %r acquired lock after %.3f s",
+                self.host, self.port, command, perf_counter() - command_started,
+            )
             for attempt in range(2):
+                attempt_started = perf_counter()
+                _LOGGER.debug(
+                    "GHL API %s:%s: command %r attempt %d/2 started",
+                    self.host, self.port, command, attempt + 1,
+                )
                 command_may_have_been_sent = False
 
                 try:
@@ -139,6 +157,12 @@ class GHLAPI:
                     reply = await asyncio.wait_for(
                         self._reader.read(256),
                         timeout=10,
+                    )
+
+                    _LOGGER.debug(
+                        "GHL API %s:%s: command %r attempt %d/2 received %d bytes after %.3f s",
+                        self.host, self.port, command, attempt + 1, len(reply),
+                        perf_counter() - attempt_started,
                     )
 
                     if not reply:
@@ -161,6 +185,13 @@ class GHLAPI:
                             f"Execution could not be confirmed for: {command}"
                         )
 
+                    _LOGGER.debug(
+                        "GHL API %s:%s: command %r completed (attempt=%d/2, attempt_duration=%.3f s, total_duration=%.3f s, reply=%s)",
+                        self.host, self.port, command, attempt + 1,
+                        perf_counter() - attempt_started, perf_counter() - command_started,
+                        "ACK" if response == "ACK" or response.startswith("ACK ") else
+                        "NACK" if response.startswith("NACK") else "unexpected",
+                    )
                     return response
 
                 except (
@@ -169,6 +200,12 @@ class GHLAPI:
                     ConnectionResetError,
                     GHLConnectionError,
                 ) as err:
+                    _LOGGER.debug(
+                        "GHL API %s:%s: command %r attempt %d/2 failed after %.3f s (total=%.3f s, error_type=%s, error=%s)",
+                        self.host, self.port, command, attempt + 1,
+                        perf_counter() - attempt_started, perf_counter() - command_started,
+                        type(err).__name__, err,
+                    )
                     await self._async_disconnect()
 
                     if command_may_have_been_sent and not may_retry:
@@ -177,6 +214,10 @@ class GHLAPI:
                         ) from err
 
                     if attempt == 0:
+                        _LOGGER.debug(
+                            "GHL API %s:%s: command %r retrying after 3 s",
+                            self.host, self.port, command,
+                        )
                         await asyncio.sleep(3)
                         continue
 
