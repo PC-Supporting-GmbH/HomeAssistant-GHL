@@ -66,6 +66,19 @@ SENSOR_SETPOINT_MIN_VALUE = -10000
 SENSOR_SETPOINT_MAX_VALUE = 10000
 SENSOR_SETPOINT_STEP = 0.000001
 
+# ProfiLux 4 programming manual, 2021-11-22, section 5.2, page 45.
+# Only types with documented setpoint limits matching the current native unit.
+SENSOR_SETPOINT_LIMITS = {
+    SENSOR_TYPE_PH: (4.5, 9.5, 0.1),
+    SENSOR_TYPE_TEMPERATURE: (1.0, 36.0, 0.1),
+    SENSOR_TYPE_REDOX: (-300, 600, 1),
+    SENSOR_TYPE_CONDUCTIVITY_FRESHWATER: (10, 1900, 1),
+    SENSOR_TYPE_CONDUCTIVITY_SEAWATER: (0.5, 99.5, 0.1),
+    SENSOR_TYPE_HUMIDITY: (2.0, 98.0, 0.1),
+    SENSOR_TYPE_AIR_TEMPERATURE: (0.0, 50.0, 0.1),
+    SENSOR_TYPE_VOLTAGE: (0.0, 10.0, 0.01),
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -504,6 +517,13 @@ class GHLSensorSetpointNumber(
         )
 
         if resource.resource == "SENSOR":
+            if limits := SENSOR_SETPOINT_LIMITS.get(self._sensor_type):
+                (
+                    self._attr_native_min_value,
+                    self._attr_native_max_value,
+                    self._attr_native_step,
+                ) = limits
+
             self._attr_unique_id = (
                 f"{entry.entry_id}_sensor_{resource.index}_desvalue"
             )
