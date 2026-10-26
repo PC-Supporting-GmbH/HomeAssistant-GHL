@@ -99,21 +99,6 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         config_entry = result["result"]
 
-        if CONF_IMPORT_HISTORICAL_DATA in config_entry.data:
-            new_data = dict(config_entry.data)
-            import_historical_data = new_data.pop(
-                CONF_IMPORT_HISTORICAL_DATA
-            )
-            new_options = dict(config_entry.options)
-            new_options[CONF_IMPORT_HISTORICAL_DATA] = (
-                import_historical_data
-            )
-            self.hass.config_entries.async_update_entry(
-                config_entry,
-                data=new_data,
-                options=new_options,
-            )
-
         options_result = await self.hass.config_entries.options.async_init(
             config_entry.entry_id,
         )
@@ -164,9 +149,6 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             CONF_PORT: user_input[CONF_PORT],
                             CONF_ACCESS_MODE: user_input[CONF_ACCESS_MODE],
                             CONF_DEVICE_TYPE: user_input[CONF_DEVICE_TYPE],
-                            CONF_IMPORT_HISTORICAL_DATA: user_input[
-                                CONF_IMPORT_HISTORICAL_DATA
-                            ],
                         }
 
                         translations = await async_get_translations(
@@ -189,6 +171,11 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         return self.async_create_entry(
                             title=f"{device_type_name} ({user_input[CONF_HOST]})",
                             data=data,
+                            options={
+                                CONF_IMPORT_HISTORICAL_DATA: user_input[
+                                    CONF_IMPORT_HISTORICAL_DATA
+                                ],
+                            },
                         )
 
         data_schema = vol.Schema(
@@ -245,6 +232,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
 
         self._sensors = []
         self._sensor_index = 0
+        self._single_sensor = False
         self._sensor_types = {}
         self._sensor_units = {}
         self._show_all_resources = False
@@ -314,6 +302,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 "sensors",
                 "history_import",
                 "rediscover",
+                "single_sensor",
             ],
         )
 
@@ -328,7 +317,6 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             menu_options=[
                 "general",
                 "sensors",
-                "rediscover",
             ],
         )
 
@@ -626,6 +614,62 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             reason="history_import_complete",
         )
 
+    async def async_step_single_sensor(self, user_input=None):
+        """Select one discovered GHL sensor to configure."""
+
+        if not self._sensors:
+            return self.async_abort(reason="no_sensors")
+
+        if user_input is not None:
+            selected_sensor = user_input["sensor_index"]
+            self._sensor_index = next(
+                index
+                for index, resource in enumerate(self._sensors)
+                if str(resource.index) == selected_sensor
+            )
+            self._single_sensor = True
+            return await self.async_step_sensor()
+
+        translations = await async_get_translations(
+            self.hass,
+            self.hass.config.language,
+            "selector",
+            {DOMAIN},
+        )
+        sensor_options = []
+        for resource in self._sensors:
+            sensor_type = self._sensor_types.get(
+                str(resource.index), SENSOR_TYPE_UNKNOWN,
+            )
+            type_name = translations.get(
+                f"component.{DOMAIN}.selector.sensor_type.options.{sensor_type}",
+                sensor_type,
+            )
+            sensor_options.append(
+                {
+                    "value": str(resource.index),
+                    "label": (
+                        f"{resource.index + 1} – {resource.description} – {type_name}"
+                        if resource.description
+                        else f"{resource.index + 1} – {type_name}"
+                    ),
+                }
+            )
+
+        return self.async_show_form(
+            step_id="single_sensor",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("sensor_index"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=sensor_options,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            ),
+        )
+
     async def async_step_sensors(self, user_input=None):
         """Start GHL sensor configuration."""
 
@@ -635,6 +679,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             )
 
         self._sensor_index = 0
+        self._single_sensor = False
 
         return await self.async_step_sensor()
 
@@ -655,7 +700,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
 
             self._sensor_index += 1
 
-            if self._sensor_index >= len(self._sensors):
+            if self._single_sensor or self._sensor_index >= len(self._sensors):
                 return self.async_create_entry(
                     title="",
                     data={
@@ -730,7 +775,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
 
             self._sensor_index += 1
 
-            if self._sensor_index >= len(self._sensors):
+            if self._single_sensor or self._sensor_index >= len(self._sensors):
                 return self.async_create_entry(
                     title="",
                     data={

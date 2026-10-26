@@ -33,7 +33,8 @@
         "title": "GHL konfigurieren",
         "menu_options": {
           "general": "Allgemeine Einstellungen",
-          "sensors": "Sensoren konfigurieren",
+          "single_sensor": "Einzelnen Sensor konfigurieren",
+          "sensors": "Alle Sensoren konfigurieren",
           "history_import": "Historische Daten jetzt importieren",
           "rediscover": "Neue Sensoren/Geräte erkennen"
         }
@@ -58,8 +59,15 @@
         "description": "**Bitte konfiguriere jetzt deine Sensoren.**\n\nDie Sensoren wurden vom GHL-Gerät erkannt, müssen aber noch ihrem jeweiligen Sensortyp zugeordnet werden.",
         "menu_options": {
           "general": "Allgemeine Einstellungen",
-          "sensors": "Sensoren konfigurieren",
+          "sensors": "Alle Sensoren konfigurieren",
           "rediscover": "Neue Sensoren/Geräte erkennen"
+        }
+      },
+      "single_sensor": {
+        "title": "Sensor auswählen",
+        "description": "Wähle den Sensor, dessen Typ oder Einheit du ändern möchtest.",
+        "data": {
+          "sensor_index": "Sensor"
         }
       },
       "sensor": {

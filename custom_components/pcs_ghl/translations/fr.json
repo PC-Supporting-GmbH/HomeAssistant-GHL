@@ -33,7 +33,8 @@
         "title": "Configurer GHL",
         "menu_options": {
           "general": "Paramètres généraux",
-          "sensors": "Configurer les capteurs",
+          "single_sensor": "Configurer un seul capteur",
+          "sensors": "Configurer tous les capteurs",
           "history_import": "Données historiques : importer maintenant",
           "rediscover": "Détecter de nouveaux capteurs/appareils"
         }
@@ -58,8 +59,15 @@
         "description": "**Veuillez maintenant configurer vos capteurs.**\n\nLes capteurs ont été détectés sur l’appareil GHL, mais doivent encore être associés à leur type de capteur respectif.",
         "menu_options": {
           "general": "Paramètres généraux",
-          "sensors": "Configurer les capteurs",
+          "sensors": "Configurer tous les capteurs",
           "rediscover": "Détecter de nouveaux capteurs/appareils"
+        }
+      },
+      "single_sensor": {
+        "title": "Sélectionner un capteur",
+        "description": "Sélectionnez le capteur dont vous souhaitez modifier le type ou l’unité.",
+        "data": {
+          "sensor_index": "Capteur"
         }
       },
       "sensor": {
@@ -392,10 +400,10 @@
       "message": "La description ne doit pas dépasser 16 caractères. Les guillemets doubles et les caractères de contrôle (comme les sauts de ligne ou les tabulations) ne sont pas autorisés."
     },
     "device_unreachable": {
-      "message": "Impossible de se connecter à {device}. Vérifie que l’appareil est accessible."
+      "message": "Impossible de se connecter à {device}. Vérifiez que l’appareil est accessible."
     },
     "command_execution_uncertain": {
-      "message": "L’exécution n’a pas pu être confirmée. La commande a peut-être déjà été exécutée. Vérifie l’état de l’appareil avant de répéter l’action."
+      "message": "L’exécution n’a pas pu être confirmée. La commande a peut-être déjà été exécutée. Vérifiez l’état de l’appareil avant de répéter l’action."
     },
     "command_communication_error": {
       "message": "La commande n’a pas pu être envoyée à l’appareil GHL."
