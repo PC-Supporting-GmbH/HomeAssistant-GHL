@@ -1107,7 +1107,10 @@ class GHLDescriptionWriteButton(ButtonEntity):
                 resource.index,
             )
 
-            return
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="description_display_update_failed",
+            )
 
         await self.hass.config_entries.async_forward_entry_setups(
             self._entry,

@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "description_display_update_failed": {
+      "message": "La descripción se ha guardado en el dispositivo GHL. Sin embargo, se ha producido un error al actualizar su visualización en Home Assistant. Recarga la integración GHL para actualizarla. No es necesario volver a escribir la descripción."
+    },
     "write_access_denied": {
       "message": "El dispositivo GHL ha denegado el acceso de escritura. Comprueba que el modo de escritura esté activado en el dispositivo GHL y en la integración."
     },

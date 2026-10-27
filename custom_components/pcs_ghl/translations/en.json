@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "description_display_update_failed": {
+      "message": "The description was saved on the GHL device. However, an error occurred while updating its display in Home Assistant. Reload the GHL integration to update the display. You do not need to write the description again."
+    },
     "write_access_denied": {
       "message": "The GHL device denied write access. Check whether write access is enabled on the GHL device and in the integration."
     },

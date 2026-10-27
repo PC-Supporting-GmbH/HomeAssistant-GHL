@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "description_display_update_failed": {
+      "message": "Die Beschreibung wurde im GHL-Gerät gespeichert. Beim anschließenden Aktualisieren der Anzeige in Home Assistant ist jedoch ein Fehler aufgetreten. Lade die GHL-Integration neu, um die Anzeige zu aktualisieren. Die Beschreibung muss nicht erneut geschrieben werden."
+    },
     "write_access_denied": {
       "message": "Das GHL-Gerät hat den Schreibzugriff verweigert. Prüfe, ob der Schreibmodus im GHL-Gerät und in der Integration aktiviert ist."
     },

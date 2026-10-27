@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "description_display_update_failed": {
+      "message": "La description a été enregistrée sur l’appareil GHL. Une erreur est toutefois survenue lors de la mise à jour de son affichage dans Home Assistant. Rechargez l’intégration GHL pour actualiser l’affichage. Il n’est pas nécessaire de réécrire la description."
+    },
     "write_access_denied": {
       "message": "L’appareil GHL a refusé l’accès en écriture. Vérifiez que le mode écriture est activé sur l’appareil GHL et dans l’intégration."
     },
