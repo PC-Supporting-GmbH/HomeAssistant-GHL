@@ -45,6 +45,10 @@ from .const import (
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
 )
+from .select import (
+    DESCRIPTION_RESOURCE_FALLBACKS,
+    DESCRIPTION_RESOURCE_TRANSLATION_KEYS,
+)
 from .history import (
     async_import_resource_history,
     history_resource_map,
@@ -556,6 +560,13 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 reason="no_history_sources",
             )
 
+        translations = await async_get_translations(
+            self.hass,
+            self.hass.config.language,
+            "entity",
+            {DOMAIN},
+        )
+
         failed = False
         summary_lines: list[str] = []
         records_label = {
@@ -572,11 +583,27 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 api=entry_data["api"],
                 resource=resource,
             )
-            resource_name = resource.description or (
-                resource.resource
-                if resource.index is None
-                else f"{resource.resource}[{resource.index}]"
-            )
+            if (
+                resource.resource in DESCRIPTION_RESOURCE_TRANSLATION_KEYS
+                and resource.index is not None
+            ):
+                translation_key = DESCRIPTION_RESOURCE_TRANSLATION_KEYS[
+                    resource.resource
+                ]
+                template = translations.get(
+                    f"component.{DOMAIN}.entity.select.{translation_key}.name",
+                    DESCRIPTION_RESOURCE_FALLBACKS[resource.resource],
+                )
+                resource_name = template.format(index=resource.index + 1)
+            else:
+                resource_name = (
+                    resource.resource
+                    if resource.index is None
+                    else f"{resource.resource}[{resource.index}]"
+                )
+
+            if resource.description is not None:
+                resource_name = f"{resource_name} - {resource.description}"
 
             if not result.success:
                 failed = True
