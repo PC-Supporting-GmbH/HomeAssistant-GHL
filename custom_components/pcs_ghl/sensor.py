@@ -48,6 +48,7 @@ from .const import (
     SENSOR_UNIT_PSU,
 )
 from .coordinator import (
+    GHLDescriptionNameMixin,
     GHLDataUpdateCoordinator,
     doser_capacity_key,
     doser_filllevel_key,
@@ -370,10 +371,14 @@ class GHLMitrasHeatsinkTemperatureSensor(
 
 
 class GHLSensor(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
     """Representation of a GHL sensor."""
+
+    _description_platform = 'sensor'
+    _description_name_keys = ('sensor', None)
 
     _attr_has_entity_name = True
 
@@ -629,10 +634,14 @@ class GHLIONDirectorValueSensor(
 
 
 class GHLSwitchChannelCurrentSensor(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
     """Representation of a GHL switch channel current."""
+
+    _description_platform = 'sensor'
+    _description_name_keys = ('switchchannel_current', 'switchchannel_current_named')
 
     _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.CURRENT
@@ -709,10 +718,14 @@ class GHLSwitchChannelCurrentSensor(
 
 
 class GHLDoserFillLevelSensor(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
     """Representation of a GHL dosing pump fill level."""
+
+    _description_platform = 'sensor'
+    _description_name_keys = ('doser_filllevel_default', 'doser_filllevel')
 
     _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.VOLUME
@@ -781,10 +794,14 @@ class GHLDoserFillLevelSensor(
 
 
 class GHLDoserCapacitySensor(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
     """Representation of a GHL dosing pump capacity."""
+
+    _description_platform = 'sensor'
+    _description_name_keys = ('doser_capacity_default', 'doser_capacity')
 
     _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.VOLUME
@@ -853,10 +870,14 @@ class GHLDoserCapacitySensor(
 
 
 class GHLFlowSensor(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
     """Representation of a GHL flow sensor."""
+
+    _description_platform = 'sensor'
+    _description_name_keys = ('flowsensor_flow_default', 'flowsensor_flow')
 
     _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.VOLUME_FLOW_RATE
@@ -981,10 +1002,14 @@ class GHLIlluminationMasterBrightnessSensor(
 
 
 class GHLIlluminationBrightnessSensor(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
     """Representation of a GHL illumination channel."""
+
+    _description_platform = 'sensor'
+    _description_name_keys = ('illumination', None)
 
     _attr_has_entity_name = True
     _attr_native_unit_of_measurement = PERCENTAGE

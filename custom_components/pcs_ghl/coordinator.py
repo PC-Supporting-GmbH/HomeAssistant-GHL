@@ -5,14 +5,18 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import logging
+from time import perf_counter
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import GHLAPI, GHLAPIError
 from .const import (
+    CONF_KNOWN_SENSORS,
+    DESCRIPTION_CHECK_EVERY_N_UPDATES,
     CONF_SENSOR_TYPES,
     CONF_SENSOR_UNITS,
     DOMAIN,
@@ -138,6 +142,41 @@ def last_update_key() -> str:
     return "last_update"
 
 
+class GHLDescriptionNameMixin:
+    """Read resource names from the current description without recreating entities."""
+
+    @property
+    def name(self):
+        """Return the current device-provided name; HA keeps user overrides."""
+        resource = self._resource
+        if (
+            self.coordinator.description_name_translations is None
+            or (
+                getattr(self, "_description_resource_type", None) is not None
+                and resource.resource != self._description_resource_type
+            )
+        ):
+            return super().name
+
+        default_key, named_key = self._description_name_keys
+        if resource.description is not None and named_key is None:
+            return resource.description
+
+        translation_key = (
+            named_key if resource.description is not None else default_key
+        )
+        template = self.coordinator.description_name_translations.get(
+            f"component.{DOMAIN}.entity.{self._description_platform}."
+            f"{translation_key}.name"
+        )
+        if template is None:
+            return super().name
+        return template.format(
+            name=resource.description,
+            index=resource.index + 1,
+        )
+
+
 class GHLDataUpdateCoordinator(
     DataUpdateCoordinator[
         dict[int | str, float | str | bool | None]
@@ -166,6 +205,95 @@ class GHLDataUpdateCoordinator(
         self.entry = entry
         self.resources = resources
         self._entity_registry = er.async_get(hass)
+        self._description_update_count = 0
+        self.description_name_translations = None
+
+    async def _async_check_descriptions(self) -> list[str]:
+        """Refresh all known indexed descriptions in one sequential pass."""
+        started = perf_counter()
+        errors: list[str] = []
+        changed = 0
+        checked = 0
+        editor = (
+            self.hass.data.get(DOMAIN, {})
+            .get(self.entry.entry_id, {})
+            .get("description_editor")
+        )
+        if self.description_name_translations is None:
+            self.description_name_translations = await async_get_translations(
+                self.hass, self.hass.config.language, "entity", {DOMAIN},
+            )
+
+        changed_sensors = {}
+        for resource in self.resources:
+            if resource.index is None or resource.resource not in {
+                "SENSOR", "SWITCHCHANNEL", "ILLUMINATION", "TIMER",
+                "DOSER", "FLOWSENSOR", "LEVELSENSOR",
+            }:
+                continue
+
+            checked += 1
+            previous_description = resource.description
+            try:
+                description = await self.api.async_get(
+                    f"{resource.resource}[{resource.index}]", "DESCRIPTION",
+                )
+            except GHLAPIError as err:
+                errors.append(
+                    f"Unable to update GHL {resource.resource}"
+                    f"[{resource.index}] DESCRIPTION: {err}"
+                )
+                continue
+
+            # None means NACK or an unusable response, not a cleared description.
+            if description is None:
+                continue
+            description = description.rstrip() or None
+            # Do not replace a description written locally while this read waited.
+            if resource.description != previous_description:
+                continue
+            if description == previous_description:
+                continue
+
+            resource.description = description
+            changed += 1
+            if resource.resource == "SENSOR":
+                changed_sensors[str(resource.index)] = resource
+
+            resource_key = f"{resource.resource}:{resource.index}"
+            if editor is not None:
+                if editor["selected_key"] == resource_key:
+                    # Preserve a description the user has already started editing.
+                    if editor["text"] == (previous_description or ""):
+                        editor["text"] = description or ""
+                        if (text_entity := editor.get("text_entity")) is not None:
+                            text_entity.async_write_ha_state()
+                editor_resource = editor["resources"].get(resource_key)
+                if editor_resource is not None:
+                    editor_resource.description = description
+
+        if changed_sensors:
+            new_data = dict(self.entry.data)
+            known_sensors = {
+                key: dict(value)
+                for key, value in new_data.get(CONF_KNOWN_SENSORS, {}).items()
+            }
+            for sensor_key, resource in changed_sensors.items():
+                sensor_data = dict(known_sensors.get(sensor_key, {}))
+                sensor_data["description"] = resource.description
+                sensor_data.setdefault("features", dict(resource.features))
+                known_sensors[sensor_key] = sensor_data
+            new_data[CONF_KNOWN_SENSORS] = known_sensors
+            self.hass.config_entries.async_update_entry(self.entry, data=new_data)
+        if changed and editor is not None:
+            if (select_entity := editor.get("select_entity")) is not None:
+                select_entity.refresh_resource_options()
+        _LOGGER.debug(
+            "GHL description check for %s completed in %.3f s "
+            "(checked=%d, changed=%d, failed=%d)",
+            self.entry.title, perf_counter() - started, checked, changed, len(errors),
+        )
+        return errors
 
     def _entity_is_enabled(
         self,
@@ -933,6 +1061,13 @@ class GHLDataUpdateCoordinator(
             data[last_update_key()] = datetime.now(
                 timezone.utc
             ).timestamp()
+
+        entry_data = self.hass.data.get(DOMAIN, {}).get(self.entry.entry_id)
+        if entry_data is not None and entry_data.get("coordinator") is self:
+            self._description_update_count += 1
+            if self._description_update_count >= DESCRIPTION_CHECK_EVERY_N_UPDATES:
+                self._description_update_count = 0
+                update_errors.extend(await self._async_check_descriptions())
 
         if update_errors:
             _LOGGER.warning(

@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import (
+    GHLDescriptionNameMixin,
     GHLDataUpdateCoordinator,
     levelsensor_state_key,
     switchchannel_state_key,
@@ -70,10 +71,14 @@ async def async_setup_entry(
 
 
 class GHLSwitchChannelBinarySensor(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     BinarySensorEntity,
 ):
     """Representation of a GHL switch channel state."""
+
+    _description_platform = 'binary_sensor'
+    _description_name_keys = ('switchchannel', None)
 
     _attr_has_entity_name = True
 

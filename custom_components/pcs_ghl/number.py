@@ -50,6 +50,7 @@ from .const import (
 )
 from .discovery import GHLDiscoveredResource
 from .coordinator import (
+    GHLDescriptionNameMixin,
     GHLDataUpdateCoordinator,
     illumination_masterbrightness_key,
     iondirector_desvalue_key,
@@ -486,10 +487,15 @@ class GHLLightSceneFadeTimeNumber(
 
 
 class GHLSensorSetpointNumber(
+    GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     NumberEntity,
 ):
     """Represent the setpoint of one GHL sensor or Director parameter."""
+
+    _description_platform = 'number'
+    _description_name_keys = ('sensor_setpoint', 'sensor_setpoint_named')
+    _description_resource_type = "SENSOR"
 
     _attr_has_entity_name = True
     _attr_native_min_value = SENSOR_SETPOINT_MIN_VALUE
