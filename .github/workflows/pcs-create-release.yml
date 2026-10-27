@@ -182,12 +182,14 @@ jobs:
           echo "Previous tag: $PREVIOUS_TAG"
 
           {
-            echo "### Release Notes"
+            echo "### Noteworthy Changes:"
             echo ""
             git log "${PREVIOUS_TAG}..${RELEASE_VERSION}" \
               --format='- %s' \
               --invert-grep \
               --grep='^Adapt manifest to Release Version$'
+            echo ""
+            echo "### Fixes:"
           } > release-notes.md
 
           echo ""

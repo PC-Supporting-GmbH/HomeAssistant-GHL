@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+from time import monotonic
 
 import voluptuous as vol
 
@@ -11,6 +13,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult, FlowType
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowResultType, UnknownFlow
 from homeassistant.helpers import selector
 from homeassistant.helpers.translation import async_get_translations
 
@@ -19,6 +22,7 @@ from .const import (
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
     CONF_DEVICE_TYPE,
+    CONF_HISTORY_PRESENT_RESOURCES,
     CONF_IMPORT_HISTORICAL_DATA,
     CONF_SENSOR_TYPE,
     CONF_SENSOR_TYPES,
@@ -50,11 +54,16 @@ from .select import (
     DESCRIPTION_RESOURCE_TRANSLATION_KEYS,
 )
 from .history import (
+    CONF_INITIAL_HISTORY_PENDING,
+    history_resource_key,
     async_import_resource_history,
     history_resource_map,
     sensor_history_is_configured,
     sensor_history_should_import,
 )
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_test_connection(host: str, port: int) -> str:
@@ -107,6 +116,9 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             config_entry.entry_id,
         )
 
+        if options_result["type"] in (FlowResultType.CREATE_ENTRY, FlowResultType.ABORT):
+            return result
+
         result["next_flow"] = (
             FlowType.OPTIONS_FLOW,
             options_result["flow_id"],
@@ -153,6 +165,7 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             CONF_PORT: user_input[CONF_PORT],
                             CONF_ACCESS_MODE: user_input[CONF_ACCESS_MODE],
                             CONF_DEVICE_TYPE: user_input[CONF_DEVICE_TYPE],
+                            CONF_INITIAL_HISTORY_PENDING: True,
                         }
 
                         translations = await async_get_translations(
@@ -241,9 +254,40 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
         self._sensor_units = {}
         self._show_all_resources = False
         self._import_historical_data = False
+        self._history_task = None
+        self._history_worker = None
+        self._history_owner = None
+        self._history_observers = set()
+        self._history_registry = None
+        self._history_refresh_received = asyncio.Event()
+        self._history_refresh_received.set()
+        self._history_dialog_closed = False
+        self._history_initial = False
+        self._history_source_name = None
+        self._history_source_number = 0
+        self._history_source_total = 0
+        self._history_records = 0
+        self._history_last_update = 0.0
+        self._history_summary = ""
+        self._history_import_failed = False
+        self._history_abort_reason = None
+        self._history_background_hint = ""
 
     async def async_step_init(self, user_input=None):
         """Initialize GHL options."""
+
+        active_import = self.hass.data.get(f"{DOMAIN}_history_imports", {}).get(
+            self.config_entry.entry_id
+        )
+        if (
+            active_import is not None
+            and active_import._history_worker is not None
+            and not active_import._history_worker.done()
+        ):
+            self._history_owner = active_import
+            self._history_initial = active_import._history_initial
+            self._history_background_hint = active_import._history_background_hint
+            return await self.async_step_history_import_progress()
 
         entry_data = (
             self.hass.data
@@ -298,6 +342,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             and not self._sensor_types
         ):
             return await self.async_step_initial_sensor_setup()
+
+        if self.config_entry.data.get(CONF_INITIAL_HISTORY_PENDING, False):
+            return await self._async_finish_initial_sensor_setup()
 
         return self.async_show_menu(
             step_id="init",
@@ -520,6 +567,18 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
     async def async_step_history_import(self, user_input=None):
         """Import historical data for all currently available sources."""
 
+        entry_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+        active_import = self.hass.data.get(f"{DOMAIN}_history_imports", {}).get(
+            self.config_entry.entry_id
+        )
+        if (
+            active_import is not None
+            and active_import._history_worker is not None
+            and not active_import._history_worker.done()
+        ):
+            self._history_owner = active_import
+            user_input = {}
+
         if user_input is None:
             return self.async_show_form(
                 step_id="history_import",
@@ -560,66 +619,274 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 reason="no_history_sources",
             )
 
+        self._history_initial = False
         translations = await async_get_translations(
-            self.hass,
-            self.hass.config.language,
-            "entity",
-            {DOMAIN},
+            self.hass, self.hass.config.language, "options", {DOMAIN},
         )
+        self._history_background_hint = translations.get(
+            f"component.{DOMAIN}.options.step.history_import_progress.description",
+            "You can close this dialog. The import will continue in the background.",
+        )
+        return await self.async_step_history_import_progress()
 
-        failed = False
-        summary_lines: list[str] = []
+    async def _async_finish_initial_sensor_setup(self):
+        """Continue initial setup without another confirmation."""
+        if self._import_historical_data:
+            translations = await async_get_translations(
+                self.hass, self.hass.config.language, "options", {DOMAIN},
+            )
+            self._history_background_hint = translations.get(
+                f"component.{DOMAIN}.options.step.history_import_progress.description",
+                "You can close this dialog. The import will continue in the background.",
+            )
+            self._history_initial = True
+            return await self.async_step_history_import_progress()
+
+        new_data = dict(self.config_entry.data)
+        new_data.pop(CONF_INITIAL_HISTORY_PENDING, None)
+        self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
+        return self.async_create_entry(title="", data=self._initial_history_options())
+
+    def _initial_history_options(self):
+        """Return the options selected during initial sensor configuration."""
+        return {
+            CONF_SENSOR_TYPES: self._sensor_types,
+            CONF_SENSOR_UNITS: self._sensor_units,
+            CONF_SHOW_ALL_RESOURCES: self._show_all_resources,
+            CONF_IMPORT_HISTORICAL_DATA: self._import_historical_data,
+        }
+
+    async def async_step_history_import_progress(self, user_input=None):
+        """Keep the import visible while the single background task runs."""
+        self._history_refresh_received.set()
+        if self._history_task is None:
+            registry = self.hass.data.setdefault(f"{DOMAIN}_history_imports", {})
+            if self._history_owner is None:
+                active_import = registry.get(self.config_entry.entry_id)
+                if (
+                    active_import is not None
+                    and active_import._history_worker is not None
+                    and not active_import._history_worker.done()
+                ):
+                    self._history_owner = active_import
+                else:
+                    entry_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+                    if entry_data is None:
+                        return self.async_abort(reason="entry_not_loaded")
+                    self._history_owner = self
+                    self._history_registry = registry
+                    registry[self.config_entry.entry_id] = self
+                    self._history_worker = self.hass.async_create_task(self._async_run_history_import())
+                    self._history_worker.add_done_callback(self._history_background_import_done)
+            if self._history_owner is not self:
+                self._history_worker = self._history_owner._history_worker
+                self._history_initial = self._history_owner._history_initial
+            self._history_owner._history_observers.add(self)
+            self._history_task = self.hass.async_create_task(self._async_wait_for_history_import())
+            self._history_task.add_done_callback(self._history_dialog_task_done)
+
+        history = self._history_owner or self
+        if not self._history_task.done():
+            progress_action = (
+                "history_import_running"
+                if history._history_source_name is not None
+                else "history_import_preparing"
+            )
+            placeholders = {
+                "source_number": str(history._history_source_number),
+                "source_total": str(history._history_source_total),
+                "source_name": history._history_source_name or "",
+                "records_count": format(history._history_records, ",").replace(",", "'"),
+                "background_hint": self._history_background_hint,
+            }
+            if (
+                self.cur_step
+                and self.cur_step.get("step_id") == "history_import_progress"
+            ):
+                # This request already refreshes the text; do not trigger another GET.
+                self.cur_step["progress_action"] = progress_action
+                self.cur_step["description_placeholders"] = placeholders
+            return self.async_show_progress(
+                step_id="history_import_progress",
+                progress_action=progress_action,
+                description_placeholders=placeholders,
+                progress_task=self._history_task,
+            )
+
+        try:
+            self._history_task.result()
+        except Exception:
+            _LOGGER.exception("Historical GHL data import failed")
+            history._history_import_failed = True
+            history._history_abort_reason = "history_import_incomplete"
+        return self.async_show_progress_done(next_step_id="history_import_finish")
+
+    async def _async_wait_for_history_import(self):
+        """Keep the import independent of the dialog's lifetime."""
+        try:
+            await asyncio.shield(self._history_worker)
+        except Exception:
+            await self._history_refresh_received.wait()
+            raise
+        await self._history_refresh_received.wait()
+
+    def _history_dialog_task_done(self, task):
+        """Keep reading when HA cancels the closed dialog's progress task."""
+        if task.cancelled():
+            self._history_dialog_closed = True
+            if self._history_owner is not None:
+                self._history_owner._history_observers.discard(self)
+
+    def _history_background_import_done(self, task):
+        """Report background errors after the import dialog was closed."""
+        if (
+            self._history_registry is not None
+            and self._history_registry.get(self.config_entry.entry_id) is self
+        ):
+            self._history_registry.pop(self.config_entry.entry_id)
+            if not self._history_registry:
+                self.hass.data.pop(f"{DOMAIN}_history_imports", None)
+        if task.cancelled():
+            return
+        if (error := task.exception()) and not self._history_observers:
+            _LOGGER.error(
+                "Historical GHL data import failed after the dialog was closed",
+                exc_info=(type(error), error, error.__traceback__),
+            )
+
+    async def _async_update_history_progress(self, records=None, *, force=False):
+        """Refresh source/count text at most once per second."""
+        if records is not None:
+            self._history_records = records
+        now = monotonic()
+        if not force and now - self._history_last_update < 1:
+            return
+        self._history_last_update = now
+        dialogs = tuple(self._history_observers) if self._history_owner is self else (self,)
+        for dialog in dialogs:
+            if dialog._history_dialog_closed:
+                continue
+            if dialog.cur_step and dialog.cur_step.get("step_id") == "history_import_progress":
+                # Only one text refresh may be outstanding for each dialog.
+                if dialog._history_refresh_received.is_set():
+                    dialog._history_refresh_received.clear()
+                    dialog.async_notify_flow_changed()
+
+    def _history_resource_name(self, resource, translations):
+        """Use the existing description-editor labels for history sources."""
+        if (
+            resource.resource in DESCRIPTION_RESOURCE_TRANSLATION_KEYS
+            and resource.index is not None
+        ):
+            translation_key = DESCRIPTION_RESOURCE_TRANSLATION_KEYS[
+                resource.resource
+            ]
+            template = translations.get(
+                f"component.{DOMAIN}.entity.select.{translation_key}.name",
+                DESCRIPTION_RESOURCE_FALLBACKS[resource.resource],
+            )
+            resource_name = template.format(index=resource.index + 1)
+        else:
+            resource_name = (
+                resource.resource
+                if resource.index is None
+                else f"{resource.resource}[{resource.index}]"
+            )
+
+        if resource.description is not None:
+            resource_name = f"{resource_name} - {resource.description}"
+        return resource_name
+
+    async def _async_run_history_import(self):
+        """Prepare initial entities, then import with source/count updates."""
+        if self._history_initial:
+            entry_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+            if entry_data is None:
+                self._history_abort_reason = "entry_not_loaded"
+                return
+            options = self._initial_history_options()
+            # This task performs the reload itself and waits for its entities.
+            entry_data["history_flow_options"] = options
+            self.hass.config_entries.async_update_entry(self.config_entry, options=options)
+            if not await self.hass.config_entries.async_reload(self.config_entry.entry_id):
+                self._history_abort_reason = "entry_not_loaded"
+                return
+
+        entry_data = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+        if entry_data is None:
+            self._history_abort_reason = "entry_not_loaded"
+            return
+
+        resources = history_resource_map(entry_data["resources"])
+        eligible_resources = [
+            resource for resource in resources.values()
+            if sensor_history_is_configured(self.config_entry, resource)
+            and sensor_history_should_import(self.config_entry, resource)
+        ]
+        if not eligible_resources and not self._history_initial:
+            self._history_abort_reason = "no_history_sources"
+            return
+
+        translations = await async_get_translations(
+            self.hass, self.hass.config.language, "entity", {DOMAIN},
+        )
         records_label = {
             "de": "Datensätze",
             "en": "records",
             "es": "registros",
             "fr": "enregistrements",
         }.get(self.hass.config.language, "records")
-
-        for resource in eligible_resources:
+        summary_lines = []
+        completed_resources = set(
+            self.config_entry.data.get(CONF_HISTORY_PRESENT_RESOURCES, [])
+        )
+        self._history_source_total = len(eligible_resources)
+        for source_number, resource in enumerate(eligible_resources, 1):
+            resource_name = self._history_resource_name(resource, translations)
+            self._history_source_number = source_number
+            self._history_source_name = resource_name
+            self._history_records = 0
+            await self._async_update_history_progress(force=True)
             result = await async_import_resource_history(
                 hass=self.hass,
                 entry=self.config_entry,
                 api=entry_data["api"],
                 resource=resource,
+                progress_callback=self._async_update_history_progress,
             )
-            if (
-                resource.resource in DESCRIPTION_RESOURCE_TRANSLATION_KEYS
-                and resource.index is not None
-            ):
-                translation_key = DESCRIPTION_RESOURCE_TRANSLATION_KEYS[
-                    resource.resource
-                ]
-                template = translations.get(
-                    f"component.{DOMAIN}.entity.select.{translation_key}.name",
-                    DESCRIPTION_RESOURCE_FALLBACKS[resource.resource],
-                )
-                resource_name = template.format(index=resource.index + 1)
-            else:
-                resource_name = (
-                    resource.resource
-                    if resource.index is None
-                    else f"{resource.resource}[{resource.index}]"
-                )
-
-            if resource.description is not None:
-                resource_name = f"{resource_name} - {resource.description}"
-
+            await self._async_update_history_progress(force=True)
             if not result.success:
-                failed = True
-
+                self._history_import_failed = True
+            else:
+                completed_resources.add(history_resource_key(resource))
+                if self._history_initial:
+                    new_data = dict(self.config_entry.data)
+                    new_data[CONF_HISTORY_PRESENT_RESOURCES] = sorted(completed_resources)
+                    self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
             summary_lines.append(
                 f"{resource_name}: {result.records_found} {records_label}"
             )
+        self._history_summary = "\n".join(summary_lines)
 
-        self._history_import_failed = failed
+        if self._history_initial:
+            new_data = dict(self.config_entry.data)
+            new_data.pop(CONF_INITIAL_HISTORY_PENDING, None)
+            self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
 
-        return self.async_show_form(
-            step_id="history_import_result",
-            data_schema=vol.Schema({}),
-            description_placeholders={
-                "summary": "\n".join(summary_lines),
-            },
+    async def async_step_history_import_finish(self, user_input=None):
+        """Finish initial setup automatically or show the manual summary."""
+        history = self._history_owner or self
+        if history._history_abort_reason is not None:
+            return self.async_abort(reason=history._history_abort_reason)
+        if history._history_initial:
+            return self.async_create_entry(title="", data=history._initial_history_options())
+        return self.async_abort(
+            reason=(
+                "history_import_result_incomplete"
+                if history._history_import_failed
+                else "history_import_result"
+            ),
+            description_placeholders={"summary": history._history_summary},
         )
 
     async def async_step_history_import_result(self, user_input=None):
@@ -629,7 +896,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             return self.async_show_form(
                 step_id="history_import_result",
                 data_schema=vol.Schema({}),
-                description_placeholders={"summary": ""},
+                description_placeholders={"summary": self._history_summary},
             )
 
         if getattr(self, "_history_import_failed", False):
@@ -728,6 +995,8 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             self._sensor_index += 1
 
             if self._single_sensor or self._sensor_index >= len(self._sensors):
+                if self.config_entry.data.get(CONF_INITIAL_HISTORY_PENDING, False):
+                    return await self._async_finish_initial_sensor_setup()
                 return self.async_create_entry(
                     title="",
                     data={
@@ -803,6 +1072,8 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             self._sensor_index += 1
 
             if self._single_sensor or self._sensor_index >= len(self._sensors):
+                if self.config_entry.data.get(CONF_INITIAL_HISTORY_PENDING, False):
+                    return await self._async_finish_initial_sensor_setup()
                 return self.async_create_entry(
                     title="",
                     data={

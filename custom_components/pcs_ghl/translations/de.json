@@ -28,7 +28,15 @@
     }
   },
   "options": {
+    "progress": {
+      "history_import_preparing": "Dieser Vorgang kann mehrere Minuten dauern.\n{background_hint}\n\nDer Import wird vorbereitet.",
+      "history_import_running": "Dieser Vorgang kann mehrere Minuten dauern.\n{background_hint}\n\nAktuelle Quelle ({source_number} von {source_total}): {source_name}\nGelesene Datensätze: {records_count}"
+    },
     "step": {
+      "history_import_progress": {
+        "title": "Historische Daten werden importiert",
+        "description": "Du kannst den Dialog schliessen. Der Import läuft im Hintergrund weiter."
+      },
       "init": {
         "title": "GHL konfigurieren",
         "menu_options": {
@@ -100,6 +108,8 @@
       "already_configured": "Ein GHL-Gerät mit dieser IP-Adresse bzw. diesem Hostnamen und Port ist bereits konfiguriert."
     },
     "abort": {
+      "history_import_result": "**Historische Daten: Importergebnis**\n\n{summary}",
+      "history_import_result_incomplete": "**Historische Daten: Importergebnis**\n\n{summary}\n\nHistorische Daten konnten nicht für alle unterstützten Quellen vollständig importiert werden. Weitere Details stehen im Home-Assistant-Protokoll.",
       "rediscovery_started": "Die Integration wird neu geladen, um neue Sensoren/Geräte zu erkennen.",
       "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen.",
       "no_sensors": "Es wurden keine GHL-Sensoren gefunden.",

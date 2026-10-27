@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
@@ -53,6 +54,8 @@ from .const import (
 from .discovery import GHLDiscoveredResource
 
 _LOGGER = logging.getLogger(__name__)
+
+CONF_INITIAL_HISTORY_PENDING = "initial_history_pending"
 
 _SENSOR_ERROR_MASK = 512 | 1024
 _HISTORY_RESOURCE_TYPES = {
@@ -188,6 +191,7 @@ async def async_import_resource_history(
     entry: ConfigEntry,
     api: GHLAPI,
     resource: GHLDiscoveredResource,
+    progress_callback: Callable[[int], Awaitable[None]] | None = None,
 ) -> GHLHistoryImportResult:
     """Read and import the stored history of one GHL resource."""
 
@@ -201,7 +205,7 @@ async def async_import_resource_history(
         return GHLHistoryImportResult(False, 0, 0, 0)
 
     try:
-        records = await _async_read_history(api, resource)
+        records = await _async_read_history(api, resource, progress_callback)
     except GHLAPIError as err:
         _LOGGER.warning(
             "Unable to read historical GHL data for %s: %s",
@@ -300,6 +304,7 @@ async def async_import_resource_history(
 async def _async_read_history(
     api: GHLAPI,
     resource: GHLDiscoveredResource,
+    progress_callback: Callable[[int], Awaitable[None]] | None = None,
 ) -> list[GHLHistoryRecord] | None:
     """Read DATARECORD entries until GHL reports the end of history."""
 
@@ -346,6 +351,9 @@ async def _async_read_history(
 
         records.append(record)
         record_index += 1
+
+        if progress_callback is not None:
+            await progress_callback(record_index)
 
     records.sort(key=lambda record: record.timestamp)
 

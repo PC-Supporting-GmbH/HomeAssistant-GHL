@@ -31,6 +31,7 @@ from .discovery import (
     async_discover_resources,
 )
 from .history import (
+    CONF_INITIAL_HISTORY_PENDING,
     async_import_resource_history,
     history_entity_is_registered,
     history_resource_map,
@@ -239,9 +240,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     failed_history_resources: set[str] = set()
 
-    if entry.options.get(
-        CONF_IMPORT_HISTORICAL_DATA,
-        False,
+    if (
+        not entry.data.get(CONF_INITIAL_HISTORY_PENDING, False)
+        and entry.options.get(CONF_IMPORT_HISTORICAL_DATA, False)
     ):
         for resource_key in sorted(history_resources_to_import):
             resource = discovered_history_resources[resource_key]
@@ -278,12 +279,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         - failed_history_resources
     )
 
-    if set(
-        entry.data.get(
-            CONF_HISTORY_PRESENT_RESOURCES,
-            [],
-        )
-    ) != history_resources_to_store:
+    if (
+        not entry.data.get(CONF_INITIAL_HISTORY_PENDING, False)
+        and set(
+            entry.data.get(
+                CONF_HISTORY_PRESENT_RESOURCES,
+                [],
+            )
+        ) != history_resources_to_store
+    ):
         new_data = dict(entry.data)
         new_data[CONF_HISTORY_PRESENT_RESOURCES] = sorted(
             history_resources_to_store
@@ -293,6 +297,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             data=new_data,
         )
 
+    entry_runtime = hass.data[DOMAIN][entry.entry_id]
     entry_title = entry.title
     entry_options = deepcopy(dict(entry.options))
     connection_data = tuple(
@@ -319,9 +324,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ):
             return
 
+        managed_history_options = (
+            updated_entry.title == entry_title
+            and updated_connection_data == connection_data
+            and entry_runtime.get("history_flow_options") == updated_options
+        )
         entry_title = updated_entry.title
         entry_options = updated_options
         connection_data = updated_connection_data
+        if managed_history_options:
+            return
         hass.config_entries.async_schedule_reload(updated_entry.entry_id)
 
     entry.async_on_unload(
