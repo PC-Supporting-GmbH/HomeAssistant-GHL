@@ -314,6 +314,13 @@ async def async_setup_entry(
         )
     )
 
+    entities.append(
+        GHLDescriptionUpdatesRemainingSensor(
+            coordinator=coordinator,
+            entry=entry,
+        )
+    )
+
     async_add_entities(entities)
 
 
@@ -1433,3 +1440,34 @@ class GHLLastUpdateSensor(
             and self.coordinator.data[key] is not None
             and self.native_value is not None
         )
+
+class GHLDescriptionUpdatesRemainingSensor(
+    CoordinatorEntity[GHLDataUpdateCoordinator],
+    SensorEntity,
+):
+    """Show the polling cycles remaining until the next description check."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "description_updates_remaining"
+    _attr_icon = "mdi:counter"
+
+    def __init__(
+        self,
+        coordinator: GHLDataUpdateCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the description polling diagnostic."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_description_updates_remaining"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name=entry.title,
+            manufacturer="GHL",
+            configuration_url=f"http://{entry.data[CONF_HOST]}",
+        )
+
+    @property
+    def native_value(self) -> int:
+        """Return the current countdown without additional device queries."""
+        return self.coordinator.description_updates_remaining

@@ -147,6 +147,10 @@
   },
   "entity": {
     "sensor": {
+      "description_updates_remaining": {
+        "name": "Beschreibungscheck in",
+        "unit_of_measurement": "Durchläufe"
+      },
       "sensor": {
         "name": "Sensor {index}"
       },

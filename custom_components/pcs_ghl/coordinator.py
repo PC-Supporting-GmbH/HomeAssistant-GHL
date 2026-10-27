@@ -208,6 +208,13 @@ class GHLDataUpdateCoordinator(
         self._description_update_count = 0
         self.description_name_translations = None
 
+    @property
+    def description_updates_remaining(self) -> int:
+        """Return completed polling cycles still needed before the next check."""
+        return max(
+            0, DESCRIPTION_CHECK_EVERY_N_UPDATES - self._description_update_count,
+        )
+
     async def _async_check_descriptions(self) -> list[str]:
         """Refresh all known indexed descriptions in one sequential pass."""
         started = perf_counter()

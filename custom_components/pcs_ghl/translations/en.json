@@ -147,6 +147,10 @@
   },
   "entity": {
     "sensor": {
+      "description_updates_remaining": {
+        "name": "Description check in",
+        "unit_of_measurement": "cycles"
+      },
       "sensor": {
         "name": "Sensor {index}"
       },
