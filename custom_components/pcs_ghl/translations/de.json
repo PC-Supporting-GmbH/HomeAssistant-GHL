@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "write_access_denied": {
+      "message": "Das GHL-Gerät hat den Schreibzugriff verweigert. Prüfe, ob der Schreibmodus im GHL-Gerät und in der Integration aktiviert ist."
+    },
     "description_selection_required": {
       "message": "Wähle zuerst ein GHL-Element aus, dessen Beschreibung du ändern möchtest."
     },

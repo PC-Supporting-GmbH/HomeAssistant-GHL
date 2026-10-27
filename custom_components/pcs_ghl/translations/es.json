@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "write_access_denied": {
+      "message": "El dispositivo GHL ha denegado el acceso de escritura. Comprueba que el modo de escritura esté activado en el dispositivo GHL y en la integración."
+    },
     "description_selection_required": {
       "message": "Selecciona primero el recurso GHL cuya descripción deseas cambiar."
     },

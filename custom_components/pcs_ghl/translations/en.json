@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "write_access_denied": {
+      "message": "The GHL device denied write access. Check whether write access is enabled on the GHL device and in the integration."
+    },
     "description_selection_required": {
       "message": "First select the GHL resource whose description you want to change."
     },

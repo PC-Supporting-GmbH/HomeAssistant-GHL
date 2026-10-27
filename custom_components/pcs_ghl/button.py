@@ -1007,6 +1007,12 @@ class GHLDescriptionWriteButton(ButtonEntity):
                 ),
             ) from err
 
+        if reply.replace(" ", "").startswith("NACK(-105)"):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="write_access_denied",
+            )
+
         if not reply.startswith("ACK"):
             _LOGGER.warning(
                 "GHL description command %s "

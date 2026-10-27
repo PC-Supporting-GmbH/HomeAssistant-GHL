@@ -397,6 +397,9 @@
     }
   },
   "exceptions": {
+    "write_access_denied": {
+      "message": "L’appareil GHL a refusé l’accès en écriture. Vérifiez que le mode écriture est activé sur l’appareil GHL et dans l’intégration."
+    },
     "description_selection_required": {
       "message": "Sélectionnez d’abord la ressource GHL dont vous souhaitez modifier la description."
     },
