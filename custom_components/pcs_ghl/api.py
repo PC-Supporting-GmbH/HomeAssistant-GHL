@@ -126,7 +126,9 @@ class GHLAPI:
         command_started = perf_counter()
         _LOGGER.debug("GHL API %s:%s: command %r queued", self.host, self.port, command)
 
-        may_retry = command.startswith("GET ") or retry_safe
+        is_read_command = command.startswith("GET ")
+        may_retry = is_read_command or retry_safe
+        execution_uncertain = False
 
         async with self._lock:
             _LOGGER.debug(
@@ -176,9 +178,12 @@ class GHLAPI:
                     response = reply.decode("cp1252").strip()
 
                     if (
-                        not may_retry
+                        not is_read_command
                         and response != "ACK"
-                        and not response.startswith("NACK")
+                        and (
+                            not response.startswith("NACK")
+                            or execution_uncertain
+                        )
                     ):
                         await self._async_disconnect()
                         raise GHLCommandUncertainError(
@@ -206,6 +211,9 @@ class GHLAPI:
                         perf_counter() - attempt_started, perf_counter() - command_started,
                         type(err).__name__, err,
                     )
+                    if command_may_have_been_sent and not is_read_command:
+                        execution_uncertain = True
+
                     await self._async_disconnect()
 
                     if command_may_have_been_sent and not may_retry:
@@ -220,6 +228,11 @@ class GHLAPI:
                         )
                         await asyncio.sleep(3)
                         continue
+
+                    if execution_uncertain:
+                        raise GHLCommandUncertainError(
+                            f"Execution could not be confirmed for: {command}"
+                        ) from err
 
                     raise GHLConnectionError(
                         f"Error communicating with {self.host}:{self.port} "

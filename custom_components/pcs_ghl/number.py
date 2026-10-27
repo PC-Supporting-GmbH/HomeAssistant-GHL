@@ -26,7 +26,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .api import GHLAPI, GHLAPIError
+from .api import GHLAPI, GHLAPIError, GHLCommandUncertainError
 from .const import (
     ACCESS_MODE_FULL_ACCESS,
     CONF_ACCESS_MODE,
@@ -303,7 +303,11 @@ class GHLIlluminationMasterBrightnessNumber(
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
@@ -714,7 +718,11 @@ class GHLSensorSetpointNumber(
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if reply.replace(" ", "").startswith("NACK(-105)"):

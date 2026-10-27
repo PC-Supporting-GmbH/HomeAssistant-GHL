@@ -1000,7 +1000,11 @@ class GHLDescriptionWriteButton(ButtonEntity):
 
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
-                translation_key="command_communication_error",
+                translation_key=(
+                    "command_execution_uncertain"
+                    if isinstance(err, GHLCommandUncertainError)
+                    else "command_communication_error"
+                ),
             ) from err
 
         if not reply.startswith("ACK"):
