@@ -951,11 +951,18 @@ class GHLDescriptionWriteButton(ButtonEntity):
         ]
 
         if selected_key is None:
-            return
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="description_selection_required",
+            )
 
-        resource = self._description_editor[
-            "resources"
-        ][selected_key]
+        resource = self._description_editor["resources"].get(selected_key)
+
+        if resource is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="description_resource_unavailable",
+            )
 
         description = self._description_editor[
             "text"

@@ -7,6 +7,7 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.translation import async_get_translations
@@ -224,17 +225,25 @@ class GHLDescriptionResourceSelect(SelectEntity):
     ) -> None:
         """Select a GHL resource."""
 
-        resource_key = self._option_to_key[
-            option
-        ]
+        resource_key = self._option_to_key.get(option)
+
+        if resource_key is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="description_resource_unavailable",
+            )
+
+        resource = self._description_editor["resources"].get(resource_key)
+
+        if resource is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="description_resource_unavailable",
+            )
 
         self._description_editor[
             "selected_key"
         ] = resource_key
-
-        resource = self._description_editor[
-            "resources"
-        ][resource_key]
 
         self._description_editor[
             "text"

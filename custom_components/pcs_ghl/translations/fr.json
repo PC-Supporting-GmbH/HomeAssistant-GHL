@@ -393,6 +393,12 @@
     }
   },
   "exceptions": {
+    "description_selection_required": {
+      "message": "Sélectionnez d’abord la ressource GHL dont vous souhaitez modifier la description."
+    },
+    "description_resource_unavailable": {
+      "message": "La ressource GHL sélectionnée n’est plus disponible. Rouvrez la liste des ressources et sélectionnez une ressource disponible."
+    },
     "setpoint_read_only": {
       "message": "La valeur ne peut pas être modifiée. Activez l’accès en écriture sur votre appareil GHL ainsi que dans l’intégration."
     },

@@ -393,6 +393,12 @@
     }
   },
   "exceptions": {
+    "description_selection_required": {
+      "message": "Wähle zuerst ein GHL-Element aus, dessen Beschreibung du ändern möchtest."
+    },
+    "description_resource_unavailable": {
+      "message": "Die ausgewählte GHL-Ressource ist nicht mehr verfügbar. Öffne die Ressourcenauswahl erneut und wähle ein verfügbares Element."
+    },
     "setpoint_read_only": {
       "message": "Der Wert kann nicht geändert werden. Aktiviere den Schreibmodus in deinem GHL-Gerät sowie in der Integration."
     },
