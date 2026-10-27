@@ -105,6 +105,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         port=entry.data[CONF_PORT],
     )
 
+    entry.async_on_unload(api.async_close)
+
     phase_started = perf_counter()
     _LOGGER.debug("GHL setup [%s]: connection check started", entry.entry_id)
 
