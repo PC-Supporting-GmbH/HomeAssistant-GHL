@@ -1,6 +1,7 @@
 name: bbb_PCS GHL Regression Tests
 
 on:
+  push:
   workflow_dispatch:
 
 permissions:
