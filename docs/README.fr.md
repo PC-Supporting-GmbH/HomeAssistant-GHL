@@ -1,4 +1,8 @@
+---
+
 [English](../README.md) · [Deutsch](README.de.md) · **Français** (traduction automatique) · [Español](README.es.md) (traduction automatique)
+
+---
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/logo.png" alt="Intégration GHL pour Home Assistant" width="250">
