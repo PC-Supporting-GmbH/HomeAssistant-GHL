@@ -51,6 +51,7 @@
         "title": "General settings",
         "description": "Adjust the connection to the GHL device and resource discovery.",
         "data": {
+          "name": "Device name",
           "host": "IP address or hostname",
           "port": "Port",
           "access_mode": "API access mode",
@@ -58,6 +59,7 @@
           "import_historical_data": "Historical data: import for newly discovered sensors"
         },
         "data_description": {
+          "name": "The device name prefixes automatically generated entity names, e.g. “Aquarium Temperature”. Leave this field empty to omit the device name prefix.",
           "show_all_resources": "Also integrate GHL resources that would normally be detected as unused and hidden based on their configuration.",
           "import_historical_data": "Historical data is imported automatically when a supported sensor or source is newly discovered. Enabling this option does not retroactively import existing sources; use the separate “Historical data: import now” action for that."
         }

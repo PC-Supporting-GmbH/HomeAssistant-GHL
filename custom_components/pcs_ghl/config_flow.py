@@ -11,10 +11,10 @@ import voluptuous as vol
 
 from homeassistant import config_entries 
 from homeassistant.config_entries import ConfigFlowResult, FlowType
-from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResultType, UnknownFlow
-from homeassistant.helpers import selector
+from homeassistant.helpers import device_registry as dr, selector
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import (
@@ -351,9 +351,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             menu_options=[
                 "general",
                 "sensors",
+                "single_sensor",
                 "history_import",
                 "rediscover",
-                "single_sensor",
             ],
         )
 
@@ -385,6 +385,15 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
     async def async_step_general(self, user_input=None):
         """Configure general GHL options."""
 
+        device_registry = dr.async_get(self.hass)
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.config_entry.entry_id)}
+        )
+        current_name = (
+            device.name_by_user
+            if device is not None and device.name_by_user
+            else self.config_entry.title
+        )
         errors = {}
 
         if user_input is not None:
@@ -397,6 +406,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             import_historical_data = user_input[
                 CONF_IMPORT_HISTORICAL_DATA
             ]
+
+            name = user_input.get(CONF_NAME, "")
+            name_changed = name != self.config_entry.title
 
             old_host = self.config_entry.data[CONF_HOST]
             old_port = self.config_entry.data[CONF_PORT]
@@ -422,7 +434,8 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             )
 
             data_changed = (
-                host != old_host
+                name_changed
+                or host != old_host
                 or port != old_port
                 or access_mode != old_access_mode
             )
@@ -460,40 +473,18 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 new_data[CONF_PORT] = port
                 new_data[CONF_ACCESS_MODE] = access_mode
 
-                if host != old_host:
-                    translations = await async_get_translations(
-                        self.hass,
-                        self.hass.config.language,
-                        "selector",
-                        {DOMAIN},
+                if device is not None and (
+                    name_changed or name != current_name
+                ):
+                    device_registry.async_update_device(
+                        device.id, name=name, name_by_user=None
                     )
 
-                    device_type = self.config_entry.data[
-                        CONF_DEVICE_TYPE
-                    ]
-
-                    translation_key = (
-                        f"component.{DOMAIN}."
-                        f"selector.device_type.options."
-                        f"{device_type}"
-                    )
-
-                    device_type_name = translations.get(
-                        translation_key,
-                        device_type,
-                    )
-
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry,
-                        data=new_data,
-                        title=f"{device_type_name} ({host})",
-                    )
-
-                else:
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry,
-                        data=new_data,
-                    )
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    data=new_data,
+                    title=name,
+                )
 
                 self._show_all_resources = (
                     show_all_resources
@@ -526,6 +517,16 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
 
         data_schema = vol.Schema(
             {
+                vol.Optional(
+                    CONF_NAME,
+                    description={
+                        "suggested_value": (
+                            current_name
+                            if user_input is None
+                            else user_input.get(CONF_NAME, "")
+                        )
+                    },
+                ): str,
                 vol.Required(
                     CONF_HOST,
                     default=self.config_entry.data[CONF_HOST],

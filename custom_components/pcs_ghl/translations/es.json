@@ -51,6 +51,7 @@
         "title": "Ajustes generales",
         "description": "Ajusta la conexión con el dispositivo GHL y la detección de recursos.",
         "data": {
+          "name": "Nombre del dispositivo",
           "host": "Dirección IP o nombre de host",
           "port": "Puerto",
           "access_mode": "Modo de acceso a la API",
@@ -58,6 +59,7 @@
           "import_historical_data": "Importar datos históricos de los sensores recién detectados"
         },
         "data_description": {
+          "name": "El nombre del dispositivo se antepone a los nombres de entidad generados automáticamente, por ejemplo, «Acuario Temperatura». Deja este campo vacío para omitir el nombre del dispositivo.",
           "show_all_resources": "Integrar también los recursos GHL que normalmente se detectarían como no utilizados y se ocultarían según su configuración.",
           "import_historical_data": "Los datos históricos se importan automáticamente cuando se detecta un nuevo sensor o una nueva fuente compatible. Activar esta opción no importa retroactivamente las fuentes existentes; para ello, utiliza la acción independiente «Importar datos históricos ahora»."
         }

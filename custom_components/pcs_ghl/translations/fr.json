@@ -51,6 +51,7 @@
         "title": "Paramètres généraux",
         "description": "Ajustez la connexion à l’appareil GHL et la détection des ressources.",
         "data": {
+          "name": "Nom de l’appareil",
           "host": "Adresse IP ou nom d’hôte",
           "port": "Port",
           "access_mode": "Mode d’accès à l’API",
@@ -58,6 +59,7 @@
           "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés"
         },
         "data_description": {
+          "name": "Le nom de l’appareil précède les noms d’entités générés automatiquement, par exemple « Aquarium Température ». Laissez ce champ vide pour ne pas ajouter le nom de l’appareil.",
           "show_all_resources": "Intégrer également les ressources GHL qui seraient normalement détectées comme inutilisées et masquées en fonction de leur configuration.",
           "import_historical_data": "Les données historiques sont importées automatiquement lorsqu’un capteur ou une source pris en charge est nouvellement détecté. L’activation de cette option n’importe pas rétroactivement les sources existantes ; utilisez pour cela l’action séparée « Données historiques : importer maintenant »."
         }
