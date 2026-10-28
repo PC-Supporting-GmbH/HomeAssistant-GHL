@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import math
 import logging
 from time import perf_counter
 
@@ -680,7 +681,7 @@ class GHLDataUpdateCoordinator(
                             data[state_key] = None
                         else:
                             data[state_key] = (
-                                _convert_switch_state(state)
+                                _convert_switch_state(state, binary_only=True)
                             )
 
                 if self._entity_is_enabled(
@@ -917,6 +918,16 @@ class GHLDataUpdateCoordinator(
                                 data[masterbrightness_key] = _convert_value(
                                     masterbrightness
                                 )
+                                if (
+                                    data[masterbrightness_key] is not None
+                                    and not 0 <= data[masterbrightness_key] <= 100
+                                ):
+                                    _LOGGER.warning(
+                                        "GHL received MASTERBRIGHTNESS outside "
+                                        "the documented range 0-100: %r",
+                                        masterbrightness,
+                                    )
+                                    data[masterbrightness_key] = None
 
                     continue
 
@@ -1092,17 +1103,33 @@ class GHLDataUpdateCoordinator(
         return data
 
 
-def _convert_value(value: str) -> float | str:
-    """Convert a GHL API value."""
+def _convert_value(value: str) -> float | None:
+    """Convert a numeric GHL API value, rejecting invalid measurements."""
 
     try:
-        return float(value)
-
+        converted = float(value)
     except ValueError:
-        return value
+        _LOGGER.warning("GHL received invalid numeric value: %r", value)
+        return None
+
+    if not math.isfinite(converted):
+        _LOGGER.warning("GHL received non-finite numeric value: %r", value)
+        return None
+
+    return converted
 
 
-def _convert_switch_state(value: str) -> bool:
-    """Convert a GHL switch state to a boolean value."""
+def _convert_switch_state(
+    value: str, *, binary_only: bool = False
+) -> bool | None:
+    """Convert a state; enforce 0/1 only where documented by the API."""
 
-    return float(value) != 0
+    converted = _convert_value(value)
+    if converted is None:
+        return None
+
+    if binary_only and converted not in (0, 1):
+        _LOGGER.warning("GHL received invalid SWITCHCHANNEL ACTSTATE: %r", value)
+        return None
+
+    return converted != 0

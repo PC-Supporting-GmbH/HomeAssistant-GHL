@@ -347,7 +347,10 @@ async def _async_read_history(
                 command,
                 value,
             )
-            return None
+            record_index += 1
+            if progress_callback is not None:
+                await progress_callback(record_index)
+            continue
 
         records.append(record)
         record_index += 1
@@ -392,13 +395,16 @@ def _parse_history_record(value: str) -> GHLHistoryRecord | None:
 
     try:
         timestamp = int(parts[0])
+        datetime.fromtimestamp(
+            timestamp - (timestamp % 3600), tz=timezone.utc
+        )
         values = (
             float(parts[1]),
             float(parts[2]),
             float(parts[3]),
         )
         status = int(parts[4])
-    except ValueError:
+    except (ValueError, OverflowError, OSError):
         return None
 
     return GHLHistoryRecord(

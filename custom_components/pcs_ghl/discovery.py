@@ -313,7 +313,10 @@ async def _async_probe_illumination_resources(
             continue
 
         try:
-            pointcount = int(float(pointcount_value))
+            numeric_pointcount = float(pointcount_value)
+            if not numeric_pointcount.is_integer() or numeric_pointcount < 0:
+                raise ValueError("POINTCOUNT must be a non-negative integer")
+            pointcount = int(numeric_pointcount)
 
         except ValueError:
             _LOGGER.warning(

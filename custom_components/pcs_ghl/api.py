@@ -175,7 +175,28 @@ class GHLAPI:
 
                     await asyncio.sleep(0.1)
 
-                    response = reply.decode("cp1252").strip()
+                    try:
+                        response = reply.decode("cp1252").strip()
+                    except UnicodeDecodeError as err:
+                        stripped_reply = reply.strip()
+                        if (
+                            command.startswith("GET ")
+                            and command.endswith(" DESCRIPTION")
+                            and stripped_reply.startswith(b'ACK <"')
+                            and stripped_reply.endswith(b'">')
+                        ):
+                            response = reply.decode(
+                                "cp1252", errors="replace"
+                            ).strip()
+                            _LOGGER.warning(
+                                "GHL description response for %s contained "
+                                "invalid characters; replaced damaged characters",
+                                command,
+                            )
+                        else:
+                            raise GHLConnectionError(
+                                f"Invalid character encoding while executing: {command}"
+                            ) from err
 
                     if (
                         not is_read_command
