@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from .functions import device_info
+
 import logging
 
 from homeassistant.components.number import (
@@ -12,7 +14,6 @@ from homeassistant.components.number import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONF_HOST,
     PERCENTAGE,
     UnitOfElectricPotential,
     UnitOfTemperature,
@@ -20,7 +21,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers import entity_registry as er
@@ -238,12 +238,7 @@ class GHLIlluminationMasterBrightnessNumber(
             f"masterbrightness_value"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self) -> float | None:
@@ -372,12 +367,7 @@ class GHLThunderstormDurationNumber(
             f"thunderstorm_duration"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self) -> float:
@@ -449,12 +439,7 @@ class GHLLightSceneFadeTimeNumber(
             f"lightscene_fadetime"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self) -> float:
@@ -564,12 +549,7 @@ class GHLSensorSetpointNumber(
             self._data_key = iondirector_desvalue_key(resource.index)
             self._attr_translation_key = f"iondirector_{parameter_key}_setpoint"
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self) -> float | None:

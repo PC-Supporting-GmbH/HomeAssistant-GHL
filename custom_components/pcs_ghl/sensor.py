@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from .functions import device_info
+
 from datetime import datetime, timezone
 
 from homeassistant.components.sensor import (
@@ -12,7 +14,6 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONF_HOST,
     EntityCategory,
     PERCENTAGE,
     UnitOfElectricCurrent,
@@ -23,7 +24,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
@@ -356,12 +356,7 @@ class GHLMitrasHeatsinkTemperatureSensor(
             f"{entry.entry_id}_mitras_heatsink_temperature"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self):
@@ -417,12 +412,7 @@ class GHLSensor(
             f"{entry.entry_id}_sensor_{resource.index}_actvalue"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if resource.description is not None:
             self._attr_name = resource.description
@@ -547,12 +537,7 @@ class GHLKHDirectorValueSensor(
             f"{entry.entry_id}_khdirector_actvalue"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         self._attr_translation_key = "khdirector_value"
 
@@ -609,12 +594,7 @@ class GHLIONDirectorValueSensor(
             f"{resource.index}_actvalue"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         self._attr_translation_key = (
             f"iondirector_{parameter_key}_value"
@@ -681,12 +661,7 @@ class GHLSwitchChannelCurrentSensor(
             f"{resource.index}_actcurrent"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if resource.description is not None:
             self._attr_translation_key = (
@@ -763,12 +738,7 @@ class GHLDoserFillLevelSensor(
             f"{resource.index}_filllevel"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if resource.description is not None:
             self._attr_translation_key = "doser_filllevel"
@@ -839,12 +809,7 @@ class GHLDoserCapacitySensor(
             f"{resource.index}_capacity"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if resource.description is not None:
             self._attr_translation_key = "doser_capacity"
@@ -916,12 +881,7 @@ class GHLFlowSensor(
             f"{resource.index}_actflow"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if resource.description is not None:
             self._attr_translation_key = "flowsensor_flow"
@@ -987,12 +947,7 @@ class GHLIlluminationMasterBrightnessSensor(
             f"{entry.entry_id}_illumination_masterbrightness"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self):
@@ -1048,12 +1003,7 @@ class GHLIlluminationBrightnessSensor(
             f"{resource.index}_actbrightness"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if resource.description is not None:
             self._attr_name = resource.description
@@ -1129,12 +1079,7 @@ class GHLSystemFirmwareSensor(
             f"{entry.entry_id}_system_firmware"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self):
@@ -1182,12 +1127,7 @@ class GHLSystemSerialNumberSensor(
             f"{entry.entry_id}_system_serialnumber"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self):
@@ -1236,12 +1176,7 @@ class GHLSystemTimeSensor(
             f"{entry.entry_id}_system_unixtime"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self):
@@ -1302,12 +1237,7 @@ class GHLSystemTimeAbsoluteSensor(
             f"{entry.entry_id}_system_unixtime_absolute"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self):
@@ -1408,12 +1338,7 @@ class GHLLastUpdateSensor(
             f"{entry.entry_id}_last_update"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self):
@@ -1467,12 +1392,7 @@ class GHLDescriptionUpdatesRemainingSensor(
         """Initialize the description polling diagnostic."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_description_updates_remaining"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self) -> int:
@@ -1499,12 +1419,7 @@ class GHLCurveUpdatesRemainingSensor(
         """Initialize the curve polling diagnostic."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_curve_updates_remaining"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     @property
     def native_value(self) -> int:

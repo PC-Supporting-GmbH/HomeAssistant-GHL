@@ -15,6 +15,7 @@ from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import GHLAPI, GHLAPIError
+from .functions import parse_pointcount
 from .const import (
     CONF_KNOWN_SENSORS,
     DESCRIPTION_CHECK_EVERY_N_UPDATES,
@@ -237,10 +238,9 @@ class GHLDataUpdateCoordinator(
                 value = await self.api.async_get(channel, "POINTCOUNT")
                 if value is None:
                     raise ValueError("missing POINTCOUNT")
-                numeric_count = float(value)
-                if not numeric_count.is_integer() or numeric_count < 0:
-                    raise ValueError(f"invalid POINTCOUNT: {value!r}")
-                pointcount = int(numeric_count)
+                pointcount = parse_pointcount(
+                    value, invalid_message=f"invalid POINTCOUNT: {value!r}"
+                )
                 if pointcount > 24:
                     _LOGGER.warning(
                         "GHL curve check received POINTCOUNT %d for %s; "

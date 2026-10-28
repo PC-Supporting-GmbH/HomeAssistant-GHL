@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
+from .functions import device_info
+
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -100,12 +100,7 @@ class GHLSwitchChannelBinarySensor(
             f"{resource.index}_actstate"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if resource.description is not None:
             self._attr_name = resource.description
@@ -167,12 +162,7 @@ class GHLLevelSensorBinarySensor(
             f"{resource.index}_actstate"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         self._attr_translation_key = "levelsensor"
         self._attr_translation_placeholders = {

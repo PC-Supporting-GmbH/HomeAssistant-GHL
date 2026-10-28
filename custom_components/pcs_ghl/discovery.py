@@ -7,6 +7,7 @@ import logging
 from dataclasses import dataclass, field
 
 from .api import GHLAPI, GHLAPIError
+from .functions import parse_pointcount
 from .const import (
     DEVICE_TYPE_MITRAS_LX7,
     DEVICE_TYPE_MITRAS_LX8,
@@ -313,10 +314,7 @@ async def _async_probe_illumination_resources(
             continue
 
         try:
-            numeric_pointcount = float(pointcount_value)
-            if not numeric_pointcount.is_integer() or numeric_pointcount < 0:
-                raise ValueError("POINTCOUNT must be a non-negative integer")
-            pointcount = int(numeric_pointcount)
+            pointcount = parse_pointcount(pointcount_value)
 
         except ValueError:
             _LOGGER.warning(

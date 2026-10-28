@@ -3,12 +3,12 @@
 
 from __future__ import annotations
 
+from .functions import device_info
+
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.translation import async_get_translations
 
@@ -127,12 +127,7 @@ class GHLDescriptionResourceSelect(SelectEntity):
             f"{entry.entry_id}_description_resource"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         self._rebuild_options()
 

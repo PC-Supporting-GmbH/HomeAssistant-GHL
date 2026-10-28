@@ -7,11 +7,9 @@ import logging
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import GHLAPI, GHLAPIError, GHLCommandUncertainError
@@ -27,7 +25,7 @@ from .const import (
     DOMAIN,
 )
 
-from .functions import is_valid_description
+from .functions import device_info, is_valid_description
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -303,12 +301,7 @@ class GHLFeedPauseButton(ButtonEntity):
             f"feedpause_{index}_{action}"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if state:
             self._attr_translation_key = "feedpause_start"
@@ -394,12 +387,7 @@ class GHLMaintenanceButton(ButtonEntity):
             f"maintenance_{index}_{action}"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if state:
             self._attr_translation_key = "maintenance_start"
@@ -485,12 +473,7 @@ class GHLWaterChangeButton(ButtonEntity):
             f"waterchange_{index}_{action}"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if state:
             self._attr_translation_key = "waterchange_start"
@@ -576,12 +559,7 @@ class GHLThunderstormButton(ButtonEntity):
             f"thunderstorm_{action}"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if state:
             self._attr_translation_key = "thunderstorm_start"
@@ -669,12 +647,7 @@ class GHLLightSceneButton(ButtonEntity):
             f"lightscene_{index}_{action}"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
         if state:
             self._attr_translation_key = "lightscene_start"
@@ -773,12 +746,7 @@ class GHLKHDirectorActionButton(ButtonEntity):
             f"startaction_{action}"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     async def async_press(self) -> None:
         """Execute the GHL KH Director action."""
@@ -861,12 +829,7 @@ class GHLIONDirectorActionButton(ButtonEntity):
             f"startaction_{action}"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     async def async_press(self) -> None:
         """Execute the GHL ION Director action."""
@@ -936,12 +899,7 @@ class GHLDescriptionWriteButton(ButtonEntity):
             f"{entry.entry_id}_description_write"
         )
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="GHL",
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
-        )
+        self._attr_device_info = device_info(entry)
 
     async def async_press(self) -> None:
         """Write the selected GHL resource description."""
