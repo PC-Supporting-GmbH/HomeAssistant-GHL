@@ -1,7 +1,7 @@
 [English](../README.md) · [Deutsch](README.de.md) · [Français](README.fr.md) (traducción automática) · **Español** (traducción automática)
 
 <p align="center">
-  <img src="images/logo.png" alt="Integración GHL para Home Assistant" width="250">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/logo.png" alt="Integración GHL para Home Assistant" width="250">
 </p>
 
 <h1 align="center">GHL</h1>
@@ -21,7 +21,7 @@ Según el dispositivo conectado y las funciones proporcionadas por la API de GHL
 Esto permite utilizar los datos y las funciones de GHL en paneles, automatizaciones y otras funciones de Home Assistant.
 
 <p align="center">
-  <img src="images/ghl-dashboard-example.png" alt="Integración GHL en Home Assistant" width: "75%">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-dashboard-example.png" alt="Integración GHL en Home Assistant" width: "75%">
 </p>
 
 ## Aviso de responsabilidad
@@ -43,7 +43,7 @@ Para obtener información sobre la API de GHL y sus posibilidades, consulta: htt
 >
 
 <p align="center">
-  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="images/buymeacoffee.png" alt="Integración GHL en Home Assistant"></a>
+  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/buymeacoffee.png" alt="Integración GHL en Home Assistant"></a>
 </p>
 
 ## Dispositivos compatibles
@@ -104,7 +104,7 @@ Para disponer de todas las funciones de esta integración, incluidas la escritur
 También se admite el acceso a la API en modo de solo lectura. Sin embargo, las funciones que requieren acceso de escritura, como iniciar o detener modos de mantenimiento o pausas de alimentación, no están disponibles cuando la API está configurada en modo de solo lectura.
 
 <p align="center">
-  <img src="images/ghl-api-settings.png" alt="Ajustes de la API de GHL en GHL Control Center">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-api-settings.png" alt="Ajustes de la API de GHL en GHL Control Center">
 </p>
 
 Después de actualizar el firmware, puede ser necesario volver a activar la API de GHL. Si la integración deja de comunicarse con el dispositivo después de una actualización, comprueba primero este ajuste.
