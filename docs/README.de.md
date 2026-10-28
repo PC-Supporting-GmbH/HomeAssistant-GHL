@@ -1,8 +1,8 @@
----
+<hr>
 
 [English](../README.md) · **Deutsch** · [Français](README.fr.md) (maschinell übersetzt) · [Español](README.es.md) (maschinell übersetzt)
 
----
+<hr>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/logo.png" alt="GHL Home Assistant Integration" width="250">
@@ -14,7 +14,7 @@
   Eine benutzerdefinierte Home-Assistant-Integration für ausgewählte GHL-Aquariencomputer und -Leuchten.
 </p>
 
----
+<hr>
 
 ## Über die Integration
 

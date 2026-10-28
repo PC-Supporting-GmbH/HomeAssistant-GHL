@@ -1,8 +1,8 @@
----
+<hr>
 
 **English** · [Deutsch](docs/README.de.md) · [Français](docs/README.fr.md) (machine-translated) · [Español](docs/README.es.md) (machine-translated)
 
----
+<hr>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/logo.png" alt="GHL Home Assistant Integration" width="250">
@@ -14,7 +14,7 @@
   A custom Home Assistant integration for selected GHL aquarium controllers and luminaires.
 </p>
 
----
+<hr>
 
 ## About
 
