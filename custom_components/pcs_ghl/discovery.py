@@ -324,6 +324,16 @@ async def _async_probe_illumination_resources(
             )
             continue
 
+        if pointcount > 24:
+            _LOGGER.warning(
+                "GHL discovery received POINTCOUNT %d for "
+                "ILLUMINATION[%d], exceeding the documented maximum "
+                "of 24; reading only curve points 0-23",
+                pointcount,
+                index,
+            )
+            pointcount = 24
+
         if pointcount <= 0 and not show_all_resources:
             continue
 
