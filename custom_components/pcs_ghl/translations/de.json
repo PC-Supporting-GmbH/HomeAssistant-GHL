@@ -161,6 +161,10 @@
         "name": "Beschreibungscheck in",
         "unit_of_measurement": "Durchläufe"
       },
+      "curve_updates_remaining": {
+        "name": "Kurvencheck in",
+        "unit_of_measurement": "Durchläufe"
+      },
       "sensor": {
         "name": "Sensor {index}"
       },

@@ -161,6 +161,10 @@
         "name": "Consulta de descripciones en",
         "unit_of_measurement": "ciclos"
       },
+      "curve_updates_remaining": {
+        "name": "Consulta de curvas en",
+        "unit_of_measurement": "ciclos"
+      },
       "sensor": {
         "name": "Sensor {index}"
       },

@@ -161,6 +161,10 @@
         "name": "Description check in",
         "unit_of_measurement": "cycles"
       },
+      "curve_updates_remaining": {
+        "name": "Curve check in",
+        "unit_of_measurement": "cycles"
+      },
       "sensor": {
         "name": "Sensor {index}"
       },

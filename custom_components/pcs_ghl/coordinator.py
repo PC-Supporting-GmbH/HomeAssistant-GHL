@@ -18,6 +18,7 @@ from .api import GHLAPI, GHLAPIError
 from .const import (
     CONF_KNOWN_SENSORS,
     DESCRIPTION_CHECK_EVERY_N_UPDATES,
+    ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
     CONF_SENSOR_TYPES,
     CONF_SENSOR_UNITS,
     DOMAIN,
@@ -206,6 +207,7 @@ class GHLDataUpdateCoordinator(
         self.entry = entry
         self.resources = resources
         self._entity_registry = er.async_get(hass)
+        self._curve_update_count = 0
         self._description_update_count = 0
         self.description_name_translations = None
 
@@ -215,6 +217,62 @@ class GHLDataUpdateCoordinator(
         return max(
             0, DESCRIPTION_CHECK_EVERY_N_UPDATES - self._description_update_count,
         )
+
+    @property
+    def curve_updates_remaining(self) -> int:
+        """Return polling cycles remaining until the next curve check."""
+        return max(
+            0, ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES - self._curve_update_count,
+        )
+
+    async def _async_check_illumination_curves(self) -> list[str]:
+        """Refresh known channel curves sequentially, keeping old data on error."""
+        errors: list[str] = []
+        started = perf_counter()
+        for resource in self.resources:
+            if resource.resource != "ILLUMINATION" or resource.index is None:
+                continue
+            channel = f"ILLUMINATION[{resource.index}]"
+            try:
+                value = await self.api.async_get(channel, "POINTCOUNT")
+                if value is None:
+                    raise ValueError("missing POINTCOUNT")
+                numeric_count = float(value)
+                if not numeric_count.is_integer() or numeric_count < 0:
+                    raise ValueError(f"invalid POINTCOUNT: {value!r}")
+                pointcount = int(numeric_count)
+                if pointcount > 24:
+                    _LOGGER.warning(
+                        "GHL curve check received POINTCOUNT %d for %s; "
+                        "reading only curve points 0-23",
+                        pointcount, channel,
+                    )
+                    pointcount = 24
+                curve: list[dict[str, float | int]] = []
+                for curvepoint in range(pointcount):
+                    time_value = await self.api.async_get(
+                        channel, f"TIME[{curvepoint}]"
+                    )
+                    brightness_value = await self.api.async_get(
+                        channel, f"BRIGHTNESS[{curvepoint}]"
+                    )
+                    if time_value is None or brightness_value is None:
+                        raise ValueError(f"missing curve point {curvepoint}")
+                    point_time = int(float(time_value))
+                    point_brightness = float(brightness_value)
+                    if not math.isfinite(point_brightness):
+                        raise ValueError(f"invalid brightness at point {curvepoint}")
+                    curve.append({"time": point_time, "brightness": point_brightness})
+            except (GHLAPIError, ValueError, OverflowError) as err:
+                errors.append(f"Unable to update GHL {channel} curve: {err}")
+                continue
+            resource.data["point_count"] = pointcount
+            resource.data["curve"] = curve
+        _LOGGER.debug(
+            "GHL curve check for %s completed in %.3f s (failed=%d)",
+            self.entry.title, perf_counter() - started, len(errors),
+        )
+        return errors
 
     async def _async_check_descriptions(self) -> list[str]:
         """Refresh all known indexed descriptions in one sequential pass."""
@@ -1086,6 +1144,10 @@ class GHLDataUpdateCoordinator(
             if self._description_update_count >= DESCRIPTION_CHECK_EVERY_N_UPDATES:
                 self._description_update_count = 0
                 update_errors.extend(await self._async_check_descriptions())
+            self._curve_update_count += 1
+            if self._curve_update_count >= ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES:
+                self._curve_update_count = 0
+                update_errors.extend(await self._async_check_illumination_curves())
 
         if update_errors:
             _LOGGER.warning(

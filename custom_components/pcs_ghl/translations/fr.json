@@ -161,6 +161,10 @@
         "name": "Vérification des descriptions dans",
         "unit_of_measurement": "cycles"
       },
+      "curve_updates_remaining": {
+        "name": "Vérification des courbes dans",
+        "unit_of_measurement": "cycles"
+      },
       "sensor": {
         "name": "Capteur {index}"
       },

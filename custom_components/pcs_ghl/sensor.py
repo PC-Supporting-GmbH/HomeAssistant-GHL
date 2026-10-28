@@ -321,6 +321,13 @@ async def async_setup_entry(
         )
     )
 
+    entities.append(
+        GHLCurveUpdatesRemainingSensor(
+            coordinator=coordinator,
+            entry=entry,
+        )
+    )
+
     async_add_entities(entities)
 
 
@@ -1069,7 +1076,7 @@ class GHLIlluminationBrightnessSensor(
 
     @property
     def extra_state_attributes(self):
-        """Return the static illumination curve."""
+        """Return the cached illumination curve."""
 
         return {
             "point_count": self._resource.data.get(
@@ -1471,3 +1478,35 @@ class GHLDescriptionUpdatesRemainingSensor(
     def native_value(self) -> int:
         """Return the current countdown without additional device queries."""
         return self.coordinator.description_updates_remaining
+
+
+class GHLCurveUpdatesRemainingSensor(
+    CoordinatorEntity[GHLDataUpdateCoordinator],
+    SensorEntity,
+):
+    """Show the polling cycles remaining until the next curve check."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "curve_updates_remaining"
+    _attr_icon = "mdi:counter"
+
+    def __init__(
+        self,
+        coordinator: GHLDataUpdateCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the curve polling diagnostic."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_curve_updates_remaining"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name=entry.title,
+            manufacturer="GHL",
+            configuration_url=f"http://{entry.data[CONF_HOST]}",
+        )
+
+    @property
+    def native_value(self) -> int:
+        """Return the current countdown without additional device queries."""
+        return self.coordinator.curve_updates_remaining
