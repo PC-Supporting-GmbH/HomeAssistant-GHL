@@ -1,4 +1,4 @@
-name: PCS GHL Regression Tests
+name: bbb_PCS GHL Regression Tests
 
 on:
   workflow_dispatch:
