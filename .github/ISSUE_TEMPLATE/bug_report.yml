@@ -12,6 +12,8 @@ body:
 
         Please provide as much information as possible so the issue can be reproduced and diagnosed.
 
+        Please write in English or German.
+
   - type: textarea
     id: description
     attributes:

@@ -12,6 +12,8 @@ body:
 
         Please describe the requested feature and its intended use as clearly as possible.
 
+        Please write in English or German.
+
   - type: textarea
     id: feature
     attributes:
