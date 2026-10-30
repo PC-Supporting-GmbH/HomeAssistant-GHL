@@ -386,8 +386,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
         """Configure general GHL options."""
 
         device_registry = dr.async_get(self.hass)
-        device = device_registry.async_get_device(
-            identifiers={(DOMAIN, self.config_entry.entry_id)}
+        device = device_registry.async_get_device_by_identifier(
+            (DOMAIN, self.config_entry.entry_id),
+            self.config_entry.entry_id,
         )
         current_name = (
             device.name_by_user
