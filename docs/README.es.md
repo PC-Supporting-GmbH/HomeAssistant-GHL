@@ -243,11 +243,10 @@ Antes de abrir una nueva incidencia, comprueba si ya se ha comunicado el mismo p
 
 ### 11.1 Filtrar entidades por recurso y función
 
-La integración añade tres atributos a las entidades correspondientes:
+La integración añade dos atributos a las entidades correspondientes:
 
 - **`ghl_resource_type`** identifica el grupo de recursos, por ejemplo `switch_channel`, `sensor` o `illumination`.
 - **`ghl_feature_type`** identifica la función dentro de ese grupo, por ejemplo `state`, `value` o `setpoint`.
-- **`ghl_device`** contiene el nombre asignado al dispositivo en la integración. Los cambios de este nombre en los ajustes generales se aplican automáticamente.
 
 Estos atributos permiten seleccionar entidades para paneles o plantillas sin tener que analizar sus nombres.
 
@@ -292,4 +291,4 @@ filter:
         ghl_feature_type: state
 ```
 
-Si hay varios dispositivos GHL configurados, el ejemplo incluye las entidades correspondientes de todos ellos. En ese caso, añade el atributo `ghl_device` para limitar la selección a un dispositivo concreto. Contiene el nombre del dispositivo indicado en la integración. Por ejemplo, añade `ghl_device: "Mi acuario"` en `attributes` y sustituye «Mi acuario» por el nombre que hayas asignado a tu dispositivo. Encontrarás más opciones de filtrado en la [documentación de Auto-Entities](https://github.com/thomasloven/lovelace-auto-entities#filters).
+Si hay varios dispositivos GHL configurados, el ejemplo incluye las entidades correspondientes de todos ellos. En ese caso, añade el filtro `device` de Auto-Entities para limitar la selección a un dispositivo concreto. Por ejemplo, añade `device: "Mi acuario"` al mismo nivel de sangría que `attributes` y sustituye «Mi acuario» por el nombre del dispositivo en Home Assistant. `device` es un filtro independiente y no debe colocarse dentro de `attributes`. Encontrarás más opciones de filtrado en la [documentación de Auto-Entities](https://github.com/thomasloven/lovelace-auto-entities#filters).

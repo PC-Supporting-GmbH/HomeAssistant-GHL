@@ -242,11 +242,10 @@ Before opening a new issue, please check whether the same problem or request has
 
 ### 11.1 Filter entities by resource and function
 
-The integration adds three attributes to the associated entities:
+The integration adds two attributes to the associated entities:
 
 - **`ghl_resource_type`** identifies the resource group, for example `switch_channel`, `sensor` or `illumination`.
 - **`ghl_feature_type`** identifies the function within that group, for example `state`, `value` or `setpoint`.
-- **`ghl_device`** contains the device name assigned in the integration. Changes to this name in the general settings are applied automatically.
 
 These attributes let you select entities for dashboards or templates without having to examine their names.
 
@@ -291,4 +290,4 @@ filter:
         ghl_feature_type: state
 ```
 
-If multiple GHL devices are configured, the example includes the matching entities from all devices. In this case, add the `ghl_device` attribute to restrict the selection to a particular device. It contains the device name shown in the integration. For example, add `ghl_device: "My Aquarium"` under `attributes` and replace “My Aquarium” with your assigned device name. Further filtering options are described in the [Auto-Entities documentation](https://github.com/thomasloven/lovelace-auto-entities#filters).
+If multiple GHL devices are configured, the example includes the matching entities from all devices. In this case, add the Auto-Entities `device` filter to restrict the selection to a particular device. For example, add `device: "My Aquarium"` at the same indentation level as `attributes` and replace “My Aquarium” with the device name in Home Assistant. `device` is a separate filter and does not belong under `attributes`. Further filtering options are described in the [Auto-Entities documentation](https://github.com/thomasloven/lovelace-auto-entities#filters).

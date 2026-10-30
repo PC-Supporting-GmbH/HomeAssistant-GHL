@@ -243,11 +243,10 @@ Prüfe vor dem Eröffnen eines neuen Issues, ob dasselbe Problem oder derselbe W
 
 ### 11.1 Entitäten nach Ressource und Funktion filtern
 
-Die Integration ergänzt die zugeordneten Entitäten um drei Attribute:
+Die Integration ergänzt die zugeordneten Entitäten um zwei Attribute:
 
 - **`ghl_resource_type`** bezeichnet die Ressourcengruppe, beispielsweise `switch_channel`, `sensor` oder `illumination`.
 - **`ghl_feature_type`** bezeichnet die Funktion innerhalb dieser Gruppe, beispielsweise `state`, `value` oder `setpoint`.
-- **`ghl_device`** enthält den in der Integration vergebenen Gerätenamen. Änderungen dieses Namens in den allgemeinen Einstellungen werden automatisch übernommen.
 
 Damit kannst du Entitäten gezielt für Dashboards oder Templates auswählen, ohne ihre Namen auswerten zu müssen.
 
@@ -292,4 +291,4 @@ filter:
         ghl_feature_type: state
 ```
 
-Bei mehreren eingerichteten GHL-Geräten umfasst das Beispiel die passenden Entitäten aller Geräte. Verwende in diesem Fall zusätzlich das Attribut `ghl_device`, um die Auswahl auf ein bestimmtes Gerät einzuschränken. Es enthält den Gerätenamen, der auch in der Integration angegeben ist. Ergänze dazu unter `attributes` beispielsweise `ghl_device: "Mein Aquarium"` und ersetze „Mein Aquarium“ durch deinen vergebenen Gerätenamen. Weitere Filtermöglichkeiten findest du in der [Auto-Entities-Dokumentation](https://github.com/thomasloven/lovelace-auto-entities#filters).
+Bei mehreren eingerichteten GHL-Geräten umfasst das Beispiel die passenden Entitäten aller Geräte. Verwende in diesem Fall zusätzlich den Auto-Entities-Filter `device`, um die Auswahl auf ein bestimmtes Gerät einzuschränken. Ergänze beispielsweise `device: "Mein Aquarium"` auf derselben Ebene wie `attributes` und ersetze „Mein Aquarium“ durch den Gerätenamen in Home Assistant. `device` ist ein eigener Filter und gehört nicht unter `attributes`. Weitere Filtermöglichkeiten findest du in der [Auto-Entities-Dokumentation](https://github.com/thomasloven/lovelace-auto-entities#filters).

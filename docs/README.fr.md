@@ -243,11 +243,10 @@ Avant d’ouvrir une nouvelle issue, vérifiez si le même problème ou la même
 
 ### 11.1 Filtrer les entités par ressource et par fonction
 
-L’intégration ajoute trois attributs aux entités concernées :
+L’intégration ajoute deux attributs aux entités concernées :
 
 - **`ghl_resource_type`** indique le groupe de ressources, par exemple `switch_channel`, `sensor` ou `illumination`.
 - **`ghl_feature_type`** indique la fonction au sein de ce groupe, par exemple `state`, `value` ou `setpoint`.
-- **`ghl_device`** contient le nom attribué à l’appareil dans l’intégration. Les modifications de ce nom dans les paramètres généraux sont automatiquement prises en compte.
 
 Ces attributs permettent de sélectionner des entités pour les tableaux de bord ou les modèles sans devoir analyser leurs noms.
 
@@ -292,4 +291,4 @@ filter:
         ghl_feature_type: state
 ```
 
-Si plusieurs appareils GHL sont configurés, cet exemple inclut les entités correspondantes de tous les appareils. Dans ce cas, ajoutez l’attribut `ghl_device` pour limiter la sélection à un appareil précis. Il contient le nom de l’appareil indiqué dans l’intégration. Ajoutez par exemple `ghl_device: "Mon aquarium"` sous `attributes` et remplacez « Mon aquarium » par le nom que vous avez attribué à votre appareil. D’autres possibilités de filtrage sont décrites dans la [documentation d’Auto-Entities](https://github.com/thomasloven/lovelace-auto-entities#filters).
+Si plusieurs appareils GHL sont configurés, cet exemple inclut les entités correspondantes de tous les appareils. Dans ce cas, ajoutez le filtre `device` d’Auto-Entities pour limiter la sélection à un appareil précis. Ajoutez par exemple `device: "Mon aquarium"` au même niveau d’indentation que `attributes` et remplacez « Mon aquarium » par le nom de l’appareil dans Home Assistant. `device` est un filtre distinct et ne doit pas être placé sous `attributes`. D’autres possibilités de filtrage sont décrites dans la [documentation d’Auto-Entities](https://github.com/thomasloven/lovelace-auto-entities#filters).
