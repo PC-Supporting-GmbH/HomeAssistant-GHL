@@ -14,9 +14,23 @@
   A custom Home Assistant integration for selected GHL aquarium controllers and luminaires.
 </p>
 
+## Contents
+
+- [1. About](#1-about)
+- [2. Disclaimer](#2-disclaimer)
+- [3. Supported devices](#3-supported-devices)
+- [4. Installation](#4-installation)
+- [5. Enable the GHL API](#5-enable-the-ghl-api)
+- [6. Configuration](#6-configuration)
+- [7. Options](#7-options)
+- [8. Changing values from Home Assistant](#8-changing-values-from-home-assistant)
+- [9. Current limitations](#9-current-limitations)
+- [10. Issues and feature requests](#10-issues-and-feature-requests)
+- [11. For Home Assistant Enthusiasts](#11-for-home-assistant-enthusiasts)
+
 <hr>
 
-## About
+## 1. About
 
 This custom integration connects supported GHL devices directly to Home Assistant using the GHL API.
 
@@ -25,10 +39,10 @@ Depending on the connected device and the features provided by the GHL API, the 
 This allows GHL data and functions to be used in dashboards, automations and other Home Assistant features.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-dashboard-example.png" alt="GHL integration in Home Assistant" width: "75%">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-dashboard-example.png" alt="GHL integration in Home Assistant" width="800">
 </p>
 
-## Disclaimer
+## 2. Disclaimer
 
 This is an unofficial Home Assistant integration and is not developed, maintained or supported by GHL.
 
@@ -43,14 +57,14 @@ For information about the GHL API and its capabilities, see: https://www.aquariu
 
 > [!TIP]
 > 
-> If you find this integration useful and would like to support its development
+> If you find this integration useful and would like to support its development:
 >
  
 <p align="center">
-  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/buymeacoffee.png" alt="GHL integration in Home Assistant"></a>
+  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/buymeacoffee.png" alt="Support the development of the GHL integration"></a>
 </p>
 
-## Supported devices
+## 3. Supported devices
 
 The following GHL device series are supported:
 
@@ -69,9 +83,9 @@ Support in this integration is limited to functionality made available by the GH
 > [!NOTE]
 > The API version currently used in this integration is **1.1**.
 
-## Installation
+## 4. Installation
 
-### HACS
+### 4.1 HACS
 
 The recommended installation method is through HACS.
 
@@ -85,7 +99,7 @@ After adding the repository to HACS:
 4. Select **Add Integration**.
 5. Search for **GHL**.
 
-### Manual installation
+### 4.2 Manual installation
 
 Alternatively, download the latest version from GitHub.
 
@@ -95,7 +109,7 @@ Restart Home Assistant afterwards and add the integration through:
 
 **Settings → Devices & services → Add Integration → GHL**
 
-## Enable the GHL API
+## 5. Enable the GHL API
 
 The GHL API is disabled by default and must be enabled before Home Assistant can communicate with the device.
 
@@ -108,7 +122,7 @@ For full functionality of this integration, including functions that write value
 Read-only API access is also supported. However, functions that require write access, such as starting or stopping maintenance modes or feed pauses, will not be available when the API is configured for read-only access.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-api-settings.png" alt="GHL API settings in GHL Control Center">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-api-settings.png" alt="GHL API settings in GHL Control Center" width="400">
 </p>
 
 After a firmware update, the GHL API may need to be enabled again. If the integration can no longer communicate with the device after updating its firmware, check this setting first.
@@ -117,7 +131,7 @@ More information about enabling the GHL API is available here:
 
 https://www.aquariumcomputer.com/software/ghl-api/
 
-## Configuration
+## 6. Configuration
 
 When adding the integration to Home Assistant, enter the network information of your GHL device and select the required API access mode.
 
@@ -129,20 +143,20 @@ After the initial setup, additional configuration options are available through:
 
 **Settings → Devices & services → GHL → Configure**
 
-## Options
+## 7. Options
 
 The integration provides additional options after the initial setup.
 
 > [!NOTE]
 > Some options are only available after a successful connection to the GHL device and once the integration has loaded.
 
-### General settings
+### 7.1 General settings
 
 The connection settings can be adjusted if required.
 
 The API access mode can also be changed between read-only and read/write access.
 
-#### Show all available resources
+#### 7.1.1 Show all available resources
 
 This option is available after the integration has been set up for the first time.
 
@@ -152,28 +166,28 @@ Enabling this option also exposes supported resources that would normally be det
 
 This can be useful if you intentionally want Home Assistant to expose all supported resources reported by the GHL device.
 
-#### Import historical data for new sensors
+#### 7.1.2 Import historical data for new sensors
 
 Enable this option to automatically import historical data when supported sensors or sources are first discovered and configured. Enabling this option later does not automatically import data for sources that are already present.
 
-### Sensor configuration
+### 7.2 Sensor configuration
 
 Sensor types assigned during the initial setup can later be changed through the integration options.
 
 This allows the sensor configuration to be corrected or adjusted without removing and setting up the integration again.
 
-### Detect new sensors/devices
+### 7.3 Detect new sensors/devices
 
 After adding sensors or devices to your GHL system, select Detect new sensors/devices in the integration options.
 This reloads the integration and runs resource discovery again. Restarting Home Assistant is not required. Newly detected sensors may need to be assigned a sensor type.
 
-### Historical data import
+### 7.4 Historical data import
 
 To manually import stored data for all currently available and supported sources, select **Historical data: import now** in the integration options.
 Sensors with no assigned type or configured as hidden are excluded. Duplicate detection helps prevent the same historical data from being imported more than once.
 Importing a large amount of stored data can take several minutes.
 
-## Changing values from Home Assistant
+## 8. Changing values from Home Assistant
 
 Some values and descriptions exposed by the GHL API can be changed directly from the Home Assistant user interface.
 
@@ -181,15 +195,15 @@ Changing values requires write access on both the GHL device and the integration
 
 An **Entities card** is recommended for these controls.
 
-### Sensor setpoints
+### 8.1 Sensor setpoints
 
 Change the value in the desired sensor's setpoint field. The value is sent directly to the GHL device. This also applies to supported KH Director and ION Director setpoints.
 
-### Master brightness
+### 8.2 Master brightness
 
 Change the master brightness value (0–100%). The value is sent directly to the GHL device.
 
-### Descriptions
+### 8.3 Descriptions
 
 Descriptions of supported GHL elements can also be changed directly from Home Assistant.
 
@@ -201,7 +215,7 @@ To change a description:
 
 No Home Assistant automation is required. But you can use it.
 
-## Current limitations
+## 9. Current limitations
 
 The integration is limited by the functionality and information provided by the GHL API.
 
@@ -213,7 +227,7 @@ Currently known limitations include:
 - **Timers are currently not imported.**  
   The GHL API exposes the timer description, but not the timer switching times. Importing timers would therefore currently provide little useful functionality in Home Assistant.
 
-## Issues and feature requests
+## 10. Issues and feature requests
 
 If you find a problem or have an idea for improving the integration, please use the GitHub issue forms.
 
@@ -224,3 +238,57 @@ https://github.com/PC-Supporting-GmbH/HomeAssistant-GHL/issues/new?template=bug_
 https://github.com/PC-Supporting-GmbH/HomeAssistant-GHL/issues/new?template=feature_request.yml
 
 Before opening a new issue, please check whether the same problem or request has already been reported.
+## 11. For Home Assistant Enthusiasts
+
+### 11.1 Filter entities by resource and function
+
+The integration adds three attributes to the associated entities:
+
+- **`ghl_resource_type`** identifies the resource group, for example `switch_channel`, `sensor` or `illumination`.
+- **`ghl_feature_type`** identifies the function within that group, for example `state`, `value` or `setpoint`.
+- **`ghl_device`** contains the device name assigned in the integration. Changes to this name in the general settings are applied automatically.
+
+These attributes let you select entities for dashboards or templates without having to examine their names.
+
+The following combinations are used. The entities available in your installation depend on the device, its available functions and your configuration.
+
+| Entity or function | `ghl_resource_type` | `ghl_feature_type` |
+|---|---|---|
+| Sensor readings | `sensor` | `value` |
+| Sensor setpoints | `sensor` | `setpoint` |
+| Switch channel states | `switch_channel` | `state` |
+| Switch channel electric currents | `switch_channel` | `electric_current` |
+| Illumination channel brightness values | `illumination` | `channel_brightness` |
+| Master brightness values – displays and controls | `illumination` | `master_brightness` |
+| Doser fill levels | `doser` | `fill_level` |
+| Doser capacities | `doser` | `capacity` |
+| Flow measurements | `flow_sensor` | `value` |
+| Level sensor states | `level_sensor` | `state` |
+| Start and stop feed pauses | `special_function` | `feed` |
+| Start and stop maintenance modes | `special_function` | `maintenance` |
+| Start and stop water changes | `special_function` | `waterchange` |
+| Thunderstorms and light scenes | `special_function` | `light` |
+| KH Director actions | `special_function` | `khdirector` |
+| ION Director actions | `special_function` | `iondirector` |
+| System information such as firmware, serial number, etc. | `system` | `info` |
+| Diagnostic information such as last update, etc. | `diagnostic` | `info` |
+
+### 11.2 Example with Auto-Entities
+
+With the optional [Auto-Entities](https://github.com/thomasloven/lovelace-auto-entities) dashboard card, you can automatically populate a card with entities matching their attributes. Auto-Entities must be installed separately.
+
+The following example shows the states of all GHL switch channels:
+
+```yaml
+type: custom:auto-entities
+card:
+  type: entities
+  title: GHL Switch Channels
+filter:
+  include:
+    - attributes:
+        ghl_resource_type: switch_channel
+        ghl_feature_type: state
+```
+
+If multiple GHL devices are configured, the example includes the matching entities from all devices. In this case, add the `ghl_device` attribute to restrict the selection to a particular device. It contains the device name shown in the integration. For example, add `ghl_device: "My Aquarium"` under `attributes` and replace “My Aquarium” with your assigned device name. Further filtering options are described in the [Auto-Entities documentation](https://github.com/thomasloven/lovelace-auto-entities#filters).

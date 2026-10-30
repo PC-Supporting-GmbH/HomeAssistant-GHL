@@ -14,9 +14,23 @@
   Una integración personalizada para Home Assistant compatible con determinados controladores de acuario y luminarias GHL.
 </p>
 
+## Índice
+
+- [1. Acerca de la integración](#1-acerca-de-la-integración)
+- [2. Aviso de responsabilidad](#2-aviso-de-responsabilidad)
+- [3. Dispositivos compatibles](#3-dispositivos-compatibles)
+- [4. Instalación](#4-instalación)
+- [5. Activar la API de GHL](#5-activar-la-api-de-ghl)
+- [6. Configuración](#6-configuración)
+- [7. Opciones](#7-opciones)
+- [8. Cambiar valores desde Home Assistant](#8-cambiar-valores-desde-home-assistant)
+- [9. Limitaciones actuales](#9-limitaciones-actuales)
+- [10. Problemas y solicitudes de funciones](#10-problemas-y-solicitudes-de-funciones)
+- [11. Para entusiastas de Home Assistant](#11-para-entusiastas-de-home-assistant)
+
 <hr>
 
-## Acerca de la integración
+## 1. Acerca de la integración
 
 Esta integración personalizada conecta directamente los dispositivos GHL compatibles con Home Assistant mediante la API de GHL.
 
@@ -25,10 +39,10 @@ Según el dispositivo conectado y las funciones proporcionadas por la API de GHL
 Esto permite utilizar los datos y las funciones de GHL en paneles, automatizaciones y otras funciones de Home Assistant.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-dashboard-example.png" alt="Integración GHL en Home Assistant" width: "75%">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-dashboard-example.png" alt="Integración GHL en Home Assistant" width="800">
 </p>
 
-## Aviso de responsabilidad
+## 2. Aviso de responsabilidad
 
 Esta es una integración no oficial para Home Assistant. GHL no la desarrolla, mantiene ni proporciona soporte para ella.
 
@@ -43,14 +57,14 @@ Para obtener información sobre la API de GHL y sus posibilidades, consulta: htt
 
 > [!TIP]
 >
-> Si esta integración te resulta útil y deseas apoyar su desarrollo
+> Si esta integración te resulta útil y deseas apoyar su desarrollo:
 >
 
 <p align="center">
-  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/buymeacoffee.png" alt="Integración GHL en Home Assistant"></a>
+  <a href="https://www.buymeacoffee.com/HA.GHL.Integration" target="_blank"><img height="60" src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/buymeacoffee.png" alt="Apoyar el desarrollo de la integración GHL"></a>
 </p>
 
-## Dispositivos compatibles
+## 3. Dispositivos compatibles
 
 Se admiten las siguientes series de dispositivos GHL:
 
@@ -69,9 +83,9 @@ La compatibilidad de esta integración se limita a las funciones que la API de G
 > [!NOTE]
 > La versión de la API que utiliza actualmente esta integración es la **1.1**.
 
-## Instalación
+## 4. Instalación
 
-### HACS
+### 4.1 HACS
 
 Se recomienda instalar la integración mediante HACS.
 
@@ -85,7 +99,7 @@ Después de añadir el repositorio a HACS:
 4. Selecciona **Añadir integración**.
 5. Busca **GHL**.
 
-### Instalación manual
+### 4.2 Instalación manual
 
 También puedes descargar la última versión desde GitHub.
 
@@ -95,7 +109,7 @@ Después, reinicia Home Assistant y añade la integración desde:
 
 **Ajustes → Dispositivos y servicios → Añadir integración → GHL**
 
-## Activar la API de GHL
+## 5. Activar la API de GHL
 
 La API de GHL está desactivada de forma predeterminada y debe activarse para que Home Assistant pueda comunicarse con el dispositivo.
 
@@ -108,7 +122,7 @@ Para disponer de todas las funciones de esta integración, incluidas la escritur
 También se admite el acceso a la API en modo de solo lectura. Sin embargo, las funciones que requieren acceso de escritura, como iniciar o detener modos de mantenimiento o pausas de alimentación, no están disponibles cuando la API está configurada en modo de solo lectura.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-api-settings.png" alt="Ajustes de la API de GHL en GHL Control Center">
+  <img src="https://raw.githubusercontent.com/PC-Supporting-GmbH/HomeAssistant-GHL/master/docs/images/ghl-api-settings.png" alt="Ajustes de la API de GHL en GHL Control Center" width="400">
 </p>
 
 Después de actualizar el firmware, puede ser necesario volver a activar la API de GHL. Si la integración deja de comunicarse con el dispositivo después de una actualización, comprueba primero este ajuste.
@@ -117,7 +131,7 @@ Encontrarás más información sobre cómo activar la API de GHL aquí:
 
 https://www.aquariumcomputer.com/software/ghl-api/
 
-## Configuración
+## 6. Configuración
 
 Al añadir la integración a Home Assistant, introduce los datos de red de tu dispositivo GHL y selecciona el modo de acceso a la API deseado.
 
@@ -129,20 +143,20 @@ Después de la configuración inicial, hay opciones adicionales disponibles en:
 
 **Ajustes → Dispositivos y servicios → GHL → Configurar**
 
-## Opciones
+## 7. Opciones
 
 La integración ofrece opciones adicionales después de la configuración inicial.
 
 > [!NOTE]
 > Algunas opciones solo están disponibles después de conectarse correctamente al dispositivo GHL y una vez que la integración se haya cargado.
 
-### Ajustes generales
+### 7.1 Ajustes generales
 
 Los ajustes de conexión pueden modificarse si es necesario.
 
 El modo de acceso a la API también puede cambiarse entre solo lectura y lectura/escritura.
 
-#### Mostrar todos los recursos disponibles
+#### 7.1.1 Mostrar todos los recursos disponibles
 
 Esta opción está disponible después de configurar la integración por primera vez.
 
@@ -152,28 +166,28 @@ Al activar esta opción, también se muestran recursos compatibles que normalmen
 
 Esto puede resultar útil si quieres mostrar deliberadamente en Home Assistant todos los recursos compatibles que comunica el dispositivo GHL.
 
-#### Importar datos históricos de sensores nuevos
+#### 7.1.2 Importar datos históricos de sensores nuevos
 
 Activa esta opción para importar automáticamente los datos históricos cuando se detectan y configuran por primera vez sensores o fuentes compatibles. Activar esta opción más adelante no importa automáticamente los datos de fuentes que ya están presentes.
 
-### Configuración de sensores
+### 7.2 Configuración de sensores
 
 Los tipos de sensor asignados durante la configuración inicial pueden cambiarse posteriormente desde las opciones de la integración.
 
 Esto permite corregir o adaptar la configuración de los sensores sin eliminar y volver a configurar la integración.
 
-### Detectar sensores/dispositivos nuevos
+### 7.3 Detectar sensores/dispositivos nuevos
 
 Después de añadir sensores o dispositivos a tu sistema GHL, selecciona la opción para detectar sensores/dispositivos nuevos en las opciones de la integración.
 Esto vuelve a cargar la integración y ejecuta de nuevo la detección de recursos. No es necesario reiniciar Home Assistant. Es posible que debas asignar un tipo a los sensores recién detectados.
 
-### Importación de datos históricos
+### 7.4 Importación de datos históricos
 
 Para importar manualmente los datos almacenados de todas las fuentes disponibles y compatibles, selecciona **Datos históricos: importar ahora** en las opciones de la integración.
 Se excluyen los sensores sin un tipo asignado o configurados como ocultos. La detección de duplicados ayuda a evitar que los mismos datos históricos se importen más de una vez.
 La importación de una gran cantidad de datos almacenados puede tardar varios minutos.
 
-## Cambiar valores desde Home Assistant
+## 8. Cambiar valores desde Home Assistant
 
 Algunos valores y descripciones que ofrece la API de GHL pueden modificarse directamente desde la interfaz de Home Assistant.
 
@@ -181,15 +195,15 @@ Para cambiar valores, se requiere acceso de escritura tanto en el dispositivo GH
 
 Se recomienda utilizar una **tarjeta Entidades** para estos controles.
 
-### Consignas de los sensores
+### 8.1 Consignas de los sensores
 
 Cambia el valor en el campo de consigna del sensor deseado. El valor se envía directamente al dispositivo GHL. Esto también se aplica a las consignas compatibles de KH Director e ION Director.
 
-### Brillo general
+### 8.2 Brillo general
 
 Cambia el valor del brillo general (0–100 %). El valor se envía directamente al dispositivo GHL.
 
-### Descripciones
+### 8.3 Descripciones
 
 Las descripciones de los elementos GHL compatibles también pueden cambiarse directamente desde Home Assistant.
 
@@ -201,7 +215,7 @@ Para cambiar una descripción:
 
 No se necesita una automatización de Home Assistant. No obstante, puedes utilizar una.
 
-## Limitaciones actuales
+## 9. Limitaciones actuales
 
 La integración está limitada por las funciones y la información que proporciona la API de GHL.
 
@@ -213,7 +227,7 @@ Entre las limitaciones conocidas actualmente se incluyen:
 - **Actualmente no se importan los temporizadores.**  
   La API de GHL ofrece su descripción, pero no sus horarios de conmutación. Por ello, importar temporizadores aportaría actualmente pocas funciones útiles en Home Assistant.
 
-## Problemas y solicitudes de funciones
+## 10. Problemas y solicitudes de funciones
 
 Si encuentras un problema o tienes una idea para mejorar la integración, utiliza los formularios de incidencias de GitHub.
 
@@ -224,3 +238,58 @@ https://github.com/PC-Supporting-GmbH/HomeAssistant-GHL/issues/new?template=bug_
 https://github.com/PC-Supporting-GmbH/HomeAssistant-GHL/issues/new?template=feature_request.yml
 
 Antes de abrir una nueva incidencia, comprueba si ya se ha comunicado el mismo problema o la misma solicitud.
+
+## 11. Para entusiastas de Home Assistant
+
+### 11.1 Filtrar entidades por recurso y función
+
+La integración añade tres atributos a las entidades correspondientes:
+
+- **`ghl_resource_type`** identifica el grupo de recursos, por ejemplo `switch_channel`, `sensor` o `illumination`.
+- **`ghl_feature_type`** identifica la función dentro de ese grupo, por ejemplo `state`, `value` o `setpoint`.
+- **`ghl_device`** contiene el nombre asignado al dispositivo en la integración. Los cambios de este nombre en los ajustes generales se aplican automáticamente.
+
+Estos atributos permiten seleccionar entidades para paneles o plantillas sin tener que analizar sus nombres.
+
+Se utilizan las siguientes combinaciones. Las entidades disponibles dependen del dispositivo, de sus funciones disponibles y de tu configuración.
+
+| Entidades o funciones | `ghl_resource_type` | `ghl_feature_type` |
+|---|---|---|
+| Valores medidos de los sensores | `sensor` | `value` |
+| Consignas de los sensores | `sensor` | `setpoint` |
+| Estados de los canales de conmutación | `switch_channel` | `state` |
+| Corrientes eléctricas de los canales de conmutación | `switch_channel` | `electric_current` |
+| Valores de brillo de los canales de iluminación | `illumination` | `channel_brightness` |
+| Valores de brillo general – indicadores y controles | `illumination` | `master_brightness` |
+| Niveles de llenado de las bombas dosificadoras | `doser` | `fill_level` |
+| Capacidades de las bombas dosificadoras | `doser` | `capacity` |
+| Mediciones de caudal | `flow_sensor` | `value` |
+| Estados de los sensores de nivel | `level_sensor` | `state` |
+| Inicio y parada de las pausas de alimentación | `special_function` | `feed` |
+| Inicio y parada de los modos de mantenimiento | `special_function` | `maintenance` |
+| Inicio y parada de los cambios de agua | `special_function` | `waterchange` |
+| Tormentas y escenas de iluminación | `special_function` | `light` |
+| Acciones de KH Director | `special_function` | `khdirector` |
+| Acciones de ION Director | `special_function` | `iondirector` |
+| Información del sistema, por ejemplo firmware, número de serie, etc. | `system` | `info` |
+| Información de diagnóstico, por ejemplo última actualización, etc. | `diagnostic` | `info` |
+
+### 11.2 Ejemplo con Auto-Entities
+
+Con la tarjeta opcional para paneles [Auto-Entities](https://github.com/thomasloven/lovelace-auto-entities), puedes agrupar automáticamente en una tarjeta las entidades que coincidan con sus atributos. Auto-Entities debe instalarse por separado.
+
+El siguiente ejemplo muestra los estados de todos los canales de conmutación GHL:
+
+```yaml
+type: custom:auto-entities
+card:
+  type: entities
+  title: Canales de conmutación GHL
+filter:
+  include:
+    - attributes:
+        ghl_resource_type: switch_channel
+        ghl_feature_type: state
+```
+
+Si hay varios dispositivos GHL configurados, el ejemplo incluye las entidades correspondientes de todos ellos. En ese caso, añade el atributo `ghl_device` para limitar la selección a un dispositivo concreto. Contiene el nombre del dispositivo indicado en la integración. Por ejemplo, añade `ghl_device: "Mi acuario"` en `attributes` y sustituye «Mi acuario» por el nombre que hayas asignado a tu dispositivo. Encontrarás más opciones de filtrado en la [documentación de Auto-Entities](https://github.com/thomasloven/lovelace-auto-entities#filters).
