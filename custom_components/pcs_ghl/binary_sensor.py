@@ -12,7 +12,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    ATTR_GHL_DEVICE,
     ATTR_GHL_FEATURE_TYPE,
     ATTR_GHL_RESOURCE_TYPE,
     DOMAIN,
@@ -100,11 +99,6 @@ class GHLSwitchChannelBinarySensor(
     ) -> None:
         """Initialize the GHL switch channel."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._entry = entry
@@ -171,11 +165,6 @@ class GHLLevelSensorBinarySensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL level sensor."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 

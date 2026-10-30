@@ -199,5 +199,3 @@ API_REPLY_BUFFER_SIZE = 256
 ATTR_GHL_RESOURCE_TYPE = "ghl_resource_type"
 
 ATTR_GHL_FEATURE_TYPE = "ghl_feature_type"
-
-ATTR_GHL_DEVICE = "ghl_device"

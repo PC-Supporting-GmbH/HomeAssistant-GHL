@@ -23,7 +23,6 @@ from .const import (
     DEVICE_TYPE_MITRAS_LX8,
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
-    ATTR_GHL_DEVICE,
     ATTR_GHL_FEATURE_TYPE,
     ATTR_GHL_RESOURCE_TYPE,
     DESCRIPTION_UPDATE_PLATFORMS,
@@ -277,11 +276,6 @@ class GHLFeedPauseButton(ButtonEntity):
     ) -> None:
         """Initialize the GHL feed pause button."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         self._api = api
         self._entry = entry
         self._index = index
@@ -372,11 +366,6 @@ class GHLMaintenanceButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL maintenance button."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         self._api = api
         self._entry = entry
@@ -469,11 +458,6 @@ class GHLWaterChangeButton(ButtonEntity):
     ) -> None:
         """Initialize the GHL water change button."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         self._api = api
         self._entry = entry
         self._index = index
@@ -564,11 +548,6 @@ class GHLThunderstormButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL thunderstorm button."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         self._api = api
         self._entry = entry
@@ -661,11 +640,6 @@ class GHLLightSceneButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL light scene button."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         self._api = api
         self._entry = entry
@@ -763,11 +737,6 @@ class GHLKHDirectorActionButton(ButtonEntity):
     ) -> None:
         """Initialize the GHL KH Director action button."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         self._api = api
         self._entry = entry
         self._action = action
@@ -854,11 +823,6 @@ class GHLIONDirectorActionButton(ButtonEntity):
         action: int,
     ) -> None:
         """Initialize the GHL ION Director action button."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         self._api = api
         self._entry = entry

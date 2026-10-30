@@ -47,7 +47,6 @@ from .const import (
     SENSOR_TYPE_TEMPERATURE,
     SENSOR_TYPE_UNKNOWN,
     SENSOR_TYPE_VOLTAGE,
-    ATTR_GHL_DEVICE,
     ATTR_GHL_FEATURE_TYPE,
     ATTR_GHL_RESOURCE_TYPE,
     IONDIRECTOR_PARAMETER_KEYS,
@@ -226,11 +225,6 @@ class GHLIlluminationMasterBrightnessNumber(
     ) -> None:
         """Initialize the GHL master brightness value."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         self._entry = entry
         self._masterbrightness_data = masterbrightness_data
         self._api = api
@@ -367,11 +361,6 @@ class GHLThunderstormDurationNumber(
     ) -> None:
         """Initialize the GHL thunderstorm duration."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         self._entry = entry
         self._thunderstorm_data = thunderstorm_data
 
@@ -448,11 +437,6 @@ class GHLLightSceneFadeTimeNumber(
         lightscene_data: dict,
     ) -> None:
         """Initialize the GHL light scene fade time."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         self._entry = entry
         self._lightscene_data = lightscene_data
@@ -535,11 +519,6 @@ class GHLSensorSetpointNumber(
         api: GHLAPI,
     ) -> None:
         """Initialize the number for a fixed setpoint resource."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
         super().__init__(coordinator)
 
         self._coordinator = coordinator

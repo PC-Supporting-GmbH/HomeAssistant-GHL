@@ -46,7 +46,6 @@ from .const import (
     SENSOR_UNIT_KG_L,
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
-    ATTR_GHL_DEVICE,
     ATTR_GHL_FEATURE_TYPE,
     ATTR_GHL_RESOURCE_TYPE,
     IONDIRECTOR_PARAMETER_KEYS,
@@ -352,11 +351,6 @@ class GHLMitrasHeatsinkTemperatureSensor(
     ) -> None:
         """Initialize the Mitras heatsink temperature sensor."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._attr_unique_id = (
@@ -412,11 +406,6 @@ class GHLSensor(
         sensor_unit: str,
     ) -> None:
         """Initialize the GHL sensor."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -551,11 +540,6 @@ class GHLKHDirectorValueSensor(
     ) -> None:
         """Initialize the GHL KH Director value sensor."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._entry = entry
@@ -614,11 +598,6 @@ class GHLIONDirectorValueSensor(
         parameter_key: str,
     ) -> None:
         """Initialize the GHL ION Director value sensor."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -692,11 +671,6 @@ class GHLSwitchChannelCurrentSensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL switch channel current sensor."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -780,11 +754,6 @@ class GHLDoserFillLevelSensor(
     ) -> None:
         """Initialize the GHL dosing pump fill level sensor."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._entry = entry
@@ -860,11 +829,6 @@ class GHLDoserCapacitySensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL dosing pump capacity."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -943,11 +907,6 @@ class GHLFlowSensor(
     ) -> None:
         """Initialize the GHL flow sensor."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._entry = entry
@@ -1021,11 +980,6 @@ class GHLIlluminationMasterBrightnessSensor(
     ) -> None:
         """Initialize the GHL illumination master brightness."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._entry = entry
@@ -1084,11 +1038,6 @@ class GHLIlluminationBrightnessSensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL illumination channel."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -1174,11 +1123,6 @@ class GHLSystemFirmwareSensor(
     ) -> None:
         """Initialize the GHL system firmware sensor."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._entry = entry
@@ -1231,11 +1175,6 @@ class GHLSystemSerialNumberSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the GHL system serial number sensor."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -1290,11 +1229,6 @@ class GHLSystemTimeSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the GHL system time sensor."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -1361,11 +1295,6 @@ class GHLSystemTimeAbsoluteSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the absolute GHL system time sensor."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
 
         super().__init__(coordinator)
 
@@ -1473,11 +1402,6 @@ class GHLLastUpdateSensor(
     ) -> None:
         """Initialize the last successful GHL update sensor."""
 
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
-
         super().__init__(coordinator)
 
         self._entry = entry
@@ -1543,11 +1467,6 @@ class GHLDescriptionUpdatesRemainingSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the description polling diagnostic."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_description_updates_remaining"
         self._attr_device_info = device_info(entry)
@@ -1580,11 +1499,6 @@ class GHLCurveUpdatesRemainingSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the curve polling diagnostic."""
-
-        self._attr_extra_state_attributes = {
-            **self._attr_extra_state_attributes,
-            ATTR_GHL_DEVICE: entry.title,
-        }
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_curve_updates_remaining"
         self._attr_device_info = device_info(entry)
