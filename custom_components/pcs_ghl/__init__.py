@@ -1,6 +1,7 @@
 """GHL integration."""
 # pyright: reportMissingImports=false
 
+import asyncio
 import logging
 from time import perf_counter
 
@@ -74,6 +75,99 @@ async def async_migrate_entry(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up GHL, restarting an obsolete attempt after address changes."""
+    connection_data = tuple(
+        entry.data.get(key)
+        for key in (CONF_HOST, CONF_PORT, CONF_ACCESS_MODE)
+    )
+    entry_title = entry.title
+    entry_options = deepcopy(dict(entry.options))
+    restart_requested = False
+    reload_requested = False
+    setup_task = hass.async_create_task(
+        _async_setup_entry(hass, entry),
+        f"GHL setup worker {entry.entry_id}",
+    )
+
+    async def async_update_during_setup(
+        hass: HomeAssistant,
+        updated_entry: ConfigEntry,
+    ) -> None:
+        """Cancel only our worker when host or port changes during setup."""
+        nonlocal connection_data, entry_title, entry_options
+        nonlocal restart_requested, reload_requested
+        if setup_task.done() or restart_requested:
+            return
+
+        updated_connection_data = tuple(
+            updated_entry.data.get(key)
+            for key in (CONF_HOST, CONF_PORT, CONF_ACCESS_MODE)
+        )
+        updated_options = deepcopy(dict(updated_entry.options))
+        if (
+            updated_connection_data == connection_data
+            and updated_entry.title == entry_title
+            and updated_options == entry_options
+        ):
+            return
+
+        address_changed = updated_connection_data[:2] != connection_data[:2]
+        entry_runtime = hass.data.get(DOMAIN, {}).get(entry.entry_id, {})
+        managed_history_options = (
+            updated_entry.title == entry_title
+            and updated_connection_data == connection_data
+            and entry_runtime.get("history_flow_options") == updated_options
+        )
+        connection_data = updated_connection_data
+        entry_title = updated_entry.title
+        entry_options = updated_options
+        if managed_history_options:
+            return
+
+        if address_changed:
+            restart_requested = True
+            setup_task.cancel()
+        else:
+            reload_requested = True
+
+    remove_setup_listener = entry.add_update_listener(async_update_during_setup)
+    try:
+        result = await setup_task
+        if reload_requested:
+            hass.config_entries.async_schedule_reload(entry.entry_id)
+        return result
+    except asyncio.CancelledError:
+        current_task = asyncio.current_task()
+        if (
+            not restart_requested
+            or (current_task is not None and current_task.cancelling())
+        ):
+            raise
+
+        _LOGGER.debug(
+            "GHL setup [%s]: stopping obsolete setup after address change",
+            entry.entry_id,
+        )
+        if entry.entry_id in hass.data.get(DOMAIN, {}):
+            if not await async_unload_entry(hass, entry):
+                _LOGGER.error(
+                    "GHL setup [%s]: unable to unload partial setup; "
+                    "automatic restart skipped",
+                    entry.entry_id,
+                )
+                return False
+
+        hass.config_entries.async_schedule_reload(entry.entry_id)
+        return False
+    except Exception:
+        if reload_requested:
+            hass.config_entries.async_schedule_reload(entry.entry_id)
+        raise
+    finally:
+        remove_setup_listener()
+
+
+async def _async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up GHL from a config entry."""
 
     setup_started = perf_counter()

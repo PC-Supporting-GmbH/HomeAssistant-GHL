@@ -1,6 +1,6 @@
 # GHL – Testmatrix
 
-Stand: 28.10.2026. **86 Tests**, teilweise mit mehreren Unterfällen.
+Stand: 30.10.2026. **108 Tests**, teilweise mit mehreren Unterfällen.
 
 Die Matrix beschreibt den Umfang der Testsuite. Die Testnamen entsprechen der Ausgabe in GitHub Actions. Die Beschreibungen in der vollständigen Liste entsprechen den englischen Testbeschreibungen beziehungsweise Testnamen im Code.
 
@@ -136,4 +136,27 @@ Die Matrix beschreibt den Umfang der Testsuite. Die Testnamen entsprechen der Au
 | 84 | `HistoryImportResultTests.test_empty_history_is_successful_without_statistics` | An empty history is successful and does not write statistics. |
 | 85 | `HistoryImportResultTests.test_failed_history_read_reports_failure` | An unusable history response produces an unsuccessful import result. |
 | 86 | `HistoryImportResultTests.test_history_connection_error_reports_failure` | A history connection error is converted to an unsuccessful import result. |
+| 87 | `SetupRestartTests.test_success_removes_temporary_listener` | success removes temporary listener. |
+| 88 | `SetupRestartTests.test_host_change_cancels_only_worker_then_schedules_reload` | host change cancels only worker then schedules reload. |
+| 89 | `SetupRestartTests.test_port_change_cancels_worker` | port change cancels worker. |
+| 90 | `SetupRestartTests.test_unchanged_address_does_not_cancel_or_reload` | unchanged address does not cancel or reload. |
+| 91 | `SetupRestartTests.test_device_name_change_preserves_running_setup` | device name change preserves running setup. |
+| 92 | `SetupRestartTests.test_option_change_preserves_running_setup` | option change preserves running setup. |
+| 93 | `SetupRestartTests.test_access_mode_change_does_not_cancel_worker` | access mode change does not cancel worker. |
+| 94 | `SetupRestartTests.test_internal_history_data_does_not_reload` | internal history data does not reload. |
+| 95 | `SetupRestartTests.test_managed_history_options_do_not_reload` | managed history options do not reload. |
+| 96 | `SetupRestartTests.test_partial_setup_is_unloaded_before_reload` | partial setup is unloaded before reload. |
+| 97 | `SetupRestartTests.test_real_unload_closes_api_before_reload` | real unload closes api before reload. |
+| 98 | `SetupRestartTests.test_reload_waits_for_partial_cleanup` | reload waits for partial cleanup. |
+| 99 | `SetupRestartTests.test_failed_cleanup_does_not_start_new_setup` | failed cleanup does not start new setup. |
+| 100 | `SetupRestartTests.test_rapid_host_changes_schedule_one_reload_with_latest_data` | rapid host changes schedule one reload with latest data. |
+| 101 | `SetupRestartTests.test_pending_reload_request_is_not_duplicated` | pending reload request is not duplicated. |
+| 102 | `SetupRestartTests.test_original_setup_failure_is_propagated` | original setup failure is propagated. |
+| 103 | `SetupRestartTests.test_external_cancellation_is_propagated` | external cancellation is propagated. |
+| 104 | `SetupRestartTests.test_shutdown_wins_over_address_change` | shutdown wins over address change. |
+| 105 | `SetupRestartTests.test_other_entry_setup_is_not_cancelled` | other entry setup is not cancelled. |
+| 106 | `SetupRestartTests.test_failed_cleanup_overrides_an_earlier_reload_request` | failed cleanup overrides an earlier reload request. |
+| 107 | `SetupRestartTests.test_pending_option_reload_survives_setup_failure` | pending option reload survives setup failure. |
+| 108 | `SetupRestartTests.test_actual_setup_discovery_is_cancelled_and_registered_api_closes` | actual setup discovery is cancelled and registered api closes. |
 
+Zusätzlich geprüft: Abbruch ausschliesslich eigener Setup-Arbeit bei Host-/Portänderung, Bereinigungsreihenfolge, schnelle mehrfache Änderungen, unveränderte Namens-/Optionsänderungen und Weitergabe externer Abbrüche. HA-Reload und Plattformen werden simuliert; kein vollständiger HA-Start oder Gerätetest. Die verworfene DNS-Erweiterung ist nicht enthalten.

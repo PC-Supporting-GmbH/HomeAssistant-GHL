@@ -252,7 +252,7 @@ class SetupTests(unittest.IsolatedAsyncioTestCase):
         # Execute the actual setup until a simulated discovery failure. The
         # harness invokes callbacks when setup fails, as HA's lifecycle does.
         ns = production_namespace()
-        load_definitions("__init__.py", {"async_setup_entry"}, ns)
+        load_definitions("__init__.py", {"_async_setup_entry"}, ns)
         callbacks = []
         clients = []
         writer = SimulatedWriter()
@@ -274,7 +274,7 @@ class SetupTests(unittest.IsolatedAsyncioTestCase):
         entry = SimpleNamespace(entry_id="entry", title="P4", data={"host": "test.local", "port": 10002, "device_type": "profilux_4"}, options={}, async_on_unload=callbacks.append)
         try:
             with self.assertRaisesRegex(RuntimeError, "simulated discovery failure"):
-                await ns["async_setup_entry"](SimpleNamespace(), entry)
+                await ns["_async_setup_entry"](SimpleNamespace(), entry)
         finally:
             for cleanup in callbacks:
                 await cleanup()
@@ -780,3 +780,337 @@ class HistoryImportResultTests(unittest.IsolatedAsyncioTestCase):
             result = await self.run_import()
         self.assertFalse(result.success)
         self.assertEqual(self.imported, [])
+
+
+class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
+    """Check deliberate setup cancellation without cancelling HA's setup task."""
+
+    def make_case(self, worker=None):
+        from copy import deepcopy
+        from unittest.mock import Mock
+        ns = production_namespace()
+        ns.update(deepcopy=deepcopy, CONF_HOST="host", CONF_PORT="port")
+        load_definitions("__init__.py", {"async_setup_entry"}, ns)
+        started, release = asyncio.Event(), asyncio.Event()
+        events, tasks, reloads = [], [], []
+        entry = SimpleNamespace(
+            entry_id="test-entry", title="Example device",
+            data={"host": "old.example", "port": 10002, "access_mode": "full_access"},
+            options={}, update_listeners=[],
+        )
+        def add_listener(callback):
+            entry.update_listeners.append(callback)
+            def remove():
+                entry.update_listeners.remove(callback)
+            return remove
+        entry.add_update_listener = add_listener
+        async def default_worker(hass, entry):
+            started.set()
+            try:
+                await release.wait()
+                return True
+            finally:
+                events.append("worker finished")
+        ns["_async_setup_entry"] = worker or default_worker
+        def create_task(coro, name):
+            task = asyncio.create_task(coro, name=name)
+            tasks.append(task)
+            return task
+        def reload(entry_id):
+            reloads.append((entry_id, dict(entry.data)))
+            events.append("reload")
+        hass = SimpleNamespace(
+            data={}, async_create_task=create_task,
+            config_entries=SimpleNamespace(async_schedule_reload=reload),
+        )
+        async def cleanup(hass, entry):
+            events.append("cleanup")
+            hass.data.pop("pcs_ghl", None)
+            return True
+        ns["async_unload_entry"] = AsyncMock(side_effect=cleanup)
+        task = asyncio.create_task(ns["async_setup_entry"](hass, entry))
+        tasks.append(task)
+        async def finish():
+            for pending in tasks:
+                if not pending.done():
+                    pending.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+        self.addAsyncCleanup(finish)
+        return SimpleNamespace(ns=ns, hass=hass, entry=entry, started=started,
+                               release=release, events=events, tasks=tasks,
+                               reloads=reloads, task=task)
+
+    async def notify(self, case):
+        for listener in list(case.entry.update_listeners):
+            await listener(case.hass, case.entry)
+
+    async def test_success_removes_temporary_listener(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.release.set()
+        self.assertTrue(await c.task)
+        self.assertEqual(c.entry.update_listeners, [])
+        self.assertEqual(c.reloads, [])
+
+    async def test_host_change_cancels_only_worker_then_schedules_reload(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        self.assertFalse(await c.task)
+        self.assertEqual(c.events, ["worker finished", "reload"])
+        self.assertEqual(c.reloads[0][1]["host"], "new.example")
+        self.assertFalse(c.task.cancelled())
+        self.assertTrue(c.tasks[1].cancelled())
+        self.assertEqual(c.entry.update_listeners, [])
+
+    async def test_port_change_cancels_worker(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.data["port"] = 10003
+        await self.notify(c)
+        self.assertFalse(await c.task)
+        self.assertEqual(c.reloads[0][1]["port"], 10003)
+
+    async def test_unchanged_address_does_not_cancel_or_reload(self):
+        c = self.make_case()
+        await c.started.wait()
+        await self.notify(c)
+        self.assertFalse(c.tasks[1].done())
+        self.assertEqual(c.reloads, [])
+        c.release.set()
+        self.assertTrue(await c.task)
+
+    async def test_device_name_change_preserves_running_setup(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.title = "Renamed example"
+        await self.notify(c)
+        self.assertFalse(c.tasks[1].done())
+        self.assertEqual(c.reloads, [])
+        c.release.set()
+        self.assertTrue(await c.task)
+        self.assertEqual(len(c.reloads), 1)
+
+    async def test_option_change_preserves_running_setup(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.options = {"show_all_resources": True}
+        await self.notify(c)
+        self.assertFalse(c.tasks[1].done())
+        self.assertEqual(c.reloads, [])
+        c.release.set()
+        self.assertTrue(await c.task)
+        self.assertEqual(len(c.reloads), 1)
+
+    async def test_access_mode_change_does_not_cancel_worker(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.data["access_mode"] = "read_only"
+        await self.notify(c)
+        self.assertFalse(c.tasks[1].done())
+        self.assertEqual(c.reloads, [])
+        c.release.set()
+        self.assertTrue(await c.task)
+        self.assertEqual(len(c.reloads), 1)
+
+    async def test_internal_history_data_does_not_reload(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.data["history_present_resources"] = ["sensor:0"]
+        await self.notify(c)
+        self.assertEqual(c.reloads, [])
+        c.release.set()
+        self.assertTrue(await c.task)
+
+    async def test_managed_history_options_do_not_reload(self):
+        c = self.make_case()
+        await c.started.wait()
+        options = {"import_historical_data": True}
+        c.hass.data["pcs_ghl"] = {c.entry.entry_id: {"history_flow_options": options}}
+        c.entry.options = options
+        await self.notify(c)
+        self.assertEqual(c.reloads, [])
+        c.release.set()
+        self.assertTrue(await c.task)
+
+    async def test_partial_setup_is_unloaded_before_reload(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.hass.data["pcs_ghl"] = {c.entry.entry_id: {"api": object()}}
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        self.assertFalse(await c.task)
+        self.assertEqual(c.events, ["worker finished", "cleanup", "reload"])
+        self.assertNotIn("pcs_ghl", c.hass.data)
+
+    async def test_real_unload_closes_api_before_reload(self):
+        c = self.make_case()
+        await c.started.wait()
+        load_definitions("__init__.py", {"async_unload_entry"}, c.ns)
+        async def unload_platforms(*args):
+            c.events.append("platforms unloaded")
+            return True
+        async def close():
+            c.events.append("connection closed")
+        c.hass.config_entries.async_unload_platforms = AsyncMock(side_effect=unload_platforms)
+        c.entry.options = {"show_all_resources": True}
+        c.hass.data["pcs_ghl"] = {c.entry.entry_id: {"api": SimpleNamespace(async_close=AsyncMock(side_effect=close))}}
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        self.assertFalse(await c.task)
+        self.assertEqual(c.events, ["worker finished", "platforms unloaded", "connection closed", "reload"])
+
+    async def test_reload_waits_for_partial_cleanup(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.hass.data["pcs_ghl"] = {c.entry.entry_id: {}}
+        cleaning, finish_cleanup = asyncio.Event(), asyncio.Event()
+        async def cleanup(hass, entry):
+            cleaning.set()
+            await finish_cleanup.wait()
+            return True
+        c.ns["async_unload_entry"].side_effect = cleanup
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        await cleaning.wait()
+        self.assertEqual(c.reloads, [])
+        self.assertFalse(c.task.done())
+        finish_cleanup.set()
+        self.assertFalse(await c.task)
+        self.assertEqual(len(c.reloads), 1)
+
+    async def test_failed_cleanup_does_not_start_new_setup(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.hass.data["pcs_ghl"] = {c.entry.entry_id: {}}
+        c.ns["async_unload_entry"].return_value = False
+        c.ns["async_unload_entry"].side_effect = None
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        with self.assertLogs("ghl-regression", "ERROR"):
+            self.assertFalse(await c.task)
+        self.assertEqual(c.reloads, [])
+
+    async def test_rapid_host_changes_schedule_one_reload_with_latest_data(self):
+        c = self.make_case()
+        await c.started.wait()
+        for host in ["first.example", "second.example", "third.example"]:
+            c.entry.data["host"] = host
+            await self.notify(c)
+        self.assertFalse(await c.task)
+        self.assertEqual(len(c.reloads), 1)
+        self.assertEqual(c.reloads[0][1]["host"], "third.example")
+
+    async def test_pending_reload_request_is_not_duplicated(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.title = "Renamed example"
+        await self.notify(c)
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        self.assertFalse(await c.task)
+        self.assertEqual(len(c.reloads), 1)
+
+    async def test_original_setup_failure_is_propagated(self):
+        async def failure(hass, entry):
+            raise RuntimeError("simulated setup failure")
+        c = self.make_case(failure)
+        with self.assertRaisesRegex(RuntimeError, "simulated setup failure"):
+            await c.task
+        self.assertEqual(c.entry.update_listeners, [])
+        self.assertEqual(c.reloads, [])
+
+    async def test_external_cancellation_is_propagated(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.task.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await c.task
+        self.assertEqual(c.reloads, [])
+        self.assertEqual(c.entry.update_listeners, [])
+
+    async def test_shutdown_wins_over_address_change(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        c.task.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await c.task
+        self.assertEqual(c.reloads, [])
+
+    async def test_other_entry_setup_is_not_cancelled(self):
+        first, second = self.make_case(), self.make_case()
+        await first.started.wait()
+        await second.started.wait()
+        first.entry.data["host"] = "new.example"
+        await self.notify(first)
+        self.assertFalse(await first.task)
+        self.assertFalse(second.tasks[1].done())
+        second.release.set()
+        self.assertTrue(await second.task)
+        self.assertEqual(second.reloads, [])
+
+    async def test_failed_cleanup_overrides_an_earlier_reload_request(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.title = "Renamed example"
+        await self.notify(c)
+        c.hass.data["pcs_ghl"] = {c.entry.entry_id: {}}
+        c.ns["async_unload_entry"].side_effect = None
+        c.ns["async_unload_entry"].return_value = False
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        with self.assertLogs("ghl-regression", "ERROR"):
+            self.assertFalse(await c.task)
+        self.assertEqual(c.reloads, [])
+
+    async def test_pending_option_reload_survives_setup_failure(self):
+        release, started = asyncio.Event(), asyncio.Event()
+        async def worker(hass, entry):
+            started.set()
+            await release.wait()
+            raise RuntimeError("simulated setup failure")
+        c = self.make_case(worker)
+        await started.wait()
+        c.entry.options = {"show_all_resources": True}
+        await self.notify(c)
+        release.set()
+        with self.assertRaisesRegex(RuntimeError, "simulated setup failure"):
+            await c.task
+        self.assertEqual(len(c.reloads), 1)
+
+    async def test_actual_setup_discovery_is_cancelled_and_registered_api_closes(self):
+        c = self.make_case()
+        load_definitions("__init__.py", {"_async_setup_entry"}, c.ns)
+        callbacks, clients = [], []
+        c.entry.async_on_unload = callbacks.append
+        writer = SimulatedWriter()
+        base = c.ns["GHLAPI"]
+        class Client(base):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self._reader, self._writer = object(), writer
+                clients.append(self)
+            async def async_check_connection(self):
+                pass
+        discovering = asyncio.Event()
+        async def discover(**kwargs):
+            discovering.set()
+            await asyncio.Future()
+        c.ns.update(GHLAPI=Client, async_discover_resources=discover, ConfigEntryNotReady=RuntimeError)
+        c.entry.data["device_type"] = "profilux_4"
+        await discovering.wait()
+        self.assertEqual(clients[0].host, "old.example")
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        self.assertFalse(await c.task)
+        # HA runs these callbacks after a false setup result and before releasing
+        # its setup lock, which allows the requested reload to start.
+        for cleanup in callbacks:
+            await cleanup()
+        self.assertEqual(writer.closed, 1)
+        self.assertIsNone(clients[0]._reader)
+        self.assertIsNone(clients[0]._writer)
+        self.assertEqual(len(c.reloads), 1)
