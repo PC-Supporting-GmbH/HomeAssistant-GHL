@@ -13,6 +13,7 @@ from .const import (
     DEVICE_TYPE_MITRAS_LX8,
     DEVICE_TYPE_PROFILUX_4,
     DISCOVERY_LIMIT,
+    ILLUMINATION_MAX_CURVE_POINTS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -325,7 +326,7 @@ async def _async_probe_illumination_resources(
             )
             continue
 
-        if pointcount > 24:
+        if pointcount > ILLUMINATION_MAX_CURVE_POINTS:
             _LOGGER.warning(
                 "GHL discovery received POINTCOUNT %d for "
                 "ILLUMINATION[%d], exceeding the documented maximum "
@@ -333,7 +334,7 @@ async def _async_probe_illumination_resources(
                 pointcount,
                 index,
             )
-            pointcount = 24
+            pointcount = ILLUMINATION_MAX_CURVE_POINTS
 
         if pointcount <= 0 and not show_all_resources:
             continue

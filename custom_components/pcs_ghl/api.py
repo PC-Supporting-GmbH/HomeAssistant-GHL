@@ -11,6 +11,11 @@ from .const import (
     SETUP_CONNECTION_ATTEMPTS,
     SETUP_CONNECTION_RETRY_DELAY_SECONDS,
     SETUP_CONNECTION_TIMEOUT_SECONDS,
+    API_COMMAND_ATTEMPTS,
+    API_COMMAND_REPLY_DELAY_SECONDS,
+    API_COMMAND_RETRY_DELAY_SECONDS,
+    API_COMMAND_TIMEOUT_SECONDS,
+    API_REPLY_BUFFER_SIZE,
 )
 
 from .functions import has_control_characters
@@ -43,7 +48,7 @@ class GHLAPI:
         self._writer: asyncio.StreamWriter | None = None
         self._lock = asyncio.Lock()
 
-    async def _async_connect(self, timeout: float = 10) -> None:
+    async def _async_connect(self, timeout: float = API_COMMAND_TIMEOUT_SECONDS) -> None:
         """Open the TCP connection to the GHL device."""
 
         if (
@@ -135,7 +140,7 @@ class GHLAPI:
                 "GHL API %s:%s: command %r acquired lock after %.3f s",
                 self.host, self.port, command, perf_counter() - command_started,
             )
-            for attempt in range(2):
+            for attempt in range(API_COMMAND_ATTEMPTS):
                 attempt_started = perf_counter()
                 _LOGGER.debug(
                     "GHL API %s:%s: command %r attempt %d/2 started",
@@ -157,8 +162,8 @@ class GHLAPI:
                     await self._writer.drain()
 
                     reply = await asyncio.wait_for(
-                        self._reader.read(256),
-                        timeout=10,
+                        self._reader.read(API_REPLY_BUFFER_SIZE),
+                        timeout=API_COMMAND_TIMEOUT_SECONDS,
                     )
 
                     _LOGGER.debug(
@@ -173,7 +178,7 @@ class GHLAPI:
                             f"while executing: {command}"
                         )
 
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(API_COMMAND_REPLY_DELAY_SECONDS)
 
                     try:
                         response = reply.decode("cp1252").strip()
@@ -247,7 +252,7 @@ class GHLAPI:
                             "GHL API %s:%s: command %r retrying after 3 s",
                             self.host, self.port, command,
                         )
-                        await asyncio.sleep(3)
+                        await asyncio.sleep(API_COMMAND_RETRY_DELAY_SECONDS)
                         continue
 
                     if execution_uncertain:

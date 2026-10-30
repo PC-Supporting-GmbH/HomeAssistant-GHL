@@ -48,13 +48,13 @@ from .const import (
     SENSOR_UNIT_KG_L,
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
-)
-from .select import (
+    API_COMMAND_TIMEOUT_SECONDS,
+    API_REPLY_BUFFER_SIZE,
+    CONF_INITIAL_HISTORY_PENDING,
     DESCRIPTION_RESOURCE_FALLBACKS,
     DESCRIPTION_RESOURCE_TRANSLATION_KEYS,
 )
 from .history import (
-    CONF_INITIAL_HISTORY_PENDING,
     history_resource_key,
     async_import_resource_history,
     history_resource_map,
@@ -71,7 +71,7 @@ async def async_test_connection(host: str, port: int) -> str:
 
     reader, writer = await asyncio.wait_for(
         asyncio.open_connection(host, port),
-        timeout=10,
+        timeout=API_COMMAND_TIMEOUT_SECONDS,
     )
 
     try:
@@ -79,8 +79,8 @@ async def async_test_connection(host: str, port: int) -> str:
         await writer.drain()
 
         reply = await asyncio.wait_for(
-            reader.read(256),
-            timeout=10,
+            reader.read(API_REPLY_BUFFER_SIZE),
+            timeout=API_COMMAND_TIMEOUT_SECONDS,
         )
 
         return reply.decode().strip()

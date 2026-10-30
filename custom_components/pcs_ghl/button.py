@@ -23,6 +23,18 @@ from .const import (
     DEVICE_TYPE_MITRAS_LX8,
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
+    ATTR_GHL_DEVICE,
+    ATTR_GHL_FEATURE_TYPE,
+    ATTR_GHL_RESOURCE_TYPE,
+    DESCRIPTION_UPDATE_PLATFORMS,
+    FEEDPAUSE_COUNT,
+    IONDIRECTOR_ACTION_COUNT,
+    KHDIRECTOR_ACTION_COUNT,
+    LIGHTSCENE_COUNT,
+    LIGHTSCENE_DEFAULT_FADETIME,
+    MAINTENANCE_COUNT,
+    THUNDERSTORM_DEFAULT_DURATION,
+    WATERCHANGE_COUNT,
 )
 
 from .functions import device_info, is_valid_description
@@ -30,37 +42,8 @@ from .functions import device_info, is_valid_description
 
 _LOGGER = logging.getLogger(__name__)
 
-FEEDPAUSE_COUNT = 4
-MAINTENANCE_COUNT = 4
-WATERCHANGE_COUNT = 4
-LIGHTSCENE_COUNT = 8
 
-THUNDERSTORM_DEFAULT_DURATION = 5
-LIGHTSCENE_DEFAULT_FADETIME = 0
 
-DESCRIPTION_UPDATE_PLATFORMS = {
-    "SENSOR": [
-        "sensor",
-        "number",
-    ],
-    "SWITCHCHANNEL": [
-        "sensor",
-        "binary_sensor",
-    ],
-    "ILLUMINATION": [
-        "sensor",
-    ],
-    "TIMER": [],
-    "DOSER": [
-        "sensor",
-    ],
-    "FLOWSENSOR": [
-        "sensor",
-    ],
-    "LEVELSENSOR": [
-        "binary_sensor",
-    ],
-}
 
 
 async def async_setup_entry(
@@ -218,7 +201,7 @@ async def async_setup_entry(
     )
 
     if khdirector_exists:
-        for action in range(5):
+        for action in range(KHDIRECTOR_ACTION_COUNT):
             entities.append(
                 GHLKHDirectorActionButton(
                     api=api,
@@ -233,7 +216,7 @@ async def async_setup_entry(
     )
 
     if iondirector_exists:
-        for action in range(6):
+        for action in range(IONDIRECTOR_ACTION_COUNT):
             entities.append(
                 GHLIONDirectorActionButton(
                     api=api,
@@ -279,8 +262,8 @@ class GHLFeedPauseButton(ButtonEntity):
     """Representation of a GHL feed pause action."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "feed",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "feed",
     }
 
     _attr_has_entity_name = True
@@ -296,7 +279,7 @@ class GHLFeedPauseButton(ButtonEntity):
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._api = api
@@ -375,8 +358,8 @@ class GHLMaintenanceButton(ButtonEntity):
     """Representation of a GHL maintenance action."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "maintenance",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "maintenance",
     }
 
     _attr_has_entity_name = True
@@ -392,7 +375,7 @@ class GHLMaintenanceButton(ButtonEntity):
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._api = api
@@ -471,8 +454,8 @@ class GHLWaterChangeButton(ButtonEntity):
     """Representation of a GHL water change action."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "waterchange",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "waterchange",
     }
 
     _attr_has_entity_name = True
@@ -488,7 +471,7 @@ class GHLWaterChangeButton(ButtonEntity):
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._api = api
@@ -567,8 +550,8 @@ class GHLThunderstormButton(ButtonEntity):
     """Representation of a GHL thunderstorm action."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "light",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "light",
     }
 
     _attr_has_entity_name = True
@@ -584,7 +567,7 @@ class GHLThunderstormButton(ButtonEntity):
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._api = api
@@ -663,8 +646,8 @@ class GHLLightSceneButton(ButtonEntity):
     """Representation of a GHL light scene action."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "light",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "light",
     }
 
     _attr_has_entity_name = True
@@ -681,7 +664,7 @@ class GHLLightSceneButton(ButtonEntity):
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._api = api
@@ -766,8 +749,8 @@ class GHLKHDirectorActionButton(ButtonEntity):
     """Representation of a GHL KH Director action."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "khdirector",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "khdirector",
     }
 
     _attr_has_entity_name = True
@@ -782,7 +765,7 @@ class GHLKHDirectorActionButton(ButtonEntity):
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._api = api
@@ -858,8 +841,8 @@ class GHLIONDirectorActionButton(ButtonEntity):
     """Representation of a GHL ION Director action."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "iondirector",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "iondirector",
     }
 
     _attr_has_entity_name = True
@@ -874,7 +857,7 @@ class GHLIONDirectorActionButton(ButtonEntity):
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._api = api

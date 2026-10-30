@@ -46,6 +46,10 @@ from .const import (
     SENSOR_UNIT_KG_L,
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
+    ATTR_GHL_DEVICE,
+    ATTR_GHL_FEATURE_TYPE,
+    ATTR_GHL_RESOURCE_TYPE,
+    IONDIRECTOR_PARAMETER_KEYS,
 )
 from .coordinator import (
     GHLDescriptionNameMixin,
@@ -66,13 +70,6 @@ from .coordinator import (
 )
 from .discovery import GHLDiscoveredResource
 
-IONDIRECTOR_PARAMETER_KEYS = {
-    0: "calcium",
-    1: "magnesium",
-    2: "potassium",
-    3: "sodium",
-    4: "nitrate",
-}
 
 
 async def async_setup_entry(
@@ -338,8 +335,8 @@ class GHLMitrasHeatsinkTemperatureSensor(
     """Representation of the Mitras heatsink temperature."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "sensor",
-        "ghl_feature_type": "value",
+        ATTR_GHL_RESOURCE_TYPE: "sensor",
+        ATTR_GHL_FEATURE_TYPE: "value",
     }
 
     _attr_has_entity_name = True
@@ -357,7 +354,7 @@ class GHLMitrasHeatsinkTemperatureSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -397,8 +394,8 @@ class GHLSensor(
     """Representation of a GHL sensor."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "sensor",
-        "ghl_feature_type": "value",
+        ATTR_GHL_RESOURCE_TYPE: "sensor",
+        ATTR_GHL_FEATURE_TYPE: "value",
     }
 
     _description_platform = 'sensor'
@@ -418,7 +415,7 @@ class GHLSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -539,8 +536,8 @@ class GHLKHDirectorValueSensor(
     """Representation of the GHL KH Director value."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "sensor",
-        "ghl_feature_type": "value",
+        ATTR_GHL_RESOURCE_TYPE: "sensor",
+        ATTR_GHL_FEATURE_TYPE: "value",
     }
 
     _attr_has_entity_name = True
@@ -556,7 +553,7 @@ class GHLKHDirectorValueSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -601,8 +598,8 @@ class GHLIONDirectorValueSensor(
     """Representation of a GHL ION Director value."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "sensor",
-        "ghl_feature_type": "value",
+        ATTR_GHL_RESOURCE_TYPE: "sensor",
+        ATTR_GHL_FEATURE_TYPE: "value",
     }
 
     _attr_has_entity_name = True
@@ -620,7 +617,7 @@ class GHLIONDirectorValueSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -675,8 +672,8 @@ class GHLSwitchChannelCurrentSensor(
     """Representation of a GHL switch channel current."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "switch_channel",
-        "ghl_feature_type": "electric_current",
+        ATTR_GHL_RESOURCE_TYPE: "switch_channel",
+        ATTR_GHL_FEATURE_TYPE: "electric_current",
     }
 
     _description_platform = 'sensor'
@@ -698,7 +695,7 @@ class GHLSwitchChannelCurrentSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -764,8 +761,8 @@ class GHLDoserFillLevelSensor(
     """Representation of a GHL dosing pump fill level."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "doser",
-        "ghl_feature_type": "fill_level",
+        ATTR_GHL_RESOURCE_TYPE: "doser",
+        ATTR_GHL_FEATURE_TYPE: "fill_level",
     }
 
     _description_platform = 'sensor'
@@ -785,7 +782,7 @@ class GHLDoserFillLevelSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -845,8 +842,8 @@ class GHLDoserCapacitySensor(
     """Representation of a GHL dosing pump capacity."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "doser",
-        "ghl_feature_type": "capacity",
+        ATTR_GHL_RESOURCE_TYPE: "doser",
+        ATTR_GHL_FEATURE_TYPE: "capacity",
     }
 
     _description_platform = 'sensor'
@@ -866,7 +863,7 @@ class GHLDoserCapacitySensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -926,8 +923,8 @@ class GHLFlowSensor(
     """Representation of a GHL flow sensor."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "flow_sensor",
-        "ghl_feature_type": "value",
+        ATTR_GHL_RESOURCE_TYPE: "flow_sensor",
+        ATTR_GHL_FEATURE_TYPE: "value",
     }
 
     _description_platform = 'sensor'
@@ -948,7 +945,7 @@ class GHLFlowSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1007,8 +1004,8 @@ class GHLIlluminationMasterBrightnessSensor(
     """Representation of the GHL illumination master brightness."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "illumination",
-        "ghl_feature_type": "master_brightness",
+        ATTR_GHL_RESOURCE_TYPE: "illumination",
+        ATTR_GHL_FEATURE_TYPE: "master_brightness",
     }
 
     _attr_has_entity_name = True
@@ -1026,7 +1023,7 @@ class GHLIlluminationMasterBrightnessSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1068,8 +1065,8 @@ class GHLIlluminationBrightnessSensor(
     """Representation of a GHL illumination channel."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "illumination",
-        "ghl_feature_type": "channel_brightness",
+        ATTR_GHL_RESOURCE_TYPE: "illumination",
+        ATTR_GHL_FEATURE_TYPE: "channel_brightness",
     }
 
     _description_platform = 'sensor'
@@ -1090,7 +1087,7 @@ class GHLIlluminationBrightnessSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1162,8 +1159,8 @@ class GHLSystemFirmwareSensor(
     """Representation of the GHL system firmware."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "system",
-        "ghl_feature_type": "info",
+        ATTR_GHL_RESOURCE_TYPE: "system",
+        ATTR_GHL_FEATURE_TYPE: "info",
     }
 
     _attr_has_entity_name = True
@@ -1179,7 +1176,7 @@ class GHLSystemFirmwareSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1220,8 +1217,8 @@ class GHLSystemSerialNumberSensor(
     """Representation of the GHL system serial number."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "system",
-        "ghl_feature_type": "info",
+        ATTR_GHL_RESOURCE_TYPE: "system",
+        ATTR_GHL_FEATURE_TYPE: "info",
     }
 
     _attr_has_entity_name = True
@@ -1237,7 +1234,7 @@ class GHLSystemSerialNumberSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1278,8 +1275,8 @@ class GHLSystemTimeSensor(
     """Representation of the GHL system time."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "system",
-        "ghl_feature_type": "info",
+        ATTR_GHL_RESOURCE_TYPE: "system",
+        ATTR_GHL_FEATURE_TYPE: "info",
     }
 
     _attr_has_entity_name = True
@@ -1296,7 +1293,7 @@ class GHLSystemTimeSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1350,8 +1347,8 @@ class GHLSystemTimeAbsoluteSensor(
     """Representation of the absolute GHL system time."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "system",
-        "ghl_feature_type": "info",
+        ATTR_GHL_RESOURCE_TYPE: "system",
+        ATTR_GHL_FEATURE_TYPE: "info",
     }
 
     _attr_has_entity_name = True
@@ -1367,7 +1364,7 @@ class GHLSystemTimeAbsoluteSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1460,8 +1457,8 @@ class GHLLastUpdateSensor(
     """Representation of the last successful GHL update."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "diagnostic",
-        "ghl_feature_type": "info",
+        ATTR_GHL_RESOURCE_TYPE: "diagnostic",
+        ATTR_GHL_FEATURE_TYPE: "info",
     }
 
     _attr_has_entity_name = True
@@ -1478,7 +1475,7 @@ class GHLLastUpdateSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -1531,8 +1528,8 @@ class GHLDescriptionUpdatesRemainingSensor(
     """Show the polling cycles remaining until the next description check."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "diagnostic",
-        "ghl_feature_type": "info",
+        ATTR_GHL_RESOURCE_TYPE: "diagnostic",
+        ATTR_GHL_FEATURE_TYPE: "info",
     }
 
     _attr_has_entity_name = True
@@ -1549,7 +1546,7 @@ class GHLDescriptionUpdatesRemainingSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_description_updates_remaining"
@@ -1568,8 +1565,8 @@ class GHLCurveUpdatesRemainingSensor(
     """Show the polling cycles remaining until the next curve check."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "diagnostic",
-        "ghl_feature_type": "info",
+        ATTR_GHL_RESOURCE_TYPE: "diagnostic",
+        ATTR_GHL_FEATURE_TYPE: "info",
     }
 
     _attr_has_entity_name = True
@@ -1586,7 +1583,7 @@ class GHLCurveUpdatesRemainingSensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_curve_updates_remaining"

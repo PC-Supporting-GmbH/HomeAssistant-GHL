@@ -24,6 +24,17 @@ from .const import (
     CONF_SHOW_ALL_RESOURCES,
     DOMAIN,
     SENSOR_TYPE_HIDDEN,
+    CONF_INITIAL_HISTORY_PENDING,
+    DESCRIPTION_RESOURCE_ORDER,
+    DESCRIPTION_RESOURCE_TYPES,
+    FEEDPAUSE_COUNT,
+    IONDIRECTOR_ACTION_COUNT,
+    ISSUE_NEW_SENSORS_PREFIX,
+    KHDIRECTOR_ACTION_COUNT,
+    LIGHTSCENE_COUNT,
+    MAINTENANCE_COUNT,
+    PLATFORMS,
+    WATERCHANGE_COUNT,
 )
 from .coordinator import GHLDataUpdateCoordinator
 from .discovery import (
@@ -31,7 +42,6 @@ from .discovery import (
     async_discover_resources,
 )
 from .history import (
-    CONF_INITIAL_HISTORY_PENDING,
     async_import_resource_history,
     history_entity_is_registered,
     history_resource_map,
@@ -41,41 +51,10 @@ from .history import (
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [
-    "sensor",
-    "binary_sensor",
-    "button",
-    "number",
-    "select",
-    "text",
-]
 
-ISSUE_NEW_SENSORS_PREFIX = "new_sensors"
 
-FEEDPAUSE_COUNT = 4
-MAINTENANCE_COUNT = 4
-WATERCHANGE_COUNT = 4
-LIGHTSCENE_COUNT = 8
 
-DESCRIPTION_RESOURCE_TYPES = {
-    "SENSOR",
-    "SWITCHCHANNEL",
-    "ILLUMINATION",
-    "TIMER",
-    "DOSER",
-    "FLOWSENSOR",
-    "LEVELSENSOR",
-}
 
-DESCRIPTION_RESOURCE_ORDER = {
-    "SENSOR": 0,
-    "SWITCHCHANNEL": 1,
-    "ILLUMINATION": 2,
-    "TIMER": 3,
-    "DOSER": 4,
-    "FLOWSENSOR": 5,
-    "LEVELSENSOR": 6,
-}
 
 
 async def async_migrate_entry(
@@ -630,7 +609,7 @@ def _async_remove_write_entities(
             entity_id
         )
 
-    for action in range(5):
+    for action in range(KHDIRECTOR_ACTION_COUNT):
         unique_id = (
             f"{entry.entry_id}_khdirector_"
             f"startaction_{action}"
@@ -647,7 +626,7 @@ def _async_remove_write_entities(
                 entity_id
             )
 
-    for action in range(6):
+    for action in range(IONDIRECTOR_ACTION_COUNT):
         unique_id = (
             f"{entry.entry_id}_iondirector_"
             f"startaction_{action}"

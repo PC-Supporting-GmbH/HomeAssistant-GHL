@@ -50,19 +50,15 @@ from .const import (
     SENSOR_UNIT_KG_L,
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
+    CONF_INITIAL_HISTORY_PENDING,
+    _HISTORY_RESOURCE_TYPES,
+    _SENSOR_ERROR_MASK,
 )
 from .discovery import GHLDiscoveredResource
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_INITIAL_HISTORY_PENDING = "initial_history_pending"
 
-_SENSOR_ERROR_MASK = 512 | 1024
-_HISTORY_RESOURCE_TYPES = {
-    "SENSOR",
-    "KHDIRECTOR",
-    "IONDIRECTOR",
-}
 
 
 @dataclass(frozen=True)

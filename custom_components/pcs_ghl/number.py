@@ -47,6 +47,16 @@ from .const import (
     SENSOR_TYPE_TEMPERATURE,
     SENSOR_TYPE_UNKNOWN,
     SENSOR_TYPE_VOLTAGE,
+    ATTR_GHL_DEVICE,
+    ATTR_GHL_FEATURE_TYPE,
+    ATTR_GHL_RESOURCE_TYPE,
+    IONDIRECTOR_PARAMETER_KEYS,
+    LIGHTSCENE_DEFAULT_FADETIME,
+    SENSOR_SETPOINT_LIMITS,
+    SENSOR_SETPOINT_MAX_VALUE,
+    SENSOR_SETPOINT_MIN_VALUE,
+    SENSOR_SETPOINT_STEP,
+    THUNDERSTORM_DEFAULT_DURATION,
 )
 from .discovery import GHLDiscoveredResource
 from .coordinator import (
@@ -60,25 +70,8 @@ from .coordinator import (
 
 _LOGGER = logging.getLogger(__name__)
 
-THUNDERSTORM_DEFAULT_DURATION = 5
-LIGHTSCENE_DEFAULT_FADETIME = 0
 
-SENSOR_SETPOINT_MIN_VALUE = -10000
-SENSOR_SETPOINT_MAX_VALUE = 10000
-SENSOR_SETPOINT_STEP = 0.000001
 
-# ProfiLux 4 programming manual, 2021-11-22, section 5.2, page 45.
-# Only types with documented setpoint limits matching the current native unit.
-SENSOR_SETPOINT_LIMITS = {
-    SENSOR_TYPE_PH: (4.5, 9.5, 0.1),
-    SENSOR_TYPE_TEMPERATURE: (1.0, 36.0, 0.1),
-    SENSOR_TYPE_REDOX: (-300, 600, 1),
-    SENSOR_TYPE_CONDUCTIVITY_FRESHWATER: (10, 1900, 1),
-    SENSOR_TYPE_CONDUCTIVITY_SEAWATER: (0.5, 99.5, 0.1),
-    SENSOR_TYPE_HUMIDITY: (2.0, 98.0, 0.1),
-    SENSOR_TYPE_AIR_TEMPERATURE: (0.0, 50.0, 0.1),
-    SENSOR_TYPE_VOLTAGE: (0.0, 10.0, 0.01),
-}
 
 
 async def async_setup_entry(
@@ -108,7 +101,7 @@ async def async_setup_entry(
                         registry.async_remove(entity_id)
                     continue
             elif resource.resource == "IONDIRECTOR":
-                if resource.index not in range(5):
+                if resource.index not in range(len(IONDIRECTOR_PARAMETER_KEYS)):
                     continue
             elif resource.resource != "KHDIRECTOR":
                 continue
@@ -211,8 +204,8 @@ class GHLIlluminationMasterBrightnessNumber(
     """Representation of the GHL master brightness value to write."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "illumination",
-        "ghl_feature_type": "master_brightness",
+        ATTR_GHL_RESOURCE_TYPE: "illumination",
+        ATTR_GHL_FEATURE_TYPE: "master_brightness",
     }
 
     _attr_has_entity_name = True
@@ -235,7 +228,7 @@ class GHLIlluminationMasterBrightnessNumber(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._entry = entry
@@ -354,8 +347,8 @@ class GHLThunderstormDurationNumber(
     """Representation of the GHL thunderstorm duration."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "light",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "light",
     }
 
     _attr_has_entity_name = True
@@ -376,7 +369,7 @@ class GHLThunderstormDurationNumber(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._entry = entry
@@ -436,8 +429,8 @@ class GHLLightSceneFadeTimeNumber(
     """Representation of the GHL light scene fade time."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "special_function",
-        "ghl_feature_type": "light",
+        ATTR_GHL_RESOURCE_TYPE: "special_function",
+        ATTR_GHL_FEATURE_TYPE: "light",
     }
 
     _attr_has_entity_name = True
@@ -458,7 +451,7 @@ class GHLLightSceneFadeTimeNumber(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         self._entry = entry
@@ -519,8 +512,8 @@ class GHLSensorSetpointNumber(
     """Represent the setpoint of one GHL sensor or Director parameter."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "sensor",
-        "ghl_feature_type": "setpoint",
+        ATTR_GHL_RESOURCE_TYPE: "sensor",
+        ATTR_GHL_FEATURE_TYPE: "setpoint",
     }
 
     _description_platform = 'number'
@@ -545,7 +538,7 @@ class GHLSensorSetpointNumber(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
         super().__init__(coordinator)
 
@@ -580,9 +573,7 @@ class GHLSensorSetpointNumber(
             self._data_key = khdirector_desvalue_key()
             self._attr_translation_key = "khdirector_setpoint"
         else:
-            parameter_key = (
-                "calcium", "magnesium", "potassium", "sodium", "nitrate"
-            )[resource.index]
+            parameter_key = tuple(IONDIRECTOR_PARAMETER_KEYS.values())[resource.index]
             self._attr_unique_id = (
                 f"{entry.entry_id}_iondirector_{resource.index}_desvalue"
             )

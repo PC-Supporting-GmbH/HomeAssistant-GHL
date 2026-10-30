@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import math
 import logging
 from time import perf_counter
@@ -29,12 +29,13 @@ from .const import (
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
     UPDATE_INTERVAL_SECONDS,
+    ILLUMINATION_MAX_CURVE_POINTS,
+    UPDATE_INTERVAL,
 )
 from .discovery import GHLDiscoveredResource
 
 _LOGGER = logging.getLogger(__name__)
 
-UPDATE_INTERVAL = timedelta(seconds=UPDATE_INTERVAL_SECONDS)
 
 
 def sensor_desvalue_key(index: int) -> str:
@@ -241,13 +242,13 @@ class GHLDataUpdateCoordinator(
                 pointcount = parse_pointcount(
                     value, invalid_message=f"invalid POINTCOUNT: {value!r}"
                 )
-                if pointcount > 24:
+                if pointcount > ILLUMINATION_MAX_CURVE_POINTS:
                     _LOGGER.warning(
                         "GHL curve check received POINTCOUNT %d for %s; "
                         "reading only curve points 0-23",
                         pointcount, channel,
                     )
-                    pointcount = 24
+                    pointcount = ILLUMINATION_MAX_CURVE_POINTS
                 curve: list[dict[str, float | int]] = []
                 for curvepoint in range(pointcount):
                     time_value = await self.api.async_get(

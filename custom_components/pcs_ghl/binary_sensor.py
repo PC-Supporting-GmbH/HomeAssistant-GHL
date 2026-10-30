@@ -11,7 +11,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import (
+    ATTR_GHL_DEVICE,
+    ATTR_GHL_FEATURE_TYPE,
+    ATTR_GHL_RESOURCE_TYPE,
+    DOMAIN,
+)
 from .coordinator import (
     GHLDescriptionNameMixin,
     GHLDataUpdateCoordinator,
@@ -78,8 +83,8 @@ class GHLSwitchChannelBinarySensor(
     """Representation of a GHL switch channel state."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "switch_channel",
-        "ghl_feature_type": "state",
+        ATTR_GHL_RESOURCE_TYPE: "switch_channel",
+        ATTR_GHL_FEATURE_TYPE: "state",
     }
 
     _description_platform = 'binary_sensor'
@@ -97,7 +102,7 @@ class GHLSwitchChannelBinarySensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)
@@ -153,8 +158,8 @@ class GHLLevelSensorBinarySensor(
     """Representation of a GHL level sensor state."""
 
     _attr_extra_state_attributes = {
-        "ghl_resource_type": "level_sensor",
-        "ghl_feature_type": "state",
+        ATTR_GHL_RESOURCE_TYPE: "level_sensor",
+        ATTR_GHL_FEATURE_TYPE: "state",
     }
 
     _attr_has_entity_name = True
@@ -169,7 +174,7 @@ class GHLLevelSensorBinarySensor(
 
         self._attr_extra_state_attributes = {
             **self._attr_extra_state_attributes,
-            "ghl_device": entry.title,
+            ATTR_GHL_DEVICE: entry.title,
         }
 
         super().__init__(coordinator)

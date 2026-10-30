@@ -18,27 +18,11 @@ from .const import (
     CONF_DEVICE_TYPE,
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
+    DESCRIPTION_RESOURCE_FALLBACKS,
+    DESCRIPTION_RESOURCE_TRANSLATION_KEYS,
 )
 
-DESCRIPTION_RESOURCE_TRANSLATION_KEYS = {
-    "SENSOR": "description_resource_sensor",
-    "SWITCHCHANNEL": "description_resource_switchchannel",
-    "ILLUMINATION": "description_resource_illumination",
-    "TIMER": "description_resource_timer",
-    "DOSER": "description_resource_doser",
-    "FLOWSENSOR": "description_resource_flowsensor",
-    "LEVELSENSOR": "description_resource_levelsensor",
-}
 
-DESCRIPTION_RESOURCE_FALLBACKS = {
-    "SENSOR": "Sensor {index}",
-    "SWITCHCHANNEL": "Switch Channel {index}",
-    "ILLUMINATION": "Illumination {index}",
-    "TIMER": "Timer {index}",
-    "DOSER": "Dosing Pump {index}",
-    "FLOWSENSOR": "Flow Sensor {index}",
-    "LEVELSENSOR": "Level Sensor {index}",
-}
 
 
 
