@@ -278,6 +278,11 @@ def _async_remove_obsolete_write_buttons(
 class GHLFeedPauseButton(ButtonEntity):
     """Representation of a GHL feed pause action."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "feed",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -288,6 +293,11 @@ class GHLFeedPauseButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL feed pause button."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._api = api
         self._entry = entry
@@ -364,6 +374,11 @@ class GHLFeedPauseButton(ButtonEntity):
 class GHLMaintenanceButton(ButtonEntity):
     """Representation of a GHL maintenance action."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "maintenance",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -374,6 +389,11 @@ class GHLMaintenanceButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL maintenance button."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._api = api
         self._entry = entry
@@ -450,6 +470,11 @@ class GHLMaintenanceButton(ButtonEntity):
 class GHLWaterChangeButton(ButtonEntity):
     """Representation of a GHL water change action."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "waterchange",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -460,6 +485,11 @@ class GHLWaterChangeButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL water change button."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._api = api
         self._entry = entry
@@ -536,6 +566,11 @@ class GHLWaterChangeButton(ButtonEntity):
 class GHLThunderstormButton(ButtonEntity):
     """Representation of a GHL thunderstorm action."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "light",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -546,6 +581,11 @@ class GHLThunderstormButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL thunderstorm button."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._api = api
         self._entry = entry
@@ -622,6 +662,11 @@ class GHLThunderstormButton(ButtonEntity):
 class GHLLightSceneButton(ButtonEntity):
     """Representation of a GHL light scene action."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "light",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -633,6 +678,11 @@ class GHLLightSceneButton(ButtonEntity):
         state: bool,
     ) -> None:
         """Initialize the GHL light scene button."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._api = api
         self._entry = entry
@@ -715,6 +765,11 @@ class GHLLightSceneButton(ButtonEntity):
 class GHLKHDirectorActionButton(ButtonEntity):
     """Representation of a GHL KH Director action."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "khdirector",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -724,6 +779,11 @@ class GHLKHDirectorActionButton(ButtonEntity):
         action: int,
     ) -> None:
         """Initialize the GHL KH Director action button."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._api = api
         self._entry = entry
@@ -797,6 +857,11 @@ class GHLKHDirectorActionButton(ButtonEntity):
 class GHLIONDirectorActionButton(ButtonEntity):
     """Representation of a GHL ION Director action."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "iondirector",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -806,6 +871,11 @@ class GHLIONDirectorActionButton(ButtonEntity):
         action: int,
     ) -> None:
         """Initialize the GHL ION Director action button."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._api = api
         self._entry = entry

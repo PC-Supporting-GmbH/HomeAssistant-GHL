@@ -337,6 +337,11 @@ class GHLMitrasHeatsinkTemperatureSensor(
 ):
     """Representation of the Mitras heatsink temperature."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "sensor",
+        "ghl_feature_type": "value",
+    }
+
     _attr_has_entity_name = True
     _attr_translation_key = "mitras_heatsink_temperature"
     _attr_device_class = SensorDeviceClass.TEMPERATURE
@@ -349,6 +354,11 @@ class GHLMitrasHeatsinkTemperatureSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the Mitras heatsink temperature sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -386,6 +396,11 @@ class GHLSensor(
 ):
     """Representation of a GHL sensor."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "sensor",
+        "ghl_feature_type": "value",
+    }
+
     _description_platform = 'sensor'
     _description_name_keys = ('sensor', None)
 
@@ -400,6 +415,11 @@ class GHLSensor(
         sensor_unit: str,
     ) -> None:
         """Initialize the GHL sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -518,6 +538,11 @@ class GHLKHDirectorValueSensor(
 ):
     """Representation of the GHL KH Director value."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "sensor",
+        "ghl_feature_type": "value",
+    }
+
     _attr_has_entity_name = True
     _attr_native_unit_of_measurement = "°dKH"
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -528,6 +553,11 @@ class GHLKHDirectorValueSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the GHL KH Director value sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -570,6 +600,11 @@ class GHLIONDirectorValueSensor(
 ):
     """Representation of a GHL ION Director value."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "sensor",
+        "ghl_feature_type": "value",
+    }
+
     _attr_has_entity_name = True
     _attr_native_unit_of_measurement = "mg/l"
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -582,6 +617,11 @@ class GHLIONDirectorValueSensor(
         parameter_key: str,
     ) -> None:
         """Initialize the GHL ION Director value sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -634,6 +674,11 @@ class GHLSwitchChannelCurrentSensor(
 ):
     """Representation of a GHL switch channel current."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "switch_channel",
+        "ghl_feature_type": "electric_current",
+    }
+
     _description_platform = 'sensor'
     _description_name_keys = ('switchchannel_current', 'switchchannel_current_named')
 
@@ -650,6 +695,11 @@ class GHLSwitchChannelCurrentSensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL switch channel current sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -713,6 +763,11 @@ class GHLDoserFillLevelSensor(
 ):
     """Representation of a GHL dosing pump fill level."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "doser",
+        "ghl_feature_type": "fill_level",
+    }
+
     _description_platform = 'sensor'
     _description_name_keys = ('doser_filllevel_default', 'doser_filllevel')
 
@@ -727,6 +782,11 @@ class GHLDoserFillLevelSensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL dosing pump fill level sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -784,6 +844,11 @@ class GHLDoserCapacitySensor(
 ):
     """Representation of a GHL dosing pump capacity."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "doser",
+        "ghl_feature_type": "capacity",
+    }
+
     _description_platform = 'sensor'
     _description_name_keys = ('doser_capacity_default', 'doser_capacity')
 
@@ -798,6 +863,11 @@ class GHLDoserCapacitySensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL dosing pump capacity."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -855,6 +925,11 @@ class GHLFlowSensor(
 ):
     """Representation of a GHL flow sensor."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "flow_sensor",
+        "ghl_feature_type": "value",
+    }
+
     _description_platform = 'sensor'
     _description_name_keys = ('flowsensor_flow_default', 'flowsensor_flow')
 
@@ -870,6 +945,11 @@ class GHLFlowSensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL flow sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -926,6 +1006,11 @@ class GHLIlluminationMasterBrightnessSensor(
 ):
     """Representation of the GHL illumination master brightness."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "illumination",
+        "ghl_feature_type": "master_brightness",
+    }
+
     _attr_has_entity_name = True
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -938,6 +1023,11 @@ class GHLIlluminationMasterBrightnessSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the GHL illumination master brightness."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -977,6 +1067,11 @@ class GHLIlluminationBrightnessSensor(
 ):
     """Representation of a GHL illumination channel."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "illumination",
+        "ghl_feature_type": "channel_brightness",
+    }
+
     _description_platform = 'sensor'
     _description_name_keys = ('illumination', None)
 
@@ -992,6 +1087,11 @@ class GHLIlluminationBrightnessSensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL illumination channel."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -1029,6 +1129,7 @@ class GHLIlluminationBrightnessSensor(
         """Return the cached illumination curve."""
 
         return {
+            **self._attr_extra_state_attributes,
             "point_count": self._resource.data.get(
                 "point_count",
                 0,
@@ -1060,6 +1161,11 @@ class GHLSystemFirmwareSensor(
 ):
     """Representation of the GHL system firmware."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "system",
+        "ghl_feature_type": "info",
+    }
+
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "system_firmware"
@@ -1070,6 +1176,11 @@ class GHLSystemFirmwareSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the GHL system firmware sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -1108,6 +1219,11 @@ class GHLSystemSerialNumberSensor(
 ):
     """Representation of the GHL system serial number."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "system",
+        "ghl_feature_type": "info",
+    }
+
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "system_serialnumber"
@@ -1118,6 +1234,11 @@ class GHLSystemSerialNumberSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the GHL system serial number sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -1156,6 +1277,11 @@ class GHLSystemTimeSensor(
 ):
     """Representation of the GHL system time."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "system",
+        "ghl_feature_type": "info",
+    }
+
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "system_time"
@@ -1167,6 +1293,11 @@ class GHLSystemTimeSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the GHL system time sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -1218,6 +1349,11 @@ class GHLSystemTimeAbsoluteSensor(
 ):
     """Representation of the absolute GHL system time."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "system",
+        "ghl_feature_type": "info",
+    }
+
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "system_time_absolute"
@@ -1228,6 +1364,11 @@ class GHLSystemTimeAbsoluteSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the absolute GHL system time sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -1318,6 +1459,11 @@ class GHLLastUpdateSensor(
 ):
     """Representation of the last successful GHL update."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "diagnostic",
+        "ghl_feature_type": "info",
+    }
+
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "last_update"
@@ -1329,6 +1475,11 @@ class GHLLastUpdateSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the last successful GHL update sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -1379,6 +1530,11 @@ class GHLDescriptionUpdatesRemainingSensor(
 ):
     """Show the polling cycles remaining until the next description check."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "diagnostic",
+        "ghl_feature_type": "info",
+    }
+
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "description_updates_remaining"
@@ -1390,6 +1546,11 @@ class GHLDescriptionUpdatesRemainingSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the description polling diagnostic."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_description_updates_remaining"
         self._attr_device_info = device_info(entry)
@@ -1406,6 +1567,11 @@ class GHLCurveUpdatesRemainingSensor(
 ):
     """Show the polling cycles remaining until the next curve check."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "diagnostic",
+        "ghl_feature_type": "info",
+    }
+
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "curve_updates_remaining"
@@ -1417,6 +1583,11 @@ class GHLCurveUpdatesRemainingSensor(
         entry: ConfigEntry,
     ) -> None:
         """Initialize the curve polling diagnostic."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_curve_updates_remaining"
         self._attr_device_info = device_info(entry)

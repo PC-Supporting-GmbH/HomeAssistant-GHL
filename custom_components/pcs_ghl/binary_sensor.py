@@ -77,6 +77,11 @@ class GHLSwitchChannelBinarySensor(
 ):
     """Representation of a GHL switch channel state."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "switch_channel",
+        "ghl_feature_type": "state",
+    }
+
     _description_platform = 'binary_sensor'
     _description_name_keys = ('switchchannel', None)
 
@@ -89,6 +94,11 @@ class GHLSwitchChannelBinarySensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL switch channel."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 
@@ -142,6 +152,11 @@ class GHLLevelSensorBinarySensor(
 ):
     """Representation of a GHL level sensor state."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "level_sensor",
+        "ghl_feature_type": "state",
+    }
+
     _attr_has_entity_name = True
 
     def __init__(
@@ -151,6 +166,11 @@ class GHLLevelSensorBinarySensor(
         resource: GHLDiscoveredResource,
     ) -> None:
         """Initialize the GHL level sensor."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         super().__init__(coordinator)
 

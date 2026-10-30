@@ -210,6 +210,11 @@ class GHLIlluminationMasterBrightnessNumber(
 ):
     """Representation of the GHL master brightness value to write."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "illumination",
+        "ghl_feature_type": "master_brightness",
+    }
+
     _attr_has_entity_name = True
     _attr_native_min_value = 0
     _attr_native_max_value = 100
@@ -227,6 +232,11 @@ class GHLIlluminationMasterBrightnessNumber(
         coordinator: GHLDataUpdateCoordinator,
     ) -> None:
         """Initialize the GHL master brightness value."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._entry = entry
         self._masterbrightness_data = masterbrightness_data
@@ -343,6 +353,11 @@ class GHLThunderstormDurationNumber(
 ):
     """Representation of the GHL thunderstorm duration."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "light",
+    }
+
     _attr_has_entity_name = True
     _attr_native_min_value = 1
     _attr_native_max_value = 60
@@ -358,6 +373,11 @@ class GHLThunderstormDurationNumber(
         thunderstorm_data: dict,
     ) -> None:
         """Initialize the GHL thunderstorm duration."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._entry = entry
         self._thunderstorm_data = thunderstorm_data
@@ -415,6 +435,11 @@ class GHLLightSceneFadeTimeNumber(
 ):
     """Representation of the GHL light scene fade time."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "special_function",
+        "ghl_feature_type": "light",
+    }
+
     _attr_has_entity_name = True
     _attr_native_min_value = 0
     _attr_native_max_value = 255
@@ -430,6 +455,11 @@ class GHLLightSceneFadeTimeNumber(
         lightscene_data: dict,
     ) -> None:
         """Initialize the GHL light scene fade time."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
 
         self._entry = entry
         self._lightscene_data = lightscene_data
@@ -488,6 +518,11 @@ class GHLSensorSetpointNumber(
 ):
     """Represent the setpoint of one GHL sensor or Director parameter."""
 
+    _attr_extra_state_attributes = {
+        "ghl_resource_type": "sensor",
+        "ghl_feature_type": "setpoint",
+    }
+
     _description_platform = 'number'
     _description_name_keys = ('sensor_setpoint', 'sensor_setpoint_named')
     _description_resource_type = "SENSOR"
@@ -507,6 +542,11 @@ class GHLSensorSetpointNumber(
         api: GHLAPI,
     ) -> None:
         """Initialize the number for a fixed setpoint resource."""
+
+        self._attr_extra_state_attributes = {
+            **self._attr_extra_state_attributes,
+            "ghl_device": entry.title,
+        }
         super().__init__(coordinator)
 
         self._coordinator = coordinator
