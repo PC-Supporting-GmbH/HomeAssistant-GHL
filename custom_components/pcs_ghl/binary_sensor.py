@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from .functions import device_info
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -150,6 +150,8 @@ class GHLLevelSensorBinarySensor(
     BinarySensorEntity,
 ):
     """Representation of a GHL level sensor state."""
+
+    _attr_device_class = BinarySensorDeviceClass.MOISTURE
 
     _attr_extra_state_attributes = {
         ATTR_GHL_RESOURCE_TYPE: "level_sensor",
