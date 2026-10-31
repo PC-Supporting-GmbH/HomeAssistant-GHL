@@ -153,10 +153,16 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     errors["base"] = "cannot_connect"
 
                 else:
+                    serial_number = (
+                        reply[6:-2].strip()
+                        if reply.startswith('ACK <"') and reply.endswith('">')
+                        else ""
+                    )
+
                     if reply == "NACK (-105)":
                         errors["base"] = "api_not_enabled"
 
-                    elif not reply.startswith("ACK"):
+                    elif not serial_number:
                         errors["base"] = "invalid_response"
 
                     else:
@@ -186,7 +192,10 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         )
 
                         return self.async_create_entry(
-                            title=f"{device_type_name} ({user_input[CONF_HOST]})",
+                            title=(
+                                f"{device_type_name.lower().replace(' ', '_')}_"
+                                f"{serial_number}"
+                            ),
                             data=data,
                             options={
                                 CONF_IMPORT_HISTORICAL_DATA: user_input[
