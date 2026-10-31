@@ -413,6 +413,9 @@ class GHLSensor(
         self._resource = resource
         self._sensor_type = sensor_type
         self._sensor_unit = sensor_unit
+        self._sensor_configured = str(resource.index) in entry.options.get(
+            CONF_SENSOR_TYPES, {},
+        )
 
         self._attr_unique_id = (
             f"{entry.entry_id}_sensor_{resource.index}_actvalue"
@@ -434,6 +437,9 @@ class GHLSensor(
     @property
     def native_value(self):
         """Return the cached GHL sensor value."""
+
+        if not self._sensor_configured:
+            return None
 
         return self.coordinator.data.get(
             self._resource.index,
