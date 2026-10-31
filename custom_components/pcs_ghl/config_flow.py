@@ -75,7 +75,7 @@ async def async_test_connection(host: str, port: int) -> str:
     )
 
     try:
-        writer.write(b"GET ILLUMINATION MASTERBRIGHTNESS\n")
+        writer.write(b"GET SYSTEM SERIALNUMBER\n")
         await writer.drain()
 
         reply = await asyncio.wait_for(
