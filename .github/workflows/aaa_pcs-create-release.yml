@@ -176,21 +176,78 @@ jobs:
 
       - name: Prepare release notes
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PREVIOUS_TAG="$(git describe --tags --abbrev=0 "${RELEASE_VERSION}^")"
 
+          RELEASE_SERIES="${RELEASE_VERSION#v}"
+          RELEASE_SERIES="${RELEASE_SERIES%.*}"
+
           echo "Previous tag: $PREVIOUS_TAG"
 
-          {
-            echo "### Noteworthy Changes:"
-            echo ""
-            git log "${PREVIOUS_TAG}..${RELEASE_VERSION}" \
-              --format='- %s' \
-              --invert-grep \
-              --grep='^Adapt manifest to Release Version$'
-            echo ""
-            echo "### Fixes:"
-          } > release-notes.md
+          if [[ "${RELEASE_VERSION##*.}" != "0" ]]; then
+            gh release view --json tagName,body,isDraft,isPrerelease > previous-release.json
+
+            python - <<'PYNOTES'
+          import json
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          version = os.environ["RELEASE_VERSION"]
+          previous = json.loads(Path("previous-release.json").read_text(encoding="utf-8"))
+          previous_version = previous["tagName"]
+          current_parts = tuple(int(part) for part in version.removeprefix("v").split("."))
+          if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", previous_version):
+              raise SystemExit("Previous release has an invalid version format")
+          previous_parts = tuple(int(part) for part in previous_version[1:].split("."))
+          if (
+              previous["isDraft"]
+              or previous["isPrerelease"]
+              or previous_parts[:2] != current_parts[:2]
+              or previous_parts >= current_parts
+          ):
+              raise SystemExit("Patch notes require an earlier published release in the same release series")
+
+          body = previous["body"].replace("\r\n", "\n")
+          fixes_heading = re.search(r"^###\s+Fixes(?:\s+in\s+[^\n:]+)?\s*:?[ \t]*$", body, re.MULTILINE)
+          if fixes_heading is None:
+              raise SystemExit("Previous release has no recognizable Fixes heading; notes were not overwritten")
+          highlights = body[:fixes_heading.start()].rstrip()
+          series = ".".join(str(part) for part in current_parts[:2])
+          highlights = re.sub(
+              r"^###\s+(?:Highlights of the [^\n]+ release series|Noteworthy Changes[^\n]*)[ \t]*$",
+              f"### Highlights of the {series} release series",
+              highlights,
+              count=1,
+              flags=re.MULTILINE,
+          )
+          commits = subprocess.check_output(
+              [
+                  "git", "log", f"{previous_version}..{version}",
+                  "--format=- %s", "--invert-grep",
+                  "--grep=^Adapt manifest to Release Version$",
+              ],
+              text=True,
+              encoding="utf-8",
+          ).rstrip()
+          notes = f"{highlights}\n\n### Fixes in {version}\n\n{commits}\n"
+          Path("release-notes.md").write_text(notes, encoding="utf-8")
+          PYNOTES
+          else
+            {
+              echo "### Highlights of the $RELEASE_SERIES release series"
+              echo ""
+              git log "${PREVIOUS_TAG}..${RELEASE_VERSION}" \
+                --format='- %s' \
+                --invert-grep \
+                --grep='^Adapt manifest to Release Version$'
+              echo ""
+              echo "### Fixes in $RELEASE_VERSION"
+            } > release-notes.md
+          fi
 
           echo ""
           echo "Generated release notes:"
