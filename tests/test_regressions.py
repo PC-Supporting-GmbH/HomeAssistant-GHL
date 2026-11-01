@@ -890,7 +890,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(c.reloads, [])
         c.release.set()
         self.assertTrue(await c.task)
-        self.assertEqual(len(c.reloads), 1)
+        self.assertEqual(c.reloads, [])
 
     async def test_option_change_preserves_running_setup(self):
         c = self.make_case()
@@ -1005,7 +1005,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
     async def test_pending_reload_request_is_not_duplicated(self):
         c = self.make_case()
         await c.started.wait()
-        c.entry.title = "Renamed example"
+        c.entry.options = {"show_all_resources": True}
         await self.notify(c)
         c.entry.data["host"] = "new.example"
         await self.notify(c)
@@ -1055,7 +1055,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
     async def test_failed_cleanup_overrides_an_earlier_reload_request(self):
         c = self.make_case()
         await c.started.wait()
-        c.entry.title = "Renamed example"
+        c.entry.options = {"show_all_resources": True}
         await self.notify(c)
         c.hass.data["pcs_ghl"] = {c.entry.entry_id: {}}
         c.ns["async_unload_entry"].side_effect = None
@@ -1114,3 +1114,120 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(clients[0]._reader)
         self.assertIsNone(clients[0]._writer)
         self.assertEqual(len(c.reloads), 1)
+
+
+    async def test_history_toggle_during_setup_does_not_reload(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.options = {"import_historical_data": True}
+        await self.notify(c)
+        self.assertFalse(c.tasks[1].done())
+        c.release.set()
+        self.assertTrue(await c.task)
+        self.assertEqual(c.reloads, [])
+
+    async def test_history_toggle_and_host_change_during_setup_restart(self):
+        c = self.make_case()
+        await c.started.wait()
+        c.entry.options = {"import_historical_data": True}
+        c.entry.data["host"] = "new.example"
+        await self.notify(c)
+        self.assertFalse(await c.task)
+        self.assertEqual(len(c.reloads), 1)
+
+
+class RenameReloadTests(unittest.IsolatedAsyncioTestCase):
+    """Exercise the production config listener after a completed setup."""
+
+    def make_listener(self):
+        import copy
+
+        tree = ast.parse((COMPONENT / "__init__.py").read_text(encoding="utf-8"))
+        setup = next(node for node in tree.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "_async_setup_entry")
+        listener = next(node for node in setup.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "async_reload_on_config_change")
+        factory = ast.parse(
+            "def make_listener():\n"
+            "    entry_title = 'Example device'\n"
+            "    entry_options = {}\n"
+            "    connection_data = ('device.example', 10001, 'full_access')\n"
+            "    entry_runtime = {}\n"
+        ).body[0]
+        factory.body.extend([listener, ast.Return(value=ast.Name(id=listener.name, ctx=ast.Load()))])
+        ns = {"deepcopy": copy.deepcopy, "CONF_HOST": "host", "CONF_PORT": "port", "CONF_ACCESS_MODE": "access_mode", "CONF_IMPORT_HISTORICAL_DATA": "import_historical_data"}
+        module = ast.Module(body=[ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0), factory], type_ignores=[])
+        exec(compile(ast.fix_missing_locations(module), "production-config-listener", "exec"), ns)
+        reloads = []
+        hass = SimpleNamespace(config_entries=SimpleNamespace(async_schedule_reload=reloads.append))
+        entry = SimpleNamespace(entry_id="example-entry", title="Example device", options={}, data={"host": "device.example", "port": 10001, "access_mode": "full_access"})
+        return ns["make_listener"](), hass, entry, reloads
+
+    async def test_rename_only_does_not_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        for title in ["Renamed device", "", "Another name"]:
+            entry.title = title
+            await listener(hass, entry)
+        self.assertEqual(reloads, [])
+
+    async def test_rename_and_connection_change_still_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        entry.title = "Renamed device"
+        entry.data["host"] = "new.example"
+        await listener(hass, entry)
+        self.assertEqual(reloads, [entry.entry_id])
+
+    async def test_rename_and_options_change_still_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        entry.title = "Renamed device"
+        entry.options = {"show_all_resources": True}
+        await listener(hass, entry)
+        self.assertEqual(reloads, [entry.entry_id])
+
+    async def test_options_change_after_rename_still_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        entry.title = "Renamed device"
+        await listener(hass, entry)
+        entry.options = {"show_all_resources": True}
+        await listener(hass, entry)
+        self.assertEqual(reloads, [entry.entry_id])
+
+    async def test_name_is_not_a_fallback_reload_trigger(self):
+        tree = ast.parse((COMPONENT / "config_flow.py").read_text(encoding="utf-8"))
+        options = next(node for node in tree.body if isinstance(node, ast.ClassDef) and any(isinstance(child, ast.AsyncFunctionDef) and child.name == "async_step_general" for child in node.body))
+        general = next(node for node in options.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "async_step_general")
+        assignment = next(node for node in ast.walk(general) if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "data_changed" for target in node.targets))
+        self.assertNotIn("name_changed", {node.id for node in ast.walk(assignment.value) if isinstance(node, ast.Name)})
+
+    async def test_history_option_toggles_do_not_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        for enabled in [True, False, True]:
+            entry.options = {"import_historical_data": enabled}
+            await listener(hass, entry)
+        self.assertEqual(reloads, [])
+
+    async def test_history_option_and_name_do_not_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        entry.title = "Renamed device"
+        entry.options = {"import_historical_data": True}
+        await listener(hass, entry)
+        self.assertEqual(reloads, [])
+
+    async def test_history_option_and_other_option_still_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        entry.options = {"import_historical_data": True, "show_all_resources": True}
+        await listener(hass, entry)
+        self.assertEqual(reloads, [entry.entry_id])
+
+    async def test_history_option_and_connection_still_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        entry.options = {"import_historical_data": True}
+        entry.data["host"] = "new.example"
+        await listener(hass, entry)
+        self.assertEqual(reloads, [entry.entry_id])
+
+    async def test_other_option_after_history_toggle_still_reload(self):
+        listener, hass, entry, reloads = self.make_listener()
+        entry.options = {"import_historical_data": True}
+        await listener(hass, entry)
+        entry.options = {"import_historical_data": True, "show_all_resources": True}
+        await listener(hass, entry)
+        self.assertEqual(reloads, [entry.entry_id])

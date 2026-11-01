@@ -444,8 +444,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             )
 
             data_changed = (
-                name_changed
-                or host != old_host
+                host != old_host
                 or port != old_port
                 or access_mode != old_access_mode
             )
@@ -453,8 +452,6 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             options_changed = (
                 show_all_resources
                 != old_show_all_resources
-                or import_historical_data
-                != old_import_historical_data
             )
 
             if connection_changed:

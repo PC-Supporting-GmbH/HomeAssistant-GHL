@@ -106,9 +106,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         updated_options = deepcopy(dict(updated_entry.options))
         if (
             updated_connection_data == connection_data
-            and updated_entry.title == entry_title
-            and updated_options == entry_options
+            and {
+                key: value for key, value in updated_options.items()
+                if key != CONF_IMPORT_HISTORICAL_DATA
+            } == {
+                key: value for key, value in entry_options.items()
+                if key != CONF_IMPORT_HISTORICAL_DATA
+            }
         ):
+            entry_title = updated_entry.title
+            entry_options = updated_options
             return
 
         address_changed = updated_connection_data[:2] != connection_data[:2]
@@ -384,7 +391,7 @@ async def _async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass: HomeAssistant,
         updated_entry: ConfigEntry,
     ) -> None:
-        """Reload for names, options or connection settings, not internal data."""
+        """Reload for options or connection settings, not names or internal data."""
         nonlocal entry_title, entry_options, connection_data
 
         updated_options = deepcopy(dict(updated_entry.options))
@@ -393,10 +400,17 @@ async def _async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             for key in (CONF_HOST, CONF_PORT, CONF_ACCESS_MODE)
         )
         if (
-            updated_entry.title == entry_title
-            and updated_options == entry_options
+            {
+                key: value for key, value in updated_options.items()
+                if key != CONF_IMPORT_HISTORICAL_DATA
+            } == {
+                key: value for key, value in entry_options.items()
+                if key != CONF_IMPORT_HISTORICAL_DATA
+            }
             and updated_connection_data == connection_data
         ):
+            entry_title = updated_entry.title
+            entry_options = updated_options
             return
 
         managed_history_options = (
