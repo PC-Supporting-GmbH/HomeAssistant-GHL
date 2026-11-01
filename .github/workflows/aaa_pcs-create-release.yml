@@ -18,6 +18,12 @@ on:
         required: false
         type: string
 
+      reuse_existing_tag:
+        description: "Bestehendes Tag übernehmen"
+        required: false
+        default: false
+        type: boolean
+
 permissions:
   contents: write
 
@@ -96,12 +102,21 @@ jobs:
 
       - name: Check whether tag already exists
         shell: bash
+        env:
+          REUSE_EXISTING_TAG: ${{ inputs.reuse_existing_tag }}
         run: |
           VERSION="$RELEASE_VERSION"
 
-          if git rev-parse "$VERSION" >/dev/null 2>&1; then
-            echo "Tag $VERSION already exists."
-            exit 1
+          if git show-ref --verify --quiet "refs/tags/$VERSION"; then
+            if [[ "$REUSE_EXISTING_TAG" == "true" ]]; then
+              echo "Using existing tag $VERSION."
+              echo "TAG_ALREADY_EXISTS=true" >> "$GITHUB_ENV"
+            else
+              echo "Tag $VERSION already exists."
+              exit 1
+            fi
+          else
+            echo "TAG_ALREADY_EXISTS=false" >> "$GITHUB_ENV"
           fi
 
       - name: Check manifest version
@@ -169,6 +184,7 @@ jobs:
           git push origin HEAD:${{ github.ref_name }}
 
       - name: Create tag
+        if: env.TAG_ALREADY_EXISTS != 'true'
         shell: bash
         run: |
           git tag "$RELEASE_VERSION"
