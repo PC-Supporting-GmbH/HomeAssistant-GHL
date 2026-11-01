@@ -65,10 +65,10 @@
         }
       },
       "initial_sensor_setup": {
-        "title": "Configurer GHL",
-        "description": "**Veuillez maintenant configurer vos capteurs.**\n\nLes capteurs ont été détectés sur l’appareil GHL, mais doivent encore être associés à leur type de capteur respectif.",
+        "title": "Configure GHL",
+        "description": "**Please configure your sensors now.**\n\nThe sensors were detected on the GHL device, but each still needs to be assigned its corresponding sensor type.",
         "menu_options": {
-          "general": "Paramètres généraux",
+          "general": "General settings",
           "sensors": "Configure all sensors",
           "rediscover": "Detect new sensors/devices"
         }
