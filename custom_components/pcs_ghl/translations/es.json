@@ -9,7 +9,7 @@
           "port": "Puerto (predeterminado: 10002)",
           "device_type": "Tipo de dispositivo",
           "access_mode": "Modo de acceso a la API",
-          "api_enabled": "Confirmo que la API GHL está activada en el dispositivo",
+          "api_enabled": "He activado la API en GHL Control Center → System → GHL API o mediante GHL Connect.",
           "import_historical_data": "Importar datos históricos de los sensores recién detectados"
         },
         "data_description": {
@@ -160,11 +160,11 @@
   "entity": {
     "sensor": {
       "description_updates_remaining": {
-        "name": "Consulta de descripciones en",
+        "name": "Próxima comprobación de descripciones en",
         "unit_of_measurement": "ciclos"
       },
       "curve_updates_remaining": {
-        "name": "Consulta de curvas en",
+        "name": "Próxima comprobación de curvas en",
         "unit_of_measurement": "ciclos"
       },
       "sensor": {

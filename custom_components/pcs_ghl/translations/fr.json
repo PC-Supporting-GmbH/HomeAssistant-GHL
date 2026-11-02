@@ -9,7 +9,7 @@
           "port": "Port (par défaut : 10002)",
           "device_type": "Type d’appareil",
           "access_mode": "Mode d’accès à l’API",
-          "api_enabled": "Je confirme que l’API GHL est activée sur l’appareil",
+          "api_enabled": "J’ai activé l’API dans GHL Control Center → System → GHL API ou via GHL Connect.",
           "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés"
         },
         "data_description": {
@@ -160,11 +160,11 @@
   "entity": {
     "sensor": {
       "description_updates_remaining": {
-        "name": "Vérification des descriptions dans",
+        "name": "Prochaine vérification des descriptions dans",
         "unit_of_measurement": "cycles"
       },
       "curve_updates_remaining": {
-        "name": "Vérification des courbes dans",
+        "name": "Prochaine vérification des courbes dans",
         "unit_of_measurement": "cycles"
       },
       "sensor": {

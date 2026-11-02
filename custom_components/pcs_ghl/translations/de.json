@@ -9,7 +9,7 @@
           "port": "Port (Standard: 10002)",
           "device_type": "Gerätetyp",
           "access_mode": "API-Zugriffsmodus",
-          "api_enabled": "Ich bestätige, dass die GHL API auf dem Gerät aktiviert ist",
+          "api_enabled": "Ich habe die API im GHL Control Center → System → GHL API oder über GHL Connect aktiviert.",
           "import_historical_data": "Historische Daten bei neu entdeckten Sensoren importieren"
         },
         "data_description": {
@@ -160,11 +160,11 @@
   "entity": {
     "sensor": {
       "description_updates_remaining": {
-        "name": "Beschreibungscheck in",
+        "name": "Nächste Beschreibungsprüfung in",
         "unit_of_measurement": "Durchläufe"
       },
       "curve_updates_remaining": {
-        "name": "Kurvencheck in",
+        "name": "Nächste Kurvenprüfung in",
         "unit_of_measurement": "Durchläufe"
       },
       "sensor": {
@@ -310,7 +310,7 @@
         "name": "ION Director Sensortest starten"
       },
       "iondirector_action_prime_cell": {
-        "name": "ION Director Messzelle primen"
+        "name": "ION Director Messzelle vorbereiten"
       }
     },
     "number": {
@@ -350,7 +350,7 @@
     },
     "select": {
       "description_resource": {
-        "name": "GHL Element (für Bezeichnung)"
+        "name": "GHL-Element (Bezeichnung ändern)"
       },
       "description_resource_sensor": {
         "name": "Sensor {index}"
