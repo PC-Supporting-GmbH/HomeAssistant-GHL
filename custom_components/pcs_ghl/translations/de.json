@@ -21,7 +21,7 @@
     "error": {
       "cannot_connect": "Verbindung zum GHL-Gerät konnte nicht hergestellt werden. Prüfe IP-Adresse, Port und Netzwerkverbindung.",
       "api_not_enabled": "Die GHL API ist nicht aktiviert oder der Zugriff wurde verweigert. Aktiviere die API auf dem GHL-Gerät.",
-      "invalid_response": "Das Gerät hat eine unerwartete Antwort zurückgegeben."
+      "invalid_response": "Es wurde eine unerwartete Antwort empfangen. Prüfe, ob die eingegebene IP-Adresse tatsächlich zu einem unterstützten GHL-Gerät gehört, und kontrolliere den eingegebenen Port."
     },
     "abort": {
       "already_configured": "Dieses GHL-Gerät ist bereits konfiguriert."
@@ -106,17 +106,17 @@
     "error": {
       "cannot_connect": "Verbindung zum GHL-Gerät konnte nicht hergestellt werden. Prüfe IP-Adresse, Port und Netzwerkverbindung.",
       "api_not_enabled": "Die GHL API ist nicht aktiviert oder der Zugriff wurde verweigert. Aktiviere die API auf dem GHL-Gerät.",
-      "invalid_response": "Das Gerät hat eine unerwartete Antwort zurückgegeben.",
+      "invalid_response": "Es wurde eine unerwartete Antwort empfangen. Prüfe, ob die eingegebene IP-Adresse tatsächlich zu einem unterstützten GHL-Gerät gehört, und kontrolliere den eingegebenen Port.",
       "already_configured": "Ein GHL-Gerät mit dieser IP-Adresse bzw. diesem Hostnamen und Port ist bereits konfiguriert."
     },
     "abort": {
       "history_import_result": "**Historische Daten: Importergebnis**\n\n{summary}",
-      "history_import_result_incomplete": "**Historische Daten: Importergebnis**\n\n{summary}\n\nHistorische Daten konnten nicht für alle unterstützten Quellen vollständig importiert werden. Weitere Details stehen im Home-Assistant-Protokoll.",
+      "history_import_result_incomplete": "**Historische Daten: Importergebnis**\n\n{summary}\n\nHistorische Daten konnten nicht für alle unterstützten Quellen vollständig importiert werden. Weitere Details findest du im Home Assistant Protokoll (Einstellungen → System → Protokolle).",
       "rediscovery_started": "Die Integration wird neu geladen, um neue Sensoren/Geräte zu erkennen.",
-      "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen.",
+      "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen. Prüfe unter Einstellungen → Geräte & Dienste den Status der Integration. Falls sie nicht geladen werden kann, findest du weitere Informationen im Home Assistant Protokoll (Einstellungen → System → Protokolle).",
       "no_sensors": "Es wurden keine GHL-Sensoren gefunden.",
       "history_import_complete": "Historische Daten wurden importiert.",
-      "history_import_incomplete": "Historische Daten konnten nicht für alle unterstützten Quellen vollständig importiert werden. Weitere Details stehen im Home-Assistant-Protokoll.",
+      "history_import_incomplete": "Historische Daten konnten nicht für alle unterstützten Quellen vollständig importiert werden. Weitere Details findest du im Home Assistant Protokoll (Einstellungen → System → Protokolle).",
       "no_history_sources": "Historische Daten können nicht importiert werden, weil derzeit keine unterstützte und konfigurierte Quelle vorhanden ist."
     }
   },
@@ -406,7 +406,7 @@
         },
         "abort": {
           "entry_not_found": "Die zugehörige GHL-Integration wurde nicht gefunden.",
-          "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen.",
+          "entry_not_loaded": "Die GHL-Integration ist derzeit nicht geladen. Prüfe unter Einstellungen → Geräte & Dienste den Status der Integration. Falls sie nicht geladen werden kann, findest du weitere Informationen im Home Assistant Protokoll (Einstellungen → System → Protokolle).",
           "no_new_sensors": "Es sind keine neuen, nicht konfigurierten GHL-Sensoren mehr vorhanden."
         }
       }
@@ -438,10 +438,10 @@
       "message": "Die Ausführung konnte nicht bestätigt werden. Der Befehl wurde möglicherweise bereits ausgeführt. Prüfe den Gerätezustand, bevor du die Aktion erneut ausführst."
     },
     "command_communication_error": {
-      "message": "Der Befehl konnte nicht an das GHL-Gerät übermittelt werden."
+      "message": "Der Befehl konnte nicht an das GHL-Gerät übermittelt werden. Prüfe die Verbindung zum Gerät."
     },
     "command_rejected": {
-      "message": "Das GHL-Gerät hat den Befehl abgelehnt."
+      "message": "Das GHL-Gerät hat den Befehl abgelehnt. Bitte prüfe, ob die GHL-API auf dem Gerät aktiviert und der Schreibzugriff freigegeben ist."
     }
   }
 }

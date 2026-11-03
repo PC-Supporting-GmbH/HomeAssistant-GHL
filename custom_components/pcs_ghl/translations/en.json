@@ -21,7 +21,7 @@
     "error": {
       "cannot_connect": "Unable to connect to the GHL device. Check the IP address, port and network connection.",
       "api_not_enabled": "The GHL API is not enabled or access was denied. Enable the API on the GHL device.",
-      "invalid_response": "The device returned an unexpected response."
+      "invalid_response": "An unexpected response was received. Check whether the entered IP address actually belongs to a supported GHL device and verify the entered port."
     },
     "abort": {
       "already_configured": "This GHL device is already configured."
@@ -106,17 +106,17 @@
     "error": {
       "cannot_connect": "Unable to connect to the GHL device. Check the IP address, port and network connection.",
       "api_not_enabled": "The GHL API is not enabled or access was denied. Enable the API on the GHL device.",
-      "invalid_response": "The device returned an unexpected response.",
+      "invalid_response": "An unexpected response was received. Check whether the entered IP address actually belongs to a supported GHL device and verify the entered port.",
       "already_configured": "A GHL device with this IP address or hostname and port is already configured."
     },
     "abort": {
       "history_import_result": "**Historical data: import result**\n\n{summary}",
-      "history_import_result_incomplete": "**Historical data: import result**\n\n{summary}\n\nHistorical data could not be imported completely for all supported sources. See the Home Assistant log for details.",
+      "history_import_result_incomplete": "**Historical data: import result**\n\n{summary}\n\nHistorical data could not be imported completely for all supported sources. For more details, see the Home Assistant log (Settings → System → Logs).",
       "rediscovery_started": "The integration is being reloaded to detect new sensors/devices.",
-      "entry_not_loaded": "The GHL integration is currently not loaded.",
+      "entry_not_loaded": "The GHL integration is currently not loaded. Check the integration status under Settings → Devices & services. If it cannot be loaded, see the Home Assistant log (Settings → System → Logs) for more information.",
       "no_sensors": "No GHL sensors were found.",
       "history_import_complete": "Historical data has been imported.",
-      "history_import_incomplete": "Historical data could not be imported completely for all supported sources. See the Home Assistant log for details.",
+      "history_import_incomplete": "Historical data could not be imported completely for all supported sources. For more details, see the Home Assistant log (Settings → System → Logs).",
       "no_history_sources": "Historical data cannot be imported because there is currently no supported and configured source."
     }
   },
@@ -406,7 +406,7 @@
         },
         "abort": {
           "entry_not_found": "The associated GHL integration could not be found.",
-          "entry_not_loaded": "The GHL integration is currently not loaded.",
+          "entry_not_loaded": "The GHL integration is currently not loaded. Check the integration status under Settings → Devices & services. If it cannot be loaded, see the Home Assistant log (Settings → System → Logs) for more information.",
           "no_new_sensors": "There are no new unconfigured GHL sensors."
         }
       }
@@ -438,10 +438,10 @@
       "message": "Execution could not be confirmed. The command may already have been executed. Check the device state before repeating the action."
     },
     "command_communication_error": {
-      "message": "The command could not be sent to the GHL device."
+      "message": "The command could not be sent to the GHL device. Check the connection to the device."
     },
     "command_rejected": {
-      "message": "The GHL device rejected the command."
+      "message": "The GHL device rejected the command. Please check that the GHL API is enabled on the device and that write access is allowed."
     }
   }
 }

@@ -21,7 +21,7 @@
     "error": {
       "cannot_connect": "Impossible de se connecter à l’appareil GHL. Vérifiez l’adresse IP, le port et la connexion réseau.",
       "api_not_enabled": "L’API GHL n’est pas activée ou l’accès a été refusé. Activez l’API sur l’appareil GHL.",
-      "invalid_response": "L’appareil a renvoyé une réponse inattendue."
+      "invalid_response": "Une réponse inattendue a été reçue. Vérifiez que l’adresse IP saisie correspond bien à un appareil GHL pris en charge et contrôlez le port saisi."
     },
     "abort": {
       "already_configured": "Cet appareil GHL est déjà configuré."
@@ -106,17 +106,17 @@
     "error": {
       "cannot_connect": "Impossible de se connecter à l’appareil GHL. Vérifiez l’adresse IP, le port et la connexion réseau.",
       "api_not_enabled": "L’API GHL n’est pas activée ou l’accès a été refusé. Activez l’API sur l’appareil GHL.",
-      "invalid_response": "L’appareil a renvoyé une réponse inattendue.",
+      "invalid_response": "Une réponse inattendue a été reçue. Vérifiez que l’adresse IP saisie correspond bien à un appareil GHL pris en charge et contrôlez le port saisi.",
       "already_configured": "Un appareil GHL avec cette adresse IP ou ce nom d’hôte et ce port est déjà configuré."
     },
     "abort": {
       "history_import_result": "**Données historiques : résultat de l’importation**\n\n{summary}",
-      "history_import_result_incomplete": "**Données historiques : résultat de l’importation**\n\n{summary}\n\nLes données historiques n’ont pas pu être importées complètement pour toutes les sources prises en charge. Consultez le journal Home Assistant pour plus de détails.",
+      "history_import_result_incomplete": "**Données historiques : résultat de l’importation**\n\n{summary}\n\nLes données historiques n’ont pas pu être importées complètement pour toutes les sources prises en charge. Pour plus de détails, consultez le journal Home Assistant (Paramètres → Système → Journaux).",
       "rediscovery_started": "L’intégration est en cours de rechargement pour détecter de nouveaux capteurs/appareils.",
-      "entry_not_loaded": "L’intégration GHL n’est actuellement pas chargée.",
+      "entry_not_loaded": "L’intégration GHL n’est actuellement pas chargée. Vérifiez son état dans Paramètres → Appareils et services. Si elle ne peut pas être chargée, consultez le journal Home Assistant (Paramètres → Système → Journaux) pour plus d’informations.",
       "no_sensors": "Aucun capteur GHL n’a été trouvé.",
       "history_import_complete": "Les données historiques ont été importées.",
-      "history_import_incomplete": "Les données historiques n’ont pas pu être importées complètement pour toutes les sources prises en charge. Consultez le journal Home Assistant pour plus de détails.",
+      "history_import_incomplete": "Les données historiques n’ont pas pu être importées complètement pour toutes les sources prises en charge. Pour plus de détails, consultez le journal Home Assistant (Paramètres → Système → Journaux).",
       "no_history_sources": "Les données historiques ne peuvent pas être importées car aucune source prise en charge et configurée n’est actuellement disponible."
     }
   },
@@ -406,7 +406,7 @@
         },
         "abort": {
           "entry_not_found": "L’intégration GHL associée est introuvable.",
-          "entry_not_loaded": "L’intégration GHL n’est actuellement pas chargée.",
+          "entry_not_loaded": "L’intégration GHL n’est actuellement pas chargée. Vérifiez son état dans Paramètres → Appareils et services. Si elle ne peut pas être chargée, consultez le journal Home Assistant (Paramètres → Système → Journaux) pour plus d’informations.",
           "no_new_sensors": "Il n’y a aucun nouveau capteur GHL non configuré."
         }
       }
@@ -438,10 +438,10 @@
       "message": "L’exécution n’a pas pu être confirmée. La commande a peut-être déjà été exécutée. Vérifiez l’état de l’appareil avant de répéter l’action."
     },
     "command_communication_error": {
-      "message": "La commande n’a pas pu être envoyée à l’appareil GHL."
+      "message": "La commande n’a pas pu être envoyée à l’appareil GHL. Vérifiez la connexion à l’appareil."
     },
     "command_rejected": {
-      "message": "L’appareil GHL a rejeté la commande."
+      "message": "L’appareil GHL a rejeté la commande. Vérifiez que l’API GHL est activée sur l’appareil et que l’accès en écriture est autorisé."
     }
   }
 }
