@@ -180,7 +180,7 @@
         "name": "Last update"
       },
       "khdirector_value": {
-        "name": "KH Director"
+        "name": "KH (KH Director)"
       },
       "switchchannel_current": {
         "name": "Switch Channel {index} Current"
@@ -207,19 +207,19 @@
         "name": "Flow Sensor {index} Flow"
       },
       "iondirector_calcium_value": {
-        "name": "ION Director Calcium"
+        "name": "Calcium (ION Director)"
       },
       "iondirector_magnesium_value": {
-        "name": "ION Director Magnesium"
+        "name": "Magnesium (ION Director)"
       },
       "iondirector_potassium_value": {
-        "name": "ION Director Potassium"
+        "name": "Potassium (ION Director)"
       },
       "iondirector_sodium_value": {
-        "name": "ION Director Sodium"
+        "name": "Sodium (ION Director)"
       },
       "iondirector_nitrate_value": {
-        "name": "ION Director Nitrate"
+        "name": "Nitrate (ION Director)"
       },
       "illumination": {
         "name": "Illumination {index}"
@@ -277,7 +277,7 @@
         "name": "Light Scenario {index} Stop"
       },
       "description_write": {
-        "name": "Write Description"
+        "name": "Save description"
       },
       "khdirector_action_stop": {
         "name": "Stop KH Director action"
@@ -321,22 +321,22 @@
         "name": "{name} Setpoint"
       },
       "khdirector_setpoint": {
-        "name": "KH Director Setpoint"
+        "name": "KH Setpoint (KH Director)"
       },
       "iondirector_calcium_setpoint": {
-        "name": "ION Director Calcium Setpoint"
+        "name": "Calcium Setpoint (ION Director)"
       },
       "iondirector_magnesium_setpoint": {
-        "name": "ION Director Magnesium Setpoint"
+        "name": "Magnesium Setpoint (ION Director)"
       },
       "iondirector_potassium_setpoint": {
-        "name": "ION Director Potassium Setpoint"
+        "name": "Potassium Setpoint (ION Director)"
       },
       "iondirector_sodium_setpoint": {
-        "name": "ION Director Sodium Setpoint"
+        "name": "Sodium Setpoint (ION Director)"
       },
       "iondirector_nitrate_setpoint": {
-        "name": "ION Director Nitrate Setpoint"
+        "name": "Nitrate Setpoint (ION Director)"
       },
       "thunderstorm_duration": {
         "name": "Thunderstorm Duration (min)"

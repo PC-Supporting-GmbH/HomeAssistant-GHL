@@ -180,7 +180,7 @@
         "name": "Dernière actualisation"
       },
       "khdirector_value": {
-        "name": "KH Director"
+        "name": "KH (KH Director)"
       },
       "switchchannel_current": {
         "name": "Courant du canal commutable {index}"
@@ -207,19 +207,19 @@
         "name": "Débit du capteur de débit {index}"
       },
       "iondirector_calcium_value": {
-        "name": "ION Director Calcium"
+        "name": "Calcium (ION Director)"
       },
       "iondirector_magnesium_value": {
-        "name": "ION Director Magnésium"
+        "name": "Magnésium (ION Director)"
       },
       "iondirector_potassium_value": {
-        "name": "ION Director Potassium"
+        "name": "Potassium (ION Director)"
       },
       "iondirector_sodium_value": {
-        "name": "ION Director Sodium"
+        "name": "Sodium (ION Director)"
       },
       "iondirector_nitrate_value": {
-        "name": "ION Director Nitrate"
+        "name": "Nitrate (ION Director)"
       },
       "illumination": {
         "name": "Éclairage {index}"
@@ -277,7 +277,7 @@
         "name": "Arrêter la scène lumineuse {index}"
       },
       "description_write": {
-        "name": "Écrire la description"
+        "name": "Enregistrer la description"
       },
       "khdirector_action_stop": {
         "name": "Arrêter l’action du KH Director"
@@ -321,22 +321,22 @@
         "name": "Consigne de {name}"
       },
       "khdirector_setpoint": {
-        "name": "Consigne KH Director"
+        "name": "Consigne kh (KH Director)"
       },
       "iondirector_calcium_setpoint": {
-        "name": "Consigne calcium ION Director"
+        "name": "Consigne calcium (ION Director)"
       },
       "iondirector_magnesium_setpoint": {
-        "name": "Consigne magnésium ION Director"
+        "name": "Consigne magnésium (ION Director)"
       },
       "iondirector_potassium_setpoint": {
-        "name": "Consigne potassium ION Director"
+        "name": "Consigne potassium (ION Director)"
       },
       "iondirector_sodium_setpoint": {
-        "name": "Consigne sodium ION Director"
+        "name": "Consigne sodium (ION Director)"
       },
       "iondirector_nitrate_setpoint": {
-        "name": "Consigne nitrate ION Director"
+        "name": "Consigne nitrate (ION Director)"
       },
       "thunderstorm_duration": {
         "name": "Durée de l’orage (min)"

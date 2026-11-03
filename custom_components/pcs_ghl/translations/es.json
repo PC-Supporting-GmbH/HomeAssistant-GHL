@@ -180,7 +180,7 @@
         "name": "Última actualización"
       },
       "khdirector_value": {
-        "name": "KH Director"
+        "name": "KH (KH Director)"
       },
       "switchchannel_current": {
         "name": "Corriente del canal de conmutación {index}"
@@ -207,19 +207,19 @@
         "name": "Caudal del sensor de caudal {index}"
       },
       "iondirector_calcium_value": {
-        "name": "ION Director Calcio"
+        "name": "Calcio (ION Director)"
       },
       "iondirector_magnesium_value": {
-        "name": "ION Director Magnesio"
+        "name": "Magnesio (ION Director)"
       },
       "iondirector_potassium_value": {
-        "name": "ION Director Potasio"
+        "name": "Potasio (ION Director)"
       },
       "iondirector_sodium_value": {
-        "name": "ION Director Sodio"
+        "name": "Sodio (ION Director)"
       },
       "iondirector_nitrate_value": {
-        "name": "ION Director Nitrato"
+        "name": "Nitrato (ION Director)"
       },
       "illumination": {
         "name": "Iluminación {index}"
@@ -277,7 +277,7 @@
         "name": "Detener la escena de iluminación {index}"
       },
       "description_write": {
-        "name": "Escribir la descripción"
+        "name": "Guardar descripción"
       },
       "khdirector_action_stop": {
         "name": "Detener la acción del KH Director"
@@ -321,22 +321,22 @@
         "name": "Valor de consigna de {name}"
       },
       "khdirector_setpoint": {
-        "name": "Valor de consigna del KH Director"
+        "name": "Valor de consigna de kh (KH Director)"
       },
       "iondirector_calcium_setpoint": {
-        "name": "Valor de consigna de calcio del ION Director"
+        "name": "Valor de consigna de calcio (ION Director)"
       },
       "iondirector_magnesium_setpoint": {
-        "name": "Valor de consigna de magnesio del ION Director"
+        "name": "Valor de consigna de magnesio (ION Director)"
       },
       "iondirector_potassium_setpoint": {
-        "name": "Valor de consigna de potasio del ION Director"
+        "name": "Valor de consigna de potasio (ION Director)"
       },
       "iondirector_sodium_setpoint": {
-        "name": "Valor de consigna de sodio del ION Director"
+        "name": "Valor de consigna de sodio (ION Director)"
       },
       "iondirector_nitrate_setpoint": {
-        "name": "Valor de consigna de nitrato del ION Director"
+        "name": "Valor de consigna de nitrato (ION Director)"
       },
       "thunderstorm_duration": {
         "name": "Duración de la tormenta (min)"

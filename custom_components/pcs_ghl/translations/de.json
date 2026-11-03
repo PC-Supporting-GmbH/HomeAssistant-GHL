@@ -180,7 +180,7 @@
         "name": "Letzte Aktualisierung"
       },
       "khdirector_value": {
-        "name": "KH Director"
+        "name": "KH (KH Director)"
       },
       "switchchannel_current": {
         "name": "Schaltkanal {index} Strom"
@@ -207,19 +207,19 @@
         "name": "Durchflusssensor {index} Durchfluss"
       },
       "iondirector_calcium_value": {
-        "name": "ION Director Calcium"
+        "name": "Kalzium (ION Director)"
       },
       "iondirector_magnesium_value": {
-        "name": "ION Director Magnesium"
+        "name": "Magnesium (ION Director)"
       },
       "iondirector_potassium_value": {
-        "name": "ION Director Kalium"
+        "name": "Kalium (ION Director)"
       },
       "iondirector_sodium_value": {
-        "name": "ION Director Natrium"
+        "name": "Natrium (ION Director)"
       },
       "iondirector_nitrate_value": {
-        "name": "ION Director Nitrat"
+        "name": "Nitrat (ION Director)"
       },
       "illumination": {
         "name": "Beleuchtung {index}"
@@ -277,7 +277,7 @@
         "name": "Lichtszene {index} beenden"
       },
       "description_write": {
-        "name": "Beschreibung schreiben"
+        "name": "Beschreibung speichern"
       },
       "khdirector_action_stop": {
         "name": "KH Director Aktion stoppen"
@@ -321,22 +321,22 @@
         "name": "{name} Sollwert"
       },
       "khdirector_setpoint": {
-        "name": "KH Director Sollwert"
+        "name": "KH Sollwert (KH Director)"
       },
       "iondirector_calcium_setpoint": {
-        "name": "ION Director Calcium Sollwert"
+        "name": "Kalzium Sollwert (ION Director)"
       },
       "iondirector_magnesium_setpoint": {
-        "name": "ION Director Magnesium Sollwert"
+        "name": "Magnesium Sollwert (ION Director)"
       },
       "iondirector_potassium_setpoint": {
-        "name": "ION Director Kalium Sollwert"
+        "name": "Kalium Sollwert (ION Director)"
       },
       "iondirector_sodium_setpoint": {
-        "name": "ION Director Natrium Sollwert"
+        "name": "Natrium Sollwert (ION Director)"
       },
       "iondirector_nitrate_setpoint": {
-        "name": "ION Director Nitrat Sollwert"
+        "name": "Nitrat Sollwert (ION Director)"
       },
       "thunderstorm_duration": {
         "name": "Gewitterdauer (min)"
