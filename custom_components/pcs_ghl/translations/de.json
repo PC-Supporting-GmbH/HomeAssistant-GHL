@@ -66,7 +66,7 @@
       },
       "initial_sensor_setup": {
         "title": "GHL konfigurieren",
-        "description": "**Bitte konfiguriere jetzt deine Sensoren.**\n\nDie Sensoren wurden vom GHL-Gerät erkannt, müssen aber noch ihrem jeweiligen Sensortyp zugeordnet werden.",
+        "description": "**Bitte konfiguriere jetzt deine Sensoren.**\n\nDie Sensoren wurden vom GHL-Gerät erkannt. Da die GHL-API den Sensortyp nicht übermittelt, musst du jedem Sensor einmalig den entsprechenden Typ zuweisen.",
         "menu_options": {
           "general": "Allgemeine Einstellungen",
           "sensors": "Alle Sensoren konfigurieren",

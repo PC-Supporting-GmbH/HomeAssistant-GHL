@@ -183,7 +183,7 @@ Esto vuelve a cargar la integración y ejecuta de nuevo la detección de recurso
 
 ### 7.4 Importación de datos históricos
 
-Para importar manualmente los datos almacenados de todas las fuentes disponibles y compatibles, selecciona **Datos históricos: importar ahora** en las opciones de la integración.
+Para importar manualmente los datos almacenados de todas las fuentes disponibles y compatibles, selecciona **Importar datos históricos ahora** en las opciones de la integración.
 Se excluyen los sensores sin un tipo asignado o configurados como ocultos. La detección de duplicados ayuda a evitar que los mismos datos históricos se importen más de una vez.
 La importación de una gran cantidad de datos almacenados puede tardar varios minutos.
 

@@ -66,7 +66,7 @@
       },
       "initial_sensor_setup": {
         "title": "Configurer GHL",
-        "description": "**Veuillez maintenant configurer vos capteurs.**\n\nLes capteurs ont été détectés sur l’appareil GHL, mais doivent encore être associés à leur type de capteur respectif.",
+        "description": "**Veuillez maintenant configurer vos capteurs.**\n\nLes capteurs ont été détectés sur l’appareil GHL. Comme l’API GHL ne transmet pas le type de capteur, vous devez attribuer une fois le type correspondant à chaque capteur.",
         "menu_options": {
           "general": "Paramètres généraux",
           "sensors": "Configurer tous les capteurs",

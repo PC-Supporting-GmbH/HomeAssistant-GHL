@@ -183,7 +183,7 @@ Dadurch wird die Integration neu geladen und die Ressourcenerkennung erneut ausg
 
 ### 7.4 Historische Daten importieren
 
-Um gespeicherte Daten für alle aktuell verfügbaren und unterstützten Quellen manuell zu importieren, wähle in den Integrationsoptionen **Historische Daten: jetzt importieren**.
+Um gespeicherte Daten für alle aktuell verfügbaren und unterstützten Quellen manuell zu importieren, wähle in den Integrationsoptionen **Historische Daten jetzt importieren**.
 Sensoren ohne zugewiesenen Typ sowie als verborgen konfigurierte Sensoren werden ausgeschlossen. Die Duplikaterkennung hilft zu verhindern, dass dieselben historischen Daten mehrfach importiert werden.
 Der Import einer grossen Menge gespeicherter Daten kann mehrere Minuten dauern.
 

@@ -66,7 +66,7 @@
       },
       "initial_sensor_setup": {
         "title": "Configure GHL",
-        "description": "**Please configure your sensors now.**\n\nThe sensors were detected on the GHL device, but each still needs to be assigned its corresponding sensor type.",
+        "description": "**Please configure your sensors now.**\n\nThe sensors were detected on the GHL device. Because the GHL API does not provide the sensor type, you need to assign the corresponding type to each sensor once.",
         "menu_options": {
           "general": "General settings",
           "sensors": "Configure all sensors",
