@@ -230,6 +230,13 @@
       "system_firmware": {
         "name": "Firmware"
       },
+      "connection_status": {
+        "name": "État de connexion",
+        "state": {
+          "ok": "OK",
+          "no_connection": "Aucune connexion"
+        }
+      },
       "system_serialnumber": {
         "name": "Numéro de série"
       },

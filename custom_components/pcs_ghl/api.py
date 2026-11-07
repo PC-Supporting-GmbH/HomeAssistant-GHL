@@ -1,4 +1,5 @@
 """GHL API client."""
+# pyright: reportMissingImports=false
 
 from __future__ import annotations
 
@@ -120,6 +121,7 @@ class GHLAPI:
         command: str,
         *,
         retry_safe: bool = False,
+        attempts: int = API_COMMAND_ATTEMPTS,
     ) -> str:
         """Send a command to the GHL device and return its reply."""
 
@@ -140,11 +142,11 @@ class GHLAPI:
                 "GHL API %s:%s: command %r acquired lock after %.3f s",
                 self.host, self.port, command, perf_counter() - command_started,
             )
-            for attempt in range(API_COMMAND_ATTEMPTS):
+            for attempt in range(attempts):
                 attempt_started = perf_counter()
                 _LOGGER.debug(
-                    "GHL API %s:%s: command %r attempt %d/2 started",
-                    self.host, self.port, command, attempt + 1,
+                    "GHL API %s:%s: command %r attempt %d/%d started",
+                    self.host, self.port, command, attempt + 1, attempts,
                 )
                 command_may_have_been_sent = False
 
@@ -167,8 +169,8 @@ class GHLAPI:
                     )
 
                     _LOGGER.debug(
-                        "GHL API %s:%s: command %r attempt %d/2 received %d bytes after %.3f s",
-                        self.host, self.port, command, attempt + 1, len(reply),
+                        "GHL API %s:%s: command %r attempt %d/%d received %d bytes after %.3f s",
+                        self.host, self.port, command, attempt + 1, attempts, len(reply),
                         perf_counter() - attempt_started,
                     )
 
@@ -217,8 +219,8 @@ class GHLAPI:
                         )
 
                     _LOGGER.debug(
-                        "GHL API %s:%s: command %r completed (attempt=%d/2, attempt_duration=%.3f s, total_duration=%.3f s, reply=%s)",
-                        self.host, self.port, command, attempt + 1,
+                        "GHL API %s:%s: command %r completed (attempt=%d/%d, attempt_duration=%.3f s, total_duration=%.3f s, reply=%s)",
+                        self.host, self.port, command, attempt + 1, attempts,
                         perf_counter() - attempt_started, perf_counter() - command_started,
                         "ACK" if response == "ACK" or response.startswith("ACK ") else
                         "NACK" if response.startswith("NACK") else "unexpected",
@@ -232,8 +234,8 @@ class GHLAPI:
                     GHLConnectionError,
                 ) as err:
                     _LOGGER.debug(
-                        "GHL API %s:%s: command %r attempt %d/2 failed after %.3f s (total=%.3f s, error_type=%s, error=%s)",
-                        self.host, self.port, command, attempt + 1,
+                        "GHL API %s:%s: command %r attempt %d/%d failed after %.3f s (total=%.3f s, error_type=%s, error=%s)",
+                        self.host, self.port, command, attempt + 1, attempts,
                         perf_counter() - attempt_started, perf_counter() - command_started,
                         type(err).__name__, err,
                     )
@@ -247,7 +249,7 @@ class GHLAPI:
                             f"Execution could not be confirmed for: {command}"
                         ) from err
 
-                    if attempt == 0:
+                    if attempt < attempts - 1:
                         _LOGGER.debug(
                             "GHL API %s:%s: command %r retrying after 3 s",
                             self.host, self.port, command,
@@ -270,10 +272,14 @@ class GHLAPI:
             f"while executing: {command}"
         )
 
-    async def async_get(self, resource: str, feature: str) -> str | None:
+    async def async_get(
+        self, resource: str, feature: str, *, attempts: int = API_COMMAND_ATTEMPTS
+    ) -> str | None:
         """Read a value from the GHL API."""
 
-        reply = await self.async_command(f"GET {resource} {feature}")
+        reply = await self.async_command(
+            f"GET {resource} {feature}", attempts=attempts
+        )
 
         if reply.startswith("NACK"):
             return None

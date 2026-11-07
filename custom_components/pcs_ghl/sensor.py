@@ -63,6 +63,7 @@ from .coordinator import (
     last_update_key,
     mitras_heatsink_temperature_key,
     switchchannel_current_key,
+    connection_status_key,
     system_firmware_key,
     system_serialnumber_key,
     system_unixtime_key,
@@ -275,6 +276,13 @@ async def async_setup_entry(
             if resource.features.get("FIRMWARE", False):
                 entities.append(
                     GHLSystemFirmwareSensor(
+                        coordinator=coordinator,
+                        entry=entry,
+                    )
+                )
+
+                entities.append(
+                    GHLConnectionStatusSensor(
                         coordinator=coordinator,
                         entry=entry,
                     )
@@ -1157,6 +1165,49 @@ class GHLSystemFirmwareSensor(
             super().available
             and key in self.coordinator.data
             and self.coordinator.data[key] is not None
+        )
+
+
+class GHLConnectionStatusSensor(
+    CoordinatorEntity[GHLDataUpdateCoordinator],
+    SensorEntity,
+):
+    """Representation of the GHL connection status."""
+
+    _attr_extra_state_attributes = {
+        ATTR_GHL_RESOURCE_TYPE: "diagnostic",
+        ATTR_GHL_FEATURE_TYPE: "info",
+    }
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "connection_status"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["ok", "no_connection"]
+
+    def __init__(
+        self,
+        coordinator: GHLDataUpdateCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the GHL connection status sensor."""
+
+        super().__init__(coordinator)
+
+        self._entry = entry
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_connection_status"
+        )
+
+        self._attr_device_info = device_info(entry)
+
+    @property
+    def native_value(self):
+        """Return the connection status from the serial number query."""
+
+        return self.coordinator.data.get(
+            connection_status_key()
         )
 
 

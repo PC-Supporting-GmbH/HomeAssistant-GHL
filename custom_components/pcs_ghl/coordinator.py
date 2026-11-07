@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 import math
 import logging
@@ -126,6 +127,12 @@ def system_firmware_key() -> str:
     """Return the coordinator key for the system firmware."""
 
     return "system_firmware"
+
+
+def connection_status_key() -> str:
+    """Return the coordinator key for the connection status."""
+
+    return "connection_status"
 
 
 def system_serialnumber_key() -> str:
@@ -404,6 +411,50 @@ class GHLDataUpdateCoordinator(
 
         data: dict[int | str, float | str | bool | None] = {}
         update_errors: list[str] = []
+
+        if any(
+            resource.resource == "SYSTEM"
+            and resource.features.get("SERIALNUMBER", False)
+            for resource in self.resources
+        ):
+            serialnumber = None
+            for attempt in range(3):
+                try:
+                    serialnumber = await self.api.async_get(
+                        "SYSTEM",
+                        "SERIALNUMBER",
+                        attempts=1,
+                    )
+                except GHLAPIError:
+                    serialnumber = None
+
+                if serialnumber is not None and str(serialnumber).strip():
+                    break
+
+                if attempt < 2:
+                    await asyncio.sleep(3)
+
+            data[system_serialnumber_key()] = serialnumber
+            data[connection_status_key()] = (
+                "ok" if serialnumber is not None and str(serialnumber).strip()
+                else "no_connection"
+            )
+
+            if data[connection_status_key()] == "no_connection":
+                if (
+                    self.data is None
+                    or self.data.get(connection_status_key()) != "no_connection"
+                ):
+                    _LOGGER.warning(
+                        "%s nicht erreichbar. Prüfe die Verbindungen.",
+                        self.entry.title,
+                    )
+
+            if self.data is not None:
+                self.async_set_updated_data({
+                    **self.data,
+                    **data,
+                })
 
         for resource in self.resources:
             if resource.resource == "SENSOR":
@@ -1083,25 +1134,7 @@ class GHLDataUpdateCoordinator(
                         serialnumber_unique_id,
                     )
                 ):
-                    try:
-                        serialnumber = await self.api.async_get(
-                            "SYSTEM",
-                            "SERIALNUMBER",
-                        )
-
-                    except GHLAPIError as err:
-                        update_errors.append(
-                            "Unable to update GHL "
-                            "SYSTEM SERIALNUMBER: %s"
-                            % (err,)
-                        )
-
-                        data[system_serialnumber_key()] = None
-
-                    else:
-                        data[system_serialnumber_key()] = (
-                            serialnumber
-                        )
+                    data[system_serialnumber_key()] = serialnumber
 
                 if (
                     resource.features.get("UNIXTIME", False)
@@ -1134,7 +1167,11 @@ class GHLDataUpdateCoordinator(
                     else:
                         data[system_unixtime_key()] = unixtime
 
-        if any(value is not None for value in data.values()):
+        if any(
+            value is not None
+            for key, value in data.items()
+            if key != connection_status_key()
+        ):
             data[last_update_key()] = datetime.now(
                 timezone.utc
             ).timestamp()
