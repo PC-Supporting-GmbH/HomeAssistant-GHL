@@ -1,4 +1,5 @@
 """Validate text used in GHL commands."""
+# pyright: reportMissingImports=false
 
 from __future__ import annotations
 
@@ -8,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .const import DESCRIPTION_TEXT_MAX_LENGTH, DOMAIN
+from .const import CONF_DEVICE_IDENTIFIER, DESCRIPTION_TEXT_MAX_LENGTH, DOMAIN
 
 
 def has_control_characters(value: str) -> bool:
@@ -27,10 +28,28 @@ def is_valid_description(value: str) -> bool:
     )
 
 
+def device_identifier(entry: ConfigEntry) -> str:
+    """Return the persisted physical-device identifier."""
+    return entry.data[CONF_DEVICE_IDENTIFIER]
+
+
+class GHLIdentityMixin:
+    """Use the technical identity for generated entity IDs, not the friendly name."""
+
+    @property
+    def suggested_object_id(self) -> str | None:
+        identifier = next(iter(self._attr_device_info["identifiers"]))[1]
+        name = super().suggested_object_id
+        if not name:
+            return self._attr_unique_id
+        return f"{identifier}_{name}"
+
+
 def device_info(entry: ConfigEntry) -> DeviceInfo:
     """Return the common device information for a GHL config entry."""
+    identifier = device_identifier(entry)
     return DeviceInfo(
-        identifiers={(DOMAIN, entry.entry_id)},
+        identifiers={(DOMAIN, identifier)},
         name=entry.title,
         manufacturer="GHL",
         configuration_url=f"http://{entry.data[CONF_HOST]}",

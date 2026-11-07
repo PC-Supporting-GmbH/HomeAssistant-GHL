@@ -54,6 +54,7 @@ from .const import (
     _HISTORY_RESOURCE_TYPES,
     _SENSOR_ERROR_MASK,
 )
+from .functions import device_identifier
 from .discovery import GHLDiscoveredResource
 
 _LOGGER = logging.getLogger(__name__)
@@ -427,16 +428,16 @@ def _measurement_unique_id(
 
     if resource.resource == "SENSOR" and resource.index is not None:
         return (
-            f"{entry.entry_id}_sensor_"
+            f"{device_identifier(entry)}_sensor_"
             f"{resource.index}_actvalue"
         )
 
     if resource.resource == "KHDIRECTOR":
-        return f"{entry.entry_id}_khdirector_actvalue"
+        return f"{device_identifier(entry)}_khdirector_actvalue"
 
     if resource.resource == "IONDIRECTOR" and resource.index is not None:
         return (
-            f"{entry.entry_id}_iondirector_"
+            f"{device_identifier(entry)}_iondirector_"
             f"{resource.index}_actvalue"
         )
 

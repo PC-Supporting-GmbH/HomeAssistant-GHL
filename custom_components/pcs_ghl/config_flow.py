@@ -22,6 +22,7 @@ from .const import (
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
     CONF_DEVICE_TYPE,
+    CONF_DEVICE_IDENTIFIER,
     CONF_HISTORY_PRESENT_RESOURCES,
     CONF_IMPORT_HISTORICAL_DATA,
     CONF_SENSOR_TYPE,
@@ -171,6 +172,9 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             CONF_PORT: user_input[CONF_PORT],
                             CONF_ACCESS_MODE: user_input[CONF_ACCESS_MODE],
                             CONF_DEVICE_TYPE: user_input[CONF_DEVICE_TYPE],
+                            CONF_DEVICE_IDENTIFIER: (
+                                f"{user_input[CONF_DEVICE_TYPE]}_{serial_number}"
+                            ),
                             CONF_INITIAL_HISTORY_PENDING: True,
                         }
 
@@ -192,10 +196,7 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         )
 
                         return self.async_create_entry(
-                            title=(
-                                f"{device_type_name.lower().replace(' ', '_')}_"
-                                f"{serial_number}"
-                            ),
+                            title=f"{user_input[CONF_DEVICE_TYPE]}_{serial_number}",
                             data=data,
                             options={
                                 CONF_IMPORT_HISTORICAL_DATA: user_input[
@@ -396,7 +397,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
 
         device_registry = dr.async_get(self.hass)
         device = device_registry.async_get_device_by_identifier(
-            (DOMAIN, self.config_entry.entry_id),
+            (DOMAIN, self.config_entry.data.get(
+                CONF_DEVICE_IDENTIFIER, self.config_entry.entry_id
+            )),
             self.config_entry.entry_id,
         )
         current_name = (

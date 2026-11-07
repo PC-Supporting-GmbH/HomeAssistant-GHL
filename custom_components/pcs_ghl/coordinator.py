@@ -16,8 +16,9 @@ from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import GHLAPI, GHLAPIError
-from .functions import parse_pointcount
+from .functions import device_identifier, parse_pointcount
 from .const import (
+    CONF_DEVICE_TYPE,
     CONF_KNOWN_SENSORS,
     DESCRIPTION_CHECK_EVERY_N_UPDATES,
     ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
@@ -445,9 +446,15 @@ class GHLDataUpdateCoordinator(
                     self.data is None
                     or self.data.get(connection_status_key()) != "no_connection"
                 ):
+                    identifier = device_identifier(self.entry)
+                    friendly = self.entry.title.strip()
+                    friendly_part = (
+                        f" ({friendly})" if friendly and friendly != identifier else ""
+                    )
                     _LOGGER.warning(
-                        "%s nicht erreichbar. Prüfe die Verbindungen.",
-                        self.entry.title,
+                        'GHL device "%s"%s is unreachable. Check the connections.',
+                        identifier,
+                        friendly_part,
                     )
 
             if self.data is not None:
@@ -463,7 +470,7 @@ class GHLDataUpdateCoordinator(
                         resource.features.get("ACTVALUE", False)
                         and self._entity_is_enabled(
                             "sensor",
-                            f"{self.entry.entry_id}_mitras_heatsink_temperature",
+                            f"{device_identifier(self.entry)}_mitras_heatsink_temperature",
                         )
                     ):
                         key = mitras_heatsink_temperature_key()
@@ -507,12 +514,12 @@ class GHLDataUpdateCoordinator(
                 )
 
                 actvalue_unique_id = (
-                    f"{self.entry.entry_id}_sensor_"
+                    f"{device_identifier(self.entry)}_sensor_"
                     f"{resource.index}_actvalue"
                 )
 
                 desvalue_unique_id = (
-                    f"{self.entry.entry_id}_sensor_"
+                    f"{device_identifier(self.entry)}_sensor_"
                     f"{resource.index}_desvalue"
                 )
 
@@ -592,11 +599,11 @@ class GHLDataUpdateCoordinator(
 
             if resource.resource == "KHDIRECTOR":
                 actvalue_unique_id = (
-                    f"{self.entry.entry_id}_khdirector_actvalue"
+                    f"{device_identifier(self.entry)}_khdirector_actvalue"
                 )
 
                 desvalue_unique_id = (
-                    f"{self.entry.entry_id}_khdirector_desvalue"
+                    f"{device_identifier(self.entry)}_khdirector_desvalue"
                 )
 
                 if (
@@ -666,12 +673,12 @@ class GHLDataUpdateCoordinator(
                     continue
 
                 actvalue_unique_id = (
-                    f"{self.entry.entry_id}_iondirector_"
+                    f"{device_identifier(self.entry)}_iondirector_"
                     f"{resource.index}_actvalue"
                 )
 
                 desvalue_unique_id = (
-                    f"{self.entry.entry_id}_iondirector_"
+                    f"{device_identifier(self.entry)}_iondirector_"
                     f"{resource.index}_desvalue"
                 )
 
@@ -750,12 +757,12 @@ class GHLDataUpdateCoordinator(
                     continue
 
                 state_unique_id = (
-                    f"{self.entry.entry_id}_switchchannel_"
+                    f"{device_identifier(self.entry)}_switchchannel_"
                     f"{resource.index}_actstate"
                 )
 
                 current_unique_id = (
-                    f"{self.entry.entry_id}_switchchannel_"
+                    f"{device_identifier(self.entry)}_switchchannel_"
                     f"{resource.index}_actcurrent"
                 )
 
@@ -828,12 +835,12 @@ class GHLDataUpdateCoordinator(
                     continue
 
                 filllevel_unique_id = (
-                    f"{self.entry.entry_id}_doser_"
+                    f"{device_identifier(self.entry)}_doser_"
                     f"{resource.index}_filllevel"
                 )
 
                 capacity_unique_id = (
-                    f"{self.entry.entry_id}_doser_"
+                    f"{device_identifier(self.entry)}_doser_"
                     f"{resource.index}_capacity"
                 )
 
@@ -906,7 +913,7 @@ class GHLDataUpdateCoordinator(
                     continue
 
                 flow_unique_id = (
-                    f"{self.entry.entry_id}_flowsensor_"
+                    f"{device_identifier(self.entry)}_flowsensor_"
                     f"{resource.index}_actflow"
                 )
 
@@ -948,7 +955,7 @@ class GHLDataUpdateCoordinator(
                     continue
 
                 state_unique_id = (
-                    f"{self.entry.entry_id}_levelsensor_"
+                    f"{device_identifier(self.entry)}_levelsensor_"
                     f"{resource.index}_actstate"
                 )
 
@@ -994,7 +1001,7 @@ class GHLDataUpdateCoordinator(
                         continue
 
                     masterbrightness_unique_id = (
-                        f"{self.entry.entry_id}_illumination_"
+                        f"{device_identifier(self.entry)}_illumination_"
                         "masterbrightness"
                     )
 
@@ -1048,7 +1055,7 @@ class GHLDataUpdateCoordinator(
                     continue
 
                 brightness_unique_id = (
-                    f"{self.entry.entry_id}_illumination_"
+                    f"{device_identifier(self.entry)}_illumination_"
                     f"{resource.index}_actbrightness"
                 )
 
@@ -1087,19 +1094,19 @@ class GHLDataUpdateCoordinator(
 
             if resource.resource == "SYSTEM":
                 firmware_unique_id = (
-                    f"{self.entry.entry_id}_system_firmware"
+                    f"{device_identifier(self.entry)}_system_firmware"
                 )
 
                 serialnumber_unique_id = (
-                    f"{self.entry.entry_id}_system_serialnumber"
+                    f"{device_identifier(self.entry)}_system_serialnumber"
                 )
 
                 unixtime_unique_id = (
-                    f"{self.entry.entry_id}_system_unixtime"
+                    f"{device_identifier(self.entry)}_system_unixtime"
                 )
 
                 unixtime_absolute_unique_id = (
-                    f"{self.entry.entry_id}_system_unixtime_absolute"
+                    f"{device_identifier(self.entry)}_system_unixtime_absolute"
                 )
 
                 if (

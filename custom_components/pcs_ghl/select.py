@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from .functions import device_info
+from .functions import GHLIdentityMixin, device_identifier, device_info
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -86,7 +86,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class GHLDescriptionResourceSelect(SelectEntity):
+class GHLDescriptionResourceSelect(GHLIdentityMixin, SelectEntity):
     """Select a GHL resource whose description should be edited."""
 
     _attr_has_entity_name = True
@@ -108,7 +108,7 @@ class GHLDescriptionResourceSelect(SelectEntity):
         self._key_to_option: dict[str, str] = {}
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_description_resource"
+            f"{device_identifier(entry)}_description_resource"
         )
 
         self._attr_device_info = device_info(entry)

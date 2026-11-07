@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from .functions import device_info
+from .functions import GHLIdentityMixin, device_identifier, device_info
 
 from datetime import datetime, timezone
 
@@ -119,7 +119,7 @@ async def async_setup_entry(
             )
 
             actvalue_unique_id = (
-                f"{entry.entry_id}_sensor_"
+                f"{device_identifier(entry)}_sensor_"
                 f"{resource.index}_actvalue"
             )
 
@@ -335,7 +335,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class GHLMitrasHeatsinkTemperatureSensor(
+class GHLMitrasHeatsinkTemperatureSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -362,7 +362,7 @@ class GHLMitrasHeatsinkTemperatureSensor(
         super().__init__(coordinator)
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_mitras_heatsink_temperature"
+            f"{device_identifier(entry)}_mitras_heatsink_temperature"
         )
 
         self._attr_device_info = device_info(entry)
@@ -388,7 +388,7 @@ class GHLMitrasHeatsinkTemperatureSensor(
         )
 
 
-class GHLSensor(
+class GHLSensor(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
@@ -426,7 +426,7 @@ class GHLSensor(
         )
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_sensor_{resource.index}_actvalue"
+            f"{device_identifier(entry)}_sensor_{resource.index}_actvalue"
         )
 
         self._attr_device_info = device_info(entry)
@@ -532,7 +532,7 @@ class GHLSensor(
 
 
 
-class GHLKHDirectorValueSensor(
+class GHLKHDirectorValueSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -559,7 +559,7 @@ class GHLKHDirectorValueSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_khdirector_actvalue"
+            f"{device_identifier(entry)}_khdirector_actvalue"
         )
 
         self._attr_device_info = device_info(entry)
@@ -589,7 +589,7 @@ class GHLKHDirectorValueSensor(
 
 
 
-class GHLIONDirectorValueSensor(
+class GHLIONDirectorValueSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -620,7 +620,7 @@ class GHLIONDirectorValueSensor(
         self._parameter_key = parameter_key
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_iondirector_"
+            f"{device_identifier(entry)}_iondirector_"
             f"{resource.index}_actvalue"
         )
 
@@ -657,7 +657,7 @@ class GHLIONDirectorValueSensor(
 
 
 
-class GHLSwitchChannelCurrentSensor(
+class GHLSwitchChannelCurrentSensor(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
@@ -692,7 +692,7 @@ class GHLSwitchChannelCurrentSensor(
         self._resource = resource
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_switchchannel_"
+            f"{device_identifier(entry)}_switchchannel_"
             f"{resource.index}_actcurrent"
         )
 
@@ -741,7 +741,7 @@ class GHLSwitchChannelCurrentSensor(
         )
 
 
-class GHLDoserFillLevelSensor(
+class GHLDoserFillLevelSensor(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
@@ -774,7 +774,7 @@ class GHLDoserFillLevelSensor(
         self._resource = resource
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_doser_"
+            f"{device_identifier(entry)}_doser_"
             f"{resource.index}_filllevel"
         )
 
@@ -817,7 +817,7 @@ class GHLDoserFillLevelSensor(
         )
 
 
-class GHLDoserCapacitySensor(
+class GHLDoserCapacitySensor(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
@@ -850,7 +850,7 @@ class GHLDoserCapacitySensor(
         self._resource = resource
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_doser_"
+            f"{device_identifier(entry)}_doser_"
             f"{resource.index}_capacity"
         )
 
@@ -893,7 +893,7 @@ class GHLDoserCapacitySensor(
         )
 
 
-class GHLFlowSensor(
+class GHLFlowSensor(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
@@ -927,7 +927,7 @@ class GHLFlowSensor(
         self._resource = resource
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_flowsensor_"
+            f"{device_identifier(entry)}_flowsensor_"
             f"{resource.index}_actflow"
         )
 
@@ -970,7 +970,7 @@ class GHLFlowSensor(
         )
 
 
-class GHLIlluminationMasterBrightnessSensor(
+class GHLIlluminationMasterBrightnessSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -999,7 +999,7 @@ class GHLIlluminationMasterBrightnessSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_illumination_masterbrightness"
+            f"{device_identifier(entry)}_illumination_masterbrightness"
         )
 
         self._attr_device_info = device_info(entry)
@@ -1025,7 +1025,7 @@ class GHLIlluminationMasterBrightnessSensor(
         )
 
 
-class GHLIlluminationBrightnessSensor(
+class GHLIlluminationBrightnessSensor(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
@@ -1059,7 +1059,7 @@ class GHLIlluminationBrightnessSensor(
         self._resource = resource
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_illumination_"
+            f"{device_identifier(entry)}_illumination_"
             f"{resource.index}_actbrightness"
         )
 
@@ -1115,7 +1115,7 @@ class GHLIlluminationBrightnessSensor(
         )
 
 
-class GHLSystemFirmwareSensor(
+class GHLSystemFirmwareSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1142,7 +1142,7 @@ class GHLSystemFirmwareSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_system_firmware"
+            f"{device_identifier(entry)}_system_firmware"
         )
 
         self._attr_device_info = device_info(entry)
@@ -1168,7 +1168,7 @@ class GHLSystemFirmwareSensor(
         )
 
 
-class GHLConnectionStatusSensor(
+class GHLConnectionStatusSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1197,7 +1197,7 @@ class GHLConnectionStatusSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_connection_status"
+            f"{device_identifier(entry)}_connection_status"
         )
 
         self._attr_device_info = device_info(entry)
@@ -1211,7 +1211,7 @@ class GHLConnectionStatusSensor(
         )
 
 
-class GHLSystemSerialNumberSensor(
+class GHLSystemSerialNumberSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1238,7 +1238,7 @@ class GHLSystemSerialNumberSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_system_serialnumber"
+            f"{device_identifier(entry)}_system_serialnumber"
         )
 
         self._attr_device_info = device_info(entry)
@@ -1264,7 +1264,7 @@ class GHLSystemSerialNumberSensor(
         )
 
 
-class GHLSystemTimeSensor(
+class GHLSystemTimeSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1292,7 +1292,7 @@ class GHLSystemTimeSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_system_unixtime"
+            f"{device_identifier(entry)}_system_unixtime"
         )
 
         self._attr_device_info = device_info(entry)
@@ -1331,7 +1331,7 @@ class GHLSystemTimeSensor(
         )
 
 
-class GHLSystemTimeAbsoluteSensor(
+class GHLSystemTimeAbsoluteSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1358,7 +1358,7 @@ class GHLSystemTimeAbsoluteSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_system_unixtime_absolute"
+            f"{device_identifier(entry)}_system_unixtime_absolute"
         )
 
         self._attr_device_info = device_info(entry)
@@ -1436,7 +1436,7 @@ class GHLSystemTimeAbsoluteSensor(
         )
 
 
-class GHLLastUpdateSensor(
+class GHLLastUpdateSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1464,7 +1464,7 @@ class GHLLastUpdateSensor(
         self._entry = entry
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_last_update"
+            f"{device_identifier(entry)}_last_update"
         )
 
         self._attr_device_info = device_info(entry)
@@ -1502,7 +1502,7 @@ class GHLLastUpdateSensor(
             and self.native_value is not None
         )
 
-class GHLDescriptionUpdatesRemainingSensor(
+class GHLDescriptionUpdatesRemainingSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1525,7 +1525,7 @@ class GHLDescriptionUpdatesRemainingSensor(
     ) -> None:
         """Initialize the description polling diagnostic."""
         super().__init__(coordinator)
-        self._attr_unique_id = f"{entry.entry_id}_description_updates_remaining"
+        self._attr_unique_id = f"{device_identifier(entry)}_description_updates_remaining"
         self._attr_device_info = device_info(entry)
 
     @property
@@ -1534,7 +1534,7 @@ class GHLDescriptionUpdatesRemainingSensor(
         return self.coordinator.description_updates_remaining
 
 
-class GHLCurveUpdatesRemainingSensor(
+class GHLCurveUpdatesRemainingSensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     SensorEntity,
 ):
@@ -1557,7 +1557,7 @@ class GHLCurveUpdatesRemainingSensor(
     ) -> None:
         """Initialize the curve polling diagnostic."""
         super().__init__(coordinator)
-        self._attr_unique_id = f"{entry.entry_id}_curve_updates_remaining"
+        self._attr_unique_id = f"{device_identifier(entry)}_curve_updates_remaining"
         self._attr_device_info = device_info(entry)
 
     @property

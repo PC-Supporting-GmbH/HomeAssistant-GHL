@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from .functions import device_info
+from .functions import GHLIdentityMixin, device_identifier, device_info
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -74,7 +74,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class GHLSwitchChannelBinarySensor(
+class GHLSwitchChannelBinarySensor(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     BinarySensorEntity,
@@ -105,7 +105,7 @@ class GHLSwitchChannelBinarySensor(
         self._resource = resource
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_switchchannel_"
+            f"{device_identifier(entry)}_switchchannel_"
             f"{resource.index}_actstate"
         )
 
@@ -145,7 +145,7 @@ class GHLSwitchChannelBinarySensor(
         )
 
 
-class GHLLevelSensorBinarySensor(
+class GHLLevelSensorBinarySensor(GHLIdentityMixin, 
     CoordinatorEntity[GHLDataUpdateCoordinator],
     BinarySensorEntity,
 ):
@@ -174,7 +174,7 @@ class GHLLevelSensorBinarySensor(
         self._resource = resource
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_levelsensor_"
+            f"{device_identifier(entry)}_levelsensor_"
             f"{resource.index}_actstate"
         )
 

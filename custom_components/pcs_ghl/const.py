@@ -1,4 +1,5 @@
 """Constants for the GHL integration."""
+# pyright: reportMissingImports=false
 
 from datetime import timedelta
 
@@ -22,6 +23,7 @@ DESCRIPTION_TEXT_MAX_LENGTH = 16
 
 CONF_ACCESS_MODE = "access_mode"
 CONF_DEVICE_TYPE = "device_type"
+CONF_DEVICE_IDENTIFIER = "device_identifier"
 CONF_SENSOR_TYPE = "sensor_type"
 CONF_SENSOR_TYPES = "sensor_types"
 CONF_SENSOR_UNIT = "sensor_unit"

@@ -11,13 +11,16 @@ from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr
+from homeassistant.util import slugify
 from homeassistant.helpers import issue_registry as ir
 
-from .api import GHLAPI, GHLConnectionError
+from .api import GHLAPI, GHLAPIError, GHLConnectionError
 from .const import (
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
     CONF_DEVICE_TYPE,
+    CONF_DEVICE_IDENTIFIER,
     CONF_HISTORY_PRESENT_RESOURCES,
     CONF_IMPORT_HISTORICAL_DATA,
     CONF_KNOWN_SENSORS,
@@ -42,6 +45,7 @@ from .discovery import (
     GHLDiscoveredResource,
     async_discover_resources,
 )
+from .functions import device_identifier
 from .history import (
     async_import_resource_history,
     history_entity_is_registered,
@@ -174,6 +178,101 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         remove_setup_listener()
 
 
+async def _async_migrate_device_identity(
+    hass: HomeAssistant, entry: ConfigEntry, api: GHLAPI
+) -> None:
+    """Persist the physical identity and migrate registered entities in place."""
+    identifier = entry.data.get(CONF_DEVICE_IDENTIFIER)
+    if not identifier:
+        try:
+            serial = await api.async_get("SYSTEM", "SERIALNUMBER")
+        except GHLAPIError as err:
+            raise ConfigEntryNotReady("Unable to read GHL serial number for migration") from err
+        if not serial or not str(serial).strip():
+            raise ConfigEntryNotReady("Unable to read GHL serial number for migration")
+        identifier = f"{entry.data[CONF_DEVICE_TYPE]}_{str(serial).strip()}"
+
+    registry = er.async_get(hass)
+    devices = dr.async_get(hass)
+    old_device = devices.async_get_device_by_identifier(
+        (DOMAIN, entry.entry_id), entry.entry_id
+    )
+    current_device = devices.async_get_device_by_identifier(
+        (DOMAIN, identifier), entry.entry_id
+    )
+    if old_device is not None and current_device is not None and old_device.id != current_device.id:
+        raise ConfigEntryNotReady("GHL device identifier collision during migration")
+
+    entries = list(er.async_entries_for_config_entry(registry, entry.entry_id))
+    old_prefixes = [slugify(entry.title)] if entry.title else []
+    if old_device is not None:
+        old_prefixes.extend(slugify(name) for name in (
+            old_device.name_by_user, old_device.name
+        ) if name)
+    old_prefixes.append(identifier)
+    old_prefixes = sorted(set(old_prefixes), key=len, reverse=True)
+
+    plan = []
+    for registered in entries:
+        old_unique_id = registered.unique_id
+        old_unique_prefix = f"{entry.entry_id}_"
+        new_unique_prefix = f"{identifier}_"
+        if old_unique_id.startswith(old_unique_prefix):
+            suffix = old_unique_id[len(old_unique_prefix):]
+            new_unique_id = f"{identifier}_{suffix}"
+        elif old_unique_id.startswith(new_unique_prefix):
+            suffix = old_unique_id[len(new_unique_prefix):]
+            new_unique_id = old_unique_id
+        else:
+            continue
+        object_id = registered.entity_id.split(".", 1)[1]
+        new_object_id = None
+        for prefix in old_prefixes:
+            if object_id.startswith(prefix + "_"):
+                new_object_id = identifier + object_id[len(prefix):]
+                break
+        if new_object_id is None:
+            new_object_id = f"{identifier}_{suffix}"
+        new_entity_id = f"{registered.domain}.{slugify(new_object_id)}"
+        plan.append((registered, new_unique_id, new_entity_id))
+
+    # Validate collisions before modifying any registry entry.
+    old_ids = {registered.entity_id for registered, _, _ in plan}
+    target_ids = [target for _, _, target in plan]
+    if len(target_ids) != len(set(target_ids)):
+        raise ConfigEntryNotReady("GHL entity ID collision during migration")
+    for registered, new_unique_id, new_entity_id in plan:
+        if new_entity_id != registered.entity_id and (
+            new_entity_id in registry.entities
+        ):
+            raise ConfigEntryNotReady(f"GHL entity ID already exists: {new_entity_id}")
+        if new_unique_id != registered.unique_id:
+            conflict = registry.async_get_entity_id(
+                registered.domain, DOMAIN, new_unique_id
+            )
+            if conflict and conflict != registered.entity_id:
+                raise ConfigEntryNotReady(f"GHL unique ID already exists: {new_unique_id}")
+
+    for registered, new_unique_id, new_entity_id in plan:
+        kwargs = {}
+        if registered.unique_id != new_unique_id:
+            kwargs["new_unique_id"] = new_unique_id
+        if registered.entity_id != new_entity_id:
+            kwargs["new_entity_id"] = new_entity_id
+        if kwargs:
+            registry.async_update_entity(registered.entity_id, **kwargs)
+
+    if old_device is not None:
+        devices.async_update_device(
+            old_device.id, new_identifiers={(DOMAIN, identifier)}
+        )
+
+    if entry.data.get(CONF_DEVICE_IDENTIFIER) != identifier:
+        new_data = dict(entry.data)
+        new_data[CONF_DEVICE_IDENTIFIER] = identifier
+        hass.config_entries.async_update_entry(entry, data=new_data)
+
+
 async def _async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up GHL from a config entry."""
 
@@ -206,6 +305,8 @@ async def _async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "GHL setup [%s]: connection check completed in %.3f s",
         entry.entry_id, perf_counter() - phase_started,
     )
+
+    await _async_migrate_device_identity(hass, entry, api)
 
     phase_started = perf_counter()
     _LOGGER.debug("GHL setup [%s]: resource discovery started", entry.entry_id)
@@ -554,7 +655,7 @@ def _async_remove_obsolete_setpoint_entities(
         ("select", "sensor_setpoint_sensor"),
     ):
         entity_id = registry.async_get_entity_id(
-            platform, DOMAIN, f"{entry.entry_id}_{suffix}"
+            platform, DOMAIN, f"{device_identifier(entry)}_{suffix}"
         )
         if entity_id is not None:
             registry.async_remove(entity_id)
@@ -563,10 +664,10 @@ def _async_remove_obsolete_setpoint_entities(
         if registry_entry.domain != "sensor" or registry_entry.platform != DOMAIN:
             continue
         unique_id = registry_entry.unique_id
-        if unique_id == f"{entry.entry_id}_khdirector_desvalue" or (
+        if unique_id == f"{device_identifier(entry)}_khdirector_desvalue" or (
             unique_id.startswith((
-                f"{entry.entry_id}_sensor_",
-                f"{entry.entry_id}_iondirector_",
+                f"{device_identifier(entry)}_sensor_",
+                f"{device_identifier(entry)}_iondirector_",
             ))
             and unique_id.endswith("_desvalue")
         ):
@@ -587,7 +688,7 @@ def _async_remove_write_entities(
             "stop",
         ):
             unique_id = (
-                f"{entry.entry_id}_specialfunction_"
+                f"{device_identifier(entry)}_specialfunction_"
                 f"feedpause_{index}_{action}"
             )
 
@@ -608,7 +709,7 @@ def _async_remove_write_entities(
             "stop",
         ):
             unique_id = (
-                f"{entry.entry_id}_specialfunction_"
+                f"{device_identifier(entry)}_specialfunction_"
                 f"maintenance_{index}_{action}"
             )
 
@@ -629,7 +730,7 @@ def _async_remove_write_entities(
             "stop",
         ):
             unique_id = (
-                f"{entry.entry_id}_specialfunction_"
+                f"{device_identifier(entry)}_specialfunction_"
                 f"waterchange_{index}_{action}"
             )
 
@@ -649,7 +750,7 @@ def _async_remove_write_entities(
         "stop",
     ):
         unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"thunderstorm_{action}"
         )
 
@@ -665,7 +766,7 @@ def _async_remove_write_entities(
             )
 
     unique_id = (
-        f"{entry.entry_id}_specialfunction_"
+        f"{device_identifier(entry)}_specialfunction_"
         f"thunderstorm_duration"
     )
 
@@ -686,7 +787,7 @@ def _async_remove_write_entities(
             "stop",
         ):
             unique_id = (
-                f"{entry.entry_id}_specialfunction_"
+                f"{device_identifier(entry)}_specialfunction_"
                 f"lightscene_{index}_{action}"
             )
 
@@ -702,7 +803,7 @@ def _async_remove_write_entities(
                 )
 
     unique_id = (
-        f"{entry.entry_id}_specialfunction_"
+        f"{device_identifier(entry)}_specialfunction_"
         f"lightscene_fadetime"
     )
 
@@ -719,7 +820,7 @@ def _async_remove_write_entities(
 
     for action in range(KHDIRECTOR_ACTION_COUNT):
         unique_id = (
-            f"{entry.entry_id}_khdirector_"
+            f"{device_identifier(entry)}_khdirector_"
             f"startaction_{action}"
         )
 
@@ -736,7 +837,7 @@ def _async_remove_write_entities(
 
     for action in range(IONDIRECTOR_ACTION_COUNT):
         unique_id = (
-            f"{entry.entry_id}_iondirector_"
+            f"{device_identifier(entry)}_iondirector_"
             f"startaction_{action}"
         )
 
@@ -752,7 +853,7 @@ def _async_remove_write_entities(
             )
 
     unique_id = (
-        f"{entry.entry_id}_description_resource"
+        f"{device_identifier(entry)}_description_resource"
     )
 
     entity_id = entity_registry.async_get_entity_id(
@@ -767,7 +868,7 @@ def _async_remove_write_entities(
         )
 
     unique_id = (
-        f"{entry.entry_id}_description_text"
+        f"{device_identifier(entry)}_description_text"
     )
 
     entity_id = entity_registry.async_get_entity_id(
@@ -782,7 +883,7 @@ def _async_remove_write_entities(
         )
 
     unique_id = (
-        f"{entry.entry_id}_description_write"
+        f"{device_identifier(entry)}_description_write"
     )
 
     entity_id = entity_registry.async_get_entity_id(
@@ -797,7 +898,7 @@ def _async_remove_write_entities(
         )
 
     unique_id = (
-        f"{entry.entry_id}_sensor_setpoint_sensor"
+        f"{device_identifier(entry)}_sensor_setpoint_sensor"
     )
 
     entity_id = entity_registry.async_get_entity_id(
@@ -812,7 +913,7 @@ def _async_remove_write_entities(
         )
 
     unique_id = (
-        f"{entry.entry_id}_sensor_setpoint_value"
+        f"{device_identifier(entry)}_sensor_setpoint_value"
     )
 
     entity_id = entity_registry.async_get_entity_id(
@@ -827,7 +928,7 @@ def _async_remove_write_entities(
         )
 
     unique_id = (
-        f"{entry.entry_id}_sensor_setpoint_write"
+        f"{device_identifier(entry)}_sensor_setpoint_write"
     )
 
     entity_id = entity_registry.async_get_entity_id(
@@ -862,12 +963,12 @@ def _async_remove_extra_resource_entities(
             unique_ids = [
                 (
                     "binary_sensor",
-                    f"{entry.entry_id}_switchchannel_"
+                    f"{device_identifier(entry)}_switchchannel_"
                     f"{resource.index}_actstate",
                 ),
                 (
                     "sensor",
-                    f"{entry.entry_id}_switchchannel_"
+                    f"{device_identifier(entry)}_switchchannel_"
                     f"{resource.index}_actcurrent",
                 ),
             ]
@@ -879,12 +980,12 @@ def _async_remove_extra_resource_entities(
             unique_ids = [
                 (
                     "sensor",
-                    f"{entry.entry_id}_doser_"
+                    f"{device_identifier(entry)}_doser_"
                     f"{resource.index}_filllevel",
                 ),
                 (
                     "sensor",
-                    f"{entry.entry_id}_doser_"
+                    f"{device_identifier(entry)}_doser_"
                     f"{resource.index}_capacity",
                 ),
             ]
@@ -896,7 +997,7 @@ def _async_remove_extra_resource_entities(
             unique_ids = [
                 (
                     "sensor",
-                    f"{entry.entry_id}_flowsensor_"
+                    f"{device_identifier(entry)}_flowsensor_"
                     f"{resource.index}_actflow",
                 ),
             ]
@@ -913,7 +1014,7 @@ def _async_remove_extra_resource_entities(
             unique_ids = [
                 (
                     "sensor",
-                    f"{entry.entry_id}_illumination_"
+                    f"{device_identifier(entry)}_illumination_"
                     f"{resource.index}_actbrightness",
                 ),
             ]

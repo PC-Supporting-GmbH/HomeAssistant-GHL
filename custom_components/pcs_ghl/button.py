@@ -36,7 +36,7 @@ from .const import (
     WATERCHANGE_COUNT,
 )
 
-from .functions import device_info, is_valid_description
+from .functions import GHLIdentityMixin, device_identifier, device_info, is_valid_description
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -251,13 +251,13 @@ def _async_remove_obsolete_write_buttons(
         entity_id = registry.async_get_entity_id(
             "button",
             DOMAIN,
-            f"{entry.entry_id}_{suffix}",
+            f"{device_identifier(entry)}_{suffix}",
         )
         if entity_id is not None:
             registry.async_remove(entity_id)
 
 
-class GHLFeedPauseButton(ButtonEntity):
+class GHLFeedPauseButton(GHLIdentityMixin, ButtonEntity):
     """Representation of a GHL feed pause action."""
 
     _attr_extra_state_attributes = {
@@ -284,7 +284,7 @@ class GHLFeedPauseButton(ButtonEntity):
         action = "start" if state else "stop"
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"feedpause_{index}_{action}"
         )
 
@@ -348,7 +348,7 @@ class GHLFeedPauseButton(ButtonEntity):
             )
 
 
-class GHLMaintenanceButton(ButtonEntity):
+class GHLMaintenanceButton(GHLIdentityMixin, ButtonEntity):
     """Representation of a GHL maintenance action."""
 
     _attr_extra_state_attributes = {
@@ -375,7 +375,7 @@ class GHLMaintenanceButton(ButtonEntity):
         action = "start" if state else "stop"
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"maintenance_{index}_{action}"
         )
 
@@ -439,7 +439,7 @@ class GHLMaintenanceButton(ButtonEntity):
             )
 
 
-class GHLWaterChangeButton(ButtonEntity):
+class GHLWaterChangeButton(GHLIdentityMixin, ButtonEntity):
     """Representation of a GHL water change action."""
 
     _attr_extra_state_attributes = {
@@ -466,7 +466,7 @@ class GHLWaterChangeButton(ButtonEntity):
         action = "start" if state else "stop"
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"waterchange_{index}_{action}"
         )
 
@@ -530,7 +530,7 @@ class GHLWaterChangeButton(ButtonEntity):
             )
 
 
-class GHLThunderstormButton(ButtonEntity):
+class GHLThunderstormButton(GHLIdentityMixin, ButtonEntity):
     """Representation of a GHL thunderstorm action."""
 
     _attr_extra_state_attributes = {
@@ -557,7 +557,7 @@ class GHLThunderstormButton(ButtonEntity):
         action = "start" if state else "stop"
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"thunderstorm_{action}"
         )
 
@@ -621,7 +621,7 @@ class GHLThunderstormButton(ButtonEntity):
             )
 
 
-class GHLLightSceneButton(ButtonEntity):
+class GHLLightSceneButton(GHLIdentityMixin, ButtonEntity):
     """Representation of a GHL light scene action."""
 
     _attr_extra_state_attributes = {
@@ -650,7 +650,7 @@ class GHLLightSceneButton(ButtonEntity):
         action = "start" if state else "stop"
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"lightscene_{index}_{action}"
         )
 
@@ -719,7 +719,7 @@ class GHLLightSceneButton(ButtonEntity):
             )
 
 
-class GHLKHDirectorActionButton(ButtonEntity):
+class GHLKHDirectorActionButton(GHLIdentityMixin, ButtonEntity):
     """Representation of a GHL KH Director action."""
 
     _attr_extra_state_attributes = {
@@ -754,7 +754,7 @@ class GHLKHDirectorActionButton(ButtonEntity):
         ]
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_khdirector_"
+            f"{device_identifier(entry)}_khdirector_"
             f"startaction_{action}"
         )
 
@@ -806,7 +806,7 @@ class GHLKHDirectorActionButton(ButtonEntity):
             )
 
 
-class GHLIONDirectorActionButton(ButtonEntity):
+class GHLIONDirectorActionButton(GHLIdentityMixin, ButtonEntity):
     """Representation of a GHL ION Director action."""
 
     _attr_extra_state_attributes = {
@@ -842,7 +842,7 @@ class GHLIONDirectorActionButton(ButtonEntity):
         ]
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_iondirector_"
+            f"{device_identifier(entry)}_iondirector_"
             f"startaction_{action}"
         )
 
@@ -894,7 +894,7 @@ class GHLIONDirectorActionButton(ButtonEntity):
             )
 
 
-class GHLDescriptionWriteButton(ButtonEntity):
+class GHLDescriptionWriteButton(GHLIdentityMixin, ButtonEntity):
     """Representation of the GHL description write action."""
 
     _attr_has_entity_name = True
@@ -913,7 +913,7 @@ class GHLDescriptionWriteButton(ButtonEntity):
         self._description_editor = description_editor
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_description_write"
+            f"{device_identifier(entry)}_description_write"
         )
 
         self._attr_device_info = device_info(entry)

@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from .functions import device_info
+from .functions import GHLIdentityMixin, device_identifier, device_info
 
 import logging
 
@@ -94,7 +94,7 @@ async def async_setup_entry(
                     entity_id = registry.async_get_entity_id(
                         "number",
                         DOMAIN,
-                        f"{entry.entry_id}_sensor_{resource.index}_desvalue",
+                        f"{device_identifier(entry)}_sensor_{resource.index}_desvalue",
                     )
                     if entity_id is not None:
                         registry.async_remove(entity_id)
@@ -196,7 +196,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class GHLIlluminationMasterBrightnessNumber(
+class GHLIlluminationMasterBrightnessNumber(GHLIdentityMixin, 
     NumberEntity,
     RestoreEntity,
 ):
@@ -231,7 +231,7 @@ class GHLIlluminationMasterBrightnessNumber(
         self._coordinator = coordinator
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_illumination_"
+            f"{device_identifier(entry)}_illumination_"
             f"masterbrightness_value"
         )
 
@@ -334,7 +334,7 @@ class GHLIlluminationMasterBrightnessNumber(
         )
 
 
-class GHLThunderstormDurationNumber(
+class GHLThunderstormDurationNumber(GHLIdentityMixin, 
     NumberEntity,
     RestoreEntity,
 ):
@@ -365,7 +365,7 @@ class GHLThunderstormDurationNumber(
         self._thunderstorm_data = thunderstorm_data
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"thunderstorm_duration"
         )
 
@@ -411,7 +411,7 @@ class GHLThunderstormDurationNumber(
         self.async_write_ha_state()
 
 
-class GHLLightSceneFadeTimeNumber(
+class GHLLightSceneFadeTimeNumber(GHLIdentityMixin, 
     NumberEntity,
     RestoreEntity,
 ):
@@ -442,7 +442,7 @@ class GHLLightSceneFadeTimeNumber(
         self._lightscene_data = lightscene_data
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_specialfunction_"
+            f"{device_identifier(entry)}_specialfunction_"
             f"lightscene_fadetime"
         )
 
@@ -488,7 +488,7 @@ class GHLLightSceneFadeTimeNumber(
         self.async_write_ha_state()
 
 
-class GHLSensorSetpointNumber(
+class GHLSensorSetpointNumber(GHLIdentityMixin, 
     GHLDescriptionNameMixin,
     CoordinatorEntity[GHLDataUpdateCoordinator],
     NumberEntity,
@@ -538,7 +538,7 @@ class GHLSensorSetpointNumber(
                 ) = limits
 
             self._attr_unique_id = (
-                f"{entry.entry_id}_sensor_{resource.index}_desvalue"
+                f"{device_identifier(entry)}_sensor_{resource.index}_desvalue"
             )
             self._data_key = sensor_desvalue_key(resource.index)
             if resource.description is not None:
@@ -548,13 +548,13 @@ class GHLSensorSetpointNumber(
                 self._attr_translation_key = "sensor_setpoint"
                 self._attr_translation_placeholders = {"index": str(resource.index + 1)}
         elif resource.resource == "KHDIRECTOR":
-            self._attr_unique_id = f"{entry.entry_id}_khdirector_desvalue"
+            self._attr_unique_id = f"{device_identifier(entry)}_khdirector_desvalue"
             self._data_key = khdirector_desvalue_key()
             self._attr_translation_key = "khdirector_setpoint"
         else:
             parameter_key = tuple(IONDIRECTOR_PARAMETER_KEYS.values())[resource.index]
             self._attr_unique_id = (
-                f"{entry.entry_id}_iondirector_{resource.index}_desvalue"
+                f"{device_identifier(entry)}_iondirector_{resource.index}_desvalue"
             )
             self._data_key = iondirector_desvalue_key(resource.index)
             self._attr_translation_key = f"iondirector_{parameter_key}_setpoint"

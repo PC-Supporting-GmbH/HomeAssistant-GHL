@@ -21,7 +21,7 @@ from .const import (
     DOMAIN,
 )
 
-from .functions import device_info, is_valid_description
+from .functions import GHLIdentityMixin, device_identifier, device_info, is_valid_description
 
 
 async def async_setup_entry(
@@ -56,7 +56,7 @@ async def async_setup_entry(
     )
 
 
-class GHLDescriptionText(TextEntity):
+class GHLDescriptionText(GHLIdentityMixin, TextEntity):
     """Edit the selected GHL resource description."""
 
     _attr_has_entity_name = True
@@ -76,7 +76,7 @@ class GHLDescriptionText(TextEntity):
         self._description_editor = description_editor
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_description_text"
+            f"{device_identifier(entry)}_description_text"
         )
 
         self._attr_device_info = device_info(entry)
