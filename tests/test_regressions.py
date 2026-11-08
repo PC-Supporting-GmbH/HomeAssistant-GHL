@@ -170,6 +170,51 @@ class APITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(writer.commands), 2)
 
 
+    async def test_n02_fragmented_plain_ack(self):
+        api, writer = self.client([b"A", b"C", b"K"])
+        self.assertEqual(await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY), "ACK")
+        self.assertEqual(len(writer.commands), 1)
+
+    async def test_n02_fragmented_numeric_ack(self):
+        api, writer = self.client([b"AC", b"K <", b"-2.", b"500", b">"])
+        self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "ACK <-2.500>")
+        self.assertEqual(len(writer.commands), 1)
+
+    async def test_n02_fragmented_text_ack(self):
+        api, writer = self.client([b"ACK <", b'"S\xfc', b'\xdfwasser"', b">"])
+        self.assertEqual(await api.async_command("GET SENSOR[0] DESCRIPTION", expected_response=GHLResponseType.ACK_TEXT), 'ACK <"Süßwasser">')
+        self.assertEqual(len(writer.commands), 1)
+
+    async def test_n02_empty_text_ack(self):
+        api, _ = self.client([b'ACK <"', b'">'])
+        self.assertEqual(await api.async_command("GET SENSOR[0] DESCRIPTION", expected_response=GHLResponseType.ACK_TEXT), 'ACK <"">')
+
+    async def test_n02_fragmented_nack_on_get(self):
+        api, writer = self.client([b"NA", b"CK (", b"-10", b"4)"])
+        self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "NACK (-104)")
+        self.assertEqual(len(writer.commands), 1)
+
+    async def test_n02_fragmented_nack_on_set(self):
+        api, writer = self.client([b"N", b"ACK (", b"-102", b")"])
+        self.assertEqual(await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY), "NACK (-102)")
+        self.assertEqual(len(writer.commands), 1)
+
+    async def test_n02_invalid_numeric_reply_is_retried(self):
+        api, writer = self.client([b"ACK <abc>", b"ACK <7.2>"])
+        self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "ACK <7.2>")
+        self.assertEqual(len(writer.commands), 2)
+
+    async def test_n02_unexpected_set_reply_is_uncertain(self):
+        api, writer = self.client([b"ACK <7.2>"])
+        with self.assertRaises(UncertainError):
+            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
+        self.assertEqual(len(writer.commands), 1)
+
+    async def test_n02_fragmented_numeric_reply_closed_before_end(self):
+        api, writer = self.client([b"ACK <7.", b"", b"ACK <7.2>"])
+        self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "ACK <7.2>")
+        self.assertEqual(len(writer.commands), 2)
+
 class ValueTests(unittest.TestCase):
     def test_pointcount_accepts_whole_counts(self):
         for value, expected in (("0", 0), ("24.000", 24), ("25", 25), ("200", 200)):

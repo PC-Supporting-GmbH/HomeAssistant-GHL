@@ -36,6 +36,7 @@ from .const import (
     CONF_SENSOR_TYPES,
     CONF_SENSOR_UNITS,
     DOMAIN,
+    HISTORY_MAX_RECORDS,
     SENSOR_TYPE_AIR_TEMPERATURE,
     SENSOR_TYPE_CONDUCTIVITY_FRESHWATER,
     SENSOR_TYPE_CONDUCTIVITY_SEAWATER,
@@ -309,7 +310,7 @@ async def _async_read_history(
     records: list[GHLHistoryRecord] = []
     record_index = 0
 
-    while True:
+    while record_index < HISTORY_MAX_RECORDS:
         command = (
             f"GET {resource_name} DATARECORD[{record_index}]"
         )
@@ -354,6 +355,13 @@ async def _async_read_history(
 
         if progress_callback is not None:
             await progress_callback(record_index)
+
+    if record_index >= HISTORY_MAX_RECORDS:
+        _LOGGER.warning(
+            "GHL history import for %s reached the safety limit of %s records",
+            resource_name,
+            HISTORY_MAX_RECORDS,
+        )
 
     records.sort(key=lambda record: record.timestamp)
 

@@ -1,5 +1,4 @@
 """Constants for the GHL integration."""
-# pyright: reportMissingImports=false
 
 from datetime import timedelta
 
@@ -8,6 +7,8 @@ DOMAIN = "pcs_ghl"
 DEFAULT_PORT = 10002
 
 DISCOVERY_LIMIT = 0
+
+HISTORY_MAX_RECORDS = 8500
 
 UPDATE_INTERVAL_SECONDS = 30
 
