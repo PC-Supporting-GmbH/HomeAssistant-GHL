@@ -170,9 +170,9 @@ class GHLAPI:
                 or data.startswith(b"NACK (") and re.fullmatch(rb"NACK \(-?[0-9]*\)?", data)
                 or expected_response is GHLResponseType.ACK_VALUE
                 and data.startswith(b"ACK <")
-                and re.fullmatch(rb"ACK <[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]*)>?", data)
+                and re.fullmatch(rb"ACK <[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]*)?>?", data)
                 or expected_response is GHLResponseType.ACK_TEXT
-                and data.startswith(b'ACK <"')
+                and (b'ACK <"'.startswith(data) or data.startswith(b'ACK <"'))
                 and not data.endswith(b'">')
             ):
                 raise GHLConnectionError("Unexpected GHL reply format")

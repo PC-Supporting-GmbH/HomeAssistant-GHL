@@ -116,16 +116,16 @@ class APITests(unittest.IsolatedAsyncioTestCase):
     async def test_invalid_description_character_is_replaced(self):
         api, writer = self.client([b'ACK <"Bad\x81name">'])
         with self.assertLogs("ghl-regression", "WARNING"):
-            self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION"), "Bad\ufffdname")
+            self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION", expected_response=GHLResponseType.ACK_TEXT), "Bad\ufffdname")
         self.assertEqual(len(writer.commands), 1)
 
     async def test_valid_description_characters_survive(self):
         api, _ = self.client(['ACK <"Süßwasser">'.encode("cp1252")])
-        self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION"), "Süßwasser")
+        self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION", expected_response=GHLResponseType.ACK_TEXT), "Süßwasser")
 
     async def test_invalid_numeric_encoding_is_not_cleaned(self):
         api, writer = self.client([b"ACK <2\x815>", b"ACK <25>"])
-        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE"), "25")
+        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "25")
         self.assertEqual(len(writer.commands), 2)
 
     async def test_invalid_write_encoding_never_repeats_action(self):
@@ -210,6 +210,51 @@ class APITests(unittest.IsolatedAsyncioTestCase):
             await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(len(writer.commands), 1)
 
+    async def test_n02_incomplete_get_reply_times_out_and_retries(self):
+        api, writer = self.client([])
+        real_asyncio = asyncio
+        chunks = iter([b"ACK <7.", None, b"ACK <7.2>"])
+        async def read(size):
+            chunk = next(chunks)
+            if chunk is None:
+                await real_asyncio.sleep(1)
+            return chunk
+        reader = SimpleNamespace(read=read)
+        api._reader = reader
+        api._writer = writer
+        async def connect(*args, **kwargs):
+            api._reader = reader
+            api._writer = writer
+        api._async_connect = AsyncMock(side_effect=connect)
+        original_timeout = NS["API_COMMAND_TIMEOUT_SECONDS"]
+        NS["API_COMMAND_TIMEOUT_SECONDS"] = 0.01
+        self.addCleanup(NS.__setitem__, "API_COMMAND_TIMEOUT_SECONDS", original_timeout)
+        self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "ACK <7.2>")
+        self.assertEqual(len(writer.commands), 2)
+
+    async def test_n02_incomplete_set_reply_times_out_without_retry(self):
+        api, writer = self.client([])
+        real_asyncio = asyncio
+        chunks = iter([b"AC", None])
+        async def read(size):
+            chunk = next(chunks)
+            if chunk is None:
+                await real_asyncio.sleep(1)
+            return chunk
+        reader = SimpleNamespace(read=read)
+        api._reader = reader
+        api._writer = writer
+        async def connect(*args, **kwargs):
+            api._reader = reader
+            api._writer = writer
+        api._async_connect = AsyncMock(side_effect=connect)
+        original_timeout = NS["API_COMMAND_TIMEOUT_SECONDS"]
+        NS["API_COMMAND_TIMEOUT_SECONDS"] = 0.01
+        self.addCleanup(NS.__setitem__, "API_COMMAND_TIMEOUT_SECONDS", original_timeout)
+        with self.assertRaises(UncertainError):
+            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
+        self.assertEqual(len(writer.commands), 1)
+
     async def test_n02_fragmented_numeric_reply_closed_before_end(self):
         api, writer = self.client([b"ACK <7.", b"", b"ACK <7.2>"])
         self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "ACK <7.2>")
@@ -233,8 +278,9 @@ class ValueTests(unittest.TestCase):
             self.assertFalse(NS["is_valid_description"](value), value)
 
     def test_device_info_preserves_empty_name_and_identity(self):
+        load_definitions("functions.py", {"device_identifier"}, NS)
         for title in ("P4", ""):
-            entry = SimpleNamespace(entry_id="stable", title=title, data={"host": "test.local"})
+            entry = SimpleNamespace(entry_id="stable", title=title, data={"host": "test.local", "device_identifier": "stable"})
             info = NS["device_info"](entry)
             self.assertEqual(info, {"identifiers": {("pcs_ghl", "stable")}, "name": title, "manufacturer": "GHL", "configuration_url": "http://test.local"})
 
@@ -355,25 +401,27 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
         for raw, expected in ((b"ACK <7.200>", "7.200"), (b"ACK <0.000>", "0.000"), (b"ACK <-2.500>", "-2.500")):
             with self.subTest(reply=raw):
                 api, writer = self.client([raw])
-                self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE"), expected)
+                self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), expected)
                 self.assertEqual(writer.commands, [b"GET SENSOR[0] ACTVALUE\n"])
                 self.assertEqual(writer.closed, 0)
 
     async def test_quoted_text_ack_on_first_attempt(self):
         """ACK with quoted text returns the text without surrounding quotes."""
         api, writer = self.client([b'ACK <"Aquarium">'])
-        self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION"), "Aquarium")
+        self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION", expected_response=GHLResponseType.ACK_TEXT), "Aquarium")
         self.assertEqual(len(writer.commands), 1)
 
     async def test_empty_quoted_description(self):
         """An empty quoted description remains an empty string."""
         api, _ = self.client([b'ACK <"">'])
-        self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION"), "")
+        self.assertEqual(await api.async_get("SENSOR[0]", "DESCRIPTION", expected_response=GHLResponseType.ACK_TEXT), "")
 
     async def test_ack_with_surrounding_whitespace(self):
-        """Whitespace around a complete ACK is stripped."""
-        api, _ = self.client([b" \r\nACK <7.200>\r\n"])
-        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE"), "7.200")
+        """Unexpected whitespace around ACK is rejected by the strict TCP parser."""
+        api, writer = self.client([b" \r\nACK <7.200>\r\n"] * 2)
+        with self.assertRaises(ConnectionError):
+            await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE)
+        self.assertEqual(len(writer.commands), 2)
 
     async def test_action_ack_on_first_attempt(self):
         """An action succeeds with a plain ACK and is sent once."""
@@ -393,7 +441,7 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
         for code in (-1, -2, -101, -102, -103, -104, -105, -999):
             with self.subTest(code=code):
                 api, writer = self.client([f"NACK ({code})".encode()])
-                self.assertIsNone(await api.async_get("SENSOR[0]", "ACTVALUE"))
+                self.assertIsNone(await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE))
                 self.assertEqual(len(writer.commands), 1)
 
     async def test_write_nacks_preserve_the_error_code(self):
@@ -406,25 +454,29 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(len(writer.commands), 1)
 
     async def test_unexpected_read_reply_is_an_api_error(self):
-        """Unrecognised or whitespace-only read replies are reported as errors."""
+        """Malformed GET replies fail after the configured retry attempts."""
         for reply in (b"HELLO", b"ERROR", b"   \r\n"):
             with self.subTest(reply=reply):
-                api, writer = self.client([reply])
-                with self.assertRaises(APIError):
-                    await api.async_get("SENSOR[0]", "ACTVALUE")
-                self.assertEqual(len(writer.commands), 1)
+                api, writer = self.client([reply] * 2)
+                with self.assertRaises(ConnectionError):
+                    await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE)
+                self.assertEqual(len(writer.commands), 2)
 
     async def test_ack_without_complete_value_returns_none(self):
-        """ACK without a complete bracket pair returns no value."""
+        """Incomplete or malformed numeric ACKs fail rather than returning a value."""
         for reply in (b"ACK", b"ACK <7.2", b"ACK 7.2>"):
             with self.subTest(reply=reply):
-                api, _ = self.client([reply])
-                self.assertIsNone(await api.async_get("SENSOR[0]", "ACTVALUE"))
+                api, writer = self.client([reply, b"", reply, b""])
+                with self.assertRaises(ConnectionError):
+                    await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE)
+                self.assertEqual(len(writer.commands), 2)
 
     async def test_empty_unquoted_ack_value(self):
-        """An empty ACK value remains empty at the transport layer."""
-        api, _ = self.client([b"ACK <>"])
-        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE"), "")
+        """An empty unquoted numeric ACK is rejected by the strict parser."""
+        api, writer = self.client([b"ACK <>", b"", b"ACK <>", b""])
+        with self.assertRaises(ConnectionError):
+            await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE)
+        self.assertEqual(len(writer.commands), 2)
 
     async def test_malformed_write_confirmations_are_uncertain(self):
         """An unexpected write reply never counts as successful confirmation."""
@@ -438,13 +490,13 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
     async def test_read_retries_after_eof(self):
         """A closed connection on a read is reconnected and retried."""
         api, writer = self.client([b"", b"ACK <1>"])
-        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE"), "1")
+        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "1")
         self.assertEqual(len(writer.commands), 2)
 
     async def test_read_retries_after_socket_error(self):
         """A socket error on a read permits a retry."""
         api, writer = self.client([OSError("simulated"), b"ACK <1>"])
-        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE"), "1")
+        self.assertEqual(await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "1")
         self.assertEqual(len(writer.commands), 2)
 
     async def test_socket_error_after_action_does_not_retry(self):
@@ -484,14 +536,14 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
         """Repeated invalid encoding is reported instead of silently cleaned."""
         api, writer = self.client([b"ACK <2\x815>"] * 2)
         with self.assertRaises(ConnectionError):
-            await api.async_get("SENSOR[0]", "ACTVALUE")
+            await api.async_get("SENSOR[0]", "ACTVALUE", expected_response=GHLResponseType.ACK_VALUE)
         self.assertEqual(len(writer.commands), 2)
 
     async def test_damaged_description_envelope_is_not_repaired(self):
         """Only a complete quoted description envelope permits replacement."""
-        api, writer = self.client([b'ACK <"Bad\x81'] * 2)
+        api, writer = self.client([b'ACK <"Bad\x81', b"", b'ACK <"Bad\x81', b""])
         with self.assertRaises(ConnectionError):
-            await api.async_get("SENSOR[0]", "DESCRIPTION")
+            await api.async_get("SENSOR[0]", "DESCRIPTION", expected_response=GHLResponseType.ACK_TEXT)
         self.assertEqual(len(writer.commands), 2)
 
     async def test_cancelled_action_is_not_repeated_and_unlocks(self):
