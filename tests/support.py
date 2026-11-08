@@ -45,6 +45,8 @@ def production_namespace():
     namespace.update({
         "CONF_HOST": "host",
         "asyncio": asyncio,
+        "Enum": __import__("enum").Enum,
+        "re": __import__("re"),
         "math": math,
         "_LOGGER": logging.getLogger("ghl-regression"),
         "perf_counter": perf_counter,
@@ -64,8 +66,16 @@ def production_namespace():
         {"has_control_characters", "is_valid_description", "parse_pointcount", "device_info"},
         namespace,
     )
+    api_source = (COMPONENT / "api.py").read_text(encoding="utf-8")
+    api_tree = ast.parse(api_source)
+    for node in api_tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id in {"_GHL_NUMBER_REPLY", "_GHL_NACK_REPLY"}
+            for target in node.targets
+        ):
+            exec(compile(ast.fix_missing_locations(ast.Module(body=[node], type_ignores=[])), str(COMPONENT / "api.py"), "exec"), namespace)
     load_definitions(
-        "api.py", {"GHLAPIError", "GHLConnectionError", "GHLCommandUncertainError", "GHLAPI"},
+        "api.py", {"GHLAPIError", "GHLConnectionError", "GHLCommandUncertainError", "GHLResponseType", "GHLAPI"},
         namespace,
     )
     return namespace

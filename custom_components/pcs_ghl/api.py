@@ -6,6 +6,8 @@ from __future__ import annotations
 import asyncio
 
 import logging
+import re
+from enum import Enum
 from time import perf_counter
 
 from .const import (
@@ -34,6 +36,18 @@ class GHLConnectionError(GHLAPIError):
 
 class GHLCommandUncertainError(GHLAPIError):
     """A command may have been executed without confirmation."""
+
+
+class GHLResponseType(Enum):
+    """Expected successful GHL API reply format."""
+
+    ACK_ONLY = "ack_only"
+    ACK_VALUE = "ack_value"
+    ACK_TEXT = "ack_text"
+
+
+_GHL_NUMBER_REPLY = re.compile(rb"ACK <[+-]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)>")
+_GHL_NACK_REPLY = re.compile(rb"NACK \(-[0-9]+\)")
 
 
 class GHLAPI:
@@ -116,10 +130,61 @@ class GHLAPI:
         async with self._lock:
             await self._async_disconnect()
 
+    async def _async_read_reply(self, expected_response: GHLResponseType) -> bytes:
+        """Read until the expected ACK or a complete NACK has arrived."""
+
+        if self._reader is None:
+            raise GHLConnectionError("GHL connection has no reader")
+
+        reply = bytearray()
+
+        while True:
+            chunk = await self._reader.read(API_REPLY_BUFFER_SIZE)
+            if not chunk:
+                raise GHLConnectionError(
+                    f"Connection to {self.host}:{self.port} closed during reply"
+                )
+
+            reply.extend(chunk)
+            data = bytes(reply)
+
+            if _GHL_NACK_REPLY.fullmatch(data):
+                return data
+
+            if expected_response is GHLResponseType.ACK_ONLY and data == b"ACK":
+                return data
+
+            if expected_response is GHLResponseType.ACK_VALUE and _GHL_NUMBER_REPLY.fullmatch(data):
+                return data
+
+            if (
+                expected_response is GHLResponseType.ACK_TEXT
+                and data.startswith(b'ACK <"')
+                and data.endswith(b'">')
+            ):
+                return data
+
+            if not (
+                b"ACK".startswith(data)
+                or b"NACK (".startswith(data)
+                or data.startswith(b"NACK (") and re.fullmatch(rb"NACK \(-?[0-9]*\)?", data)
+                or expected_response is GHLResponseType.ACK_VALUE
+                and data.startswith(b"ACK <")
+                and re.fullmatch(rb"ACK <[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]*)>?", data)
+                or expected_response is GHLResponseType.ACK_TEXT
+                and data.startswith(b'ACK <"')
+                and not data.endswith(b'">')
+            ):
+                raise GHLConnectionError("Unexpected GHL reply format")
+
+            if len(reply) > 65536:
+                raise GHLConnectionError("GHL reply exceeds maximum length")
+
     async def async_command(
         self,
         command: str,
         *,
+        expected_response: GHLResponseType,
         retry_safe: bool = False,
         attempts: int = API_COMMAND_ATTEMPTS,
     ) -> str:
@@ -164,7 +229,7 @@ class GHLAPI:
                     await self._writer.drain()
 
                     reply = await asyncio.wait_for(
-                        self._reader.read(API_REPLY_BUFFER_SIZE),
+                        self._async_read_reply(expected_response),
                         timeout=API_COMMAND_TIMEOUT_SECONDS,
                     )
 
@@ -273,12 +338,12 @@ class GHLAPI:
         )
 
     async def async_get(
-        self, resource: str, feature: str, *, attempts: int = API_COMMAND_ATTEMPTS
+        self, resource: str, feature: str, *, expected_response: GHLResponseType, attempts: int = API_COMMAND_ATTEMPTS
     ) -> str | None:
         """Read a value from the GHL API."""
 
         reply = await self.async_command(
-            f"GET {resource} {feature}", attempts=attempts
+            f"GET {resource} {feature}", expected_response=expected_response, attempts=attempts
         )
 
         if reply.startswith("NACK"):

@@ -16,6 +16,7 @@ GHLAPI = NS["GHLAPI"]
 APIError = NS["GHLAPIError"]
 ConnectionError = NS["GHLConnectionError"]
 UncertainError = NS["GHLCommandUncertainError"]
+GHLResponseType = NS["GHLResponseType"]
 
 
 class SimulatedReader:
@@ -69,47 +70,47 @@ class APITests(unittest.IsolatedAsyncioTestCase):
 
     async def test_read_retries_after_timeout(self):
         api, writer = self.client([asyncio.TimeoutError(), b"ACK <7.2>"])
-        self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE"), "ACK <7.2>")
+        self.assertEqual(await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), "ACK <7.2>")
         self.assertEqual(len(writer.commands), 2)
 
     async def test_read_fails_after_two_attempts(self):
         api, writer = self.client([asyncio.TimeoutError(), asyncio.TimeoutError()])
         with self.assertRaises(ConnectionError):
-            await api.async_command("GET SENSOR[0] ACTVALUE")
+            await api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE)
         self.assertEqual(len(writer.commands), 2)
 
     async def test_uncertain_action_is_not_repeated(self):
         api, writer = self.client([asyncio.TimeoutError(), b"ACK"])
         with self.assertRaises(UncertainError):
-            await api.async_command("SET SPECIALFUNCTION WATERCHANGE[0] 1")
+            await api.async_command("SET SPECIALFUNCTION WATERCHANGE[0] 1", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(len(writer.commands), 1)
 
     async def test_closed_connection_after_write_is_uncertain(self):
         api, writer = self.client([b"", b"ACK"])
         with self.assertRaises(UncertainError):
-            await api.async_command("SET SPECIALFUNCTION MAINTENANCE[0] 1")
+            await api.async_command("SET SPECIALFUNCTION MAINTENANCE[0] 1", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(len(writer.commands), 1)
 
     async def test_explicitly_safe_write_can_retry(self):
         api, writer = self.client([asyncio.TimeoutError(), b"ACK"])
-        self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", retry_safe=True), "ACK")
+        self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", expected_response=GHLResponseType.ACK_ONLY, retry_safe=True), "ACK")
         self.assertEqual(len(writer.commands), 2)
 
     async def test_nack_is_returned_without_retry(self):
         api, writer = self.client([b"NACK (-105)"])
-        self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50"), "NACK (-105)")
+        self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", expected_response=GHLResponseType.ACK_ONLY), "NACK (-105)")
         self.assertEqual(len(writer.commands), 1)
 
     async def test_malformed_write_reply_is_uncertain(self):
         api, writer = self.client([b"ACK <unexpected>"])
         with self.assertRaises(UncertainError):
-            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5")
+            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(len(writer.commands), 1)
 
     async def test_nack_after_uncertain_safe_write_stays_uncertain(self):
         api, writer = self.client([asyncio.TimeoutError(), b"NACK (-105)"])
         with self.assertRaises(UncertainError):
-            await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", retry_safe=True)
+            await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", expected_response=GHLResponseType.ACK_ONLY, retry_safe=True)
         self.assertEqual(len(writer.commands), 2)
 
     async def test_invalid_description_character_is_replaced(self):
@@ -130,13 +131,13 @@ class APITests(unittest.IsolatedAsyncioTestCase):
     async def test_invalid_write_encoding_never_repeats_action(self):
         api, writer = self.client([b"ACK\x81", b"ACK"])
         with self.assertRaises(UncertainError):
-            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5")
+            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(len(writer.commands), 1)
 
     async def test_control_characters_never_reach_device(self):
         api, writer = self.client([])
         with self.assertRaises(APIError):
-            await api.async_command("GET SENSOR[0] ACTVALUE\nSET SPECIALFUNCTION THUNDERSTORM 5")
+            await api.async_command("GET SENSOR[0] ACTVALUE\nSET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_VALUE)
         self.assertEqual(writer.commands, [])
 
     async def test_close_is_idempotent(self):
@@ -164,7 +165,7 @@ class APITests(unittest.IsolatedAsyncioTestCase):
         api._async_connect.side_effect = None
         api._reader = SimpleNamespace(read=read)
         api._writer = writer
-        await asyncio.gather(api.async_command("GET SENSOR[0] ACTVALUE"), api.async_command("GET SENSOR[1] ACTVALUE"))
+        await asyncio.gather(api.async_command("GET SENSOR[0] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE), api.async_command("GET SENSOR[1] ACTVALUE", expected_response=GHLResponseType.ACK_VALUE))
         self.assertEqual(peak, 1)
         self.assertEqual(len(writer.commands), 2)
 
@@ -332,14 +333,14 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
     async def test_action_ack_on_first_attempt(self):
         """An action succeeds with a plain ACK and is sent once."""
         api, writer = self.client([b"ACK"])
-        self.assertEqual(await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5"), "ACK")
+        self.assertEqual(await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY), "ACK")
         self.assertEqual(len(writer.commands), 1)
         self.assertEqual(writer.closed, 0)
 
     async def test_safe_write_ack_on_first_attempt(self):
         """A safe value write succeeds with ACK without a retry."""
         api, writer = self.client([b"ACK"])
-        self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", retry_safe=True), "ACK")
+        self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", expected_response=GHLResponseType.ACK_ONLY, retry_safe=True), "ACK")
         self.assertEqual(len(writer.commands), 1)
 
     async def test_read_nacks_return_no_value(self):
@@ -356,7 +357,7 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(code=code):
                 reply = f"NACK ({code})"
                 api, writer = self.client([reply.encode()])
-                self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50"), reply)
+                self.assertEqual(await api.async_command("SET ILLUMINATION MASTERBRIGHTNESS 50", expected_response=GHLResponseType.ACK_ONLY), reply)
                 self.assertEqual(len(writer.commands), 1)
 
     async def test_unexpected_read_reply_is_an_api_error(self):
@@ -386,7 +387,7 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(reply=reply):
                 api, writer = self.client([reply])
                 with self.assertRaises(UncertainError):
-                    await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5")
+                    await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
                 self.assertEqual(len(writer.commands), 1)
 
     async def test_read_retries_after_eof(self):
@@ -405,7 +406,7 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
         """A socket error after an action is sent leaves execution uncertain."""
         api, writer = self.client([OSError("simulated")])
         with self.assertRaises(UncertainError):
-            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5")
+            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(len(writer.commands), 1)
 
     async def test_connection_failure_before_sending_action_can_retry(self):
@@ -422,7 +423,7 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
             await connect()
 
         api._async_connect.side_effect = fail_once
-        self.assertEqual(await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5"), "ACK")
+        self.assertEqual(await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY), "ACK")
         self.assertEqual((attempts, len(writer.commands)), (2, 1))
 
     async def test_two_connection_failures_send_nothing(self):
@@ -430,7 +431,7 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
         api, writer = self.client([])
         api._async_connect.side_effect = ConnectionError("not connected")
         with self.assertRaises(ConnectionError):
-            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5")
+            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(writer.commands, [])
         self.assertEqual(api._async_connect.await_count, 2)
 
@@ -452,7 +453,7 @@ class ResponseTypeTests(unittest.IsolatedAsyncioTestCase):
         """Cancellation does not repeat an action or leave the command lock held."""
         api, writer = self.client([asyncio.CancelledError()])
         with self.assertRaises(asyncio.CancelledError):
-            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5")
+            await api.async_command("SET SPECIALFUNCTION THUNDERSTORM 5", expected_response=GHLResponseType.ACK_ONLY)
         self.assertEqual(len(writer.commands), 1)
         self.assertFalse(api._lock.locked())
 

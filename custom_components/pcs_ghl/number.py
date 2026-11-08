@@ -26,7 +26,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .api import GHLAPI, GHLAPIError, GHLCommandUncertainError
+from .api import GHLResponseType, GHLAPI, GHLAPIError, GHLCommandUncertainError
 from .const import (
     ACCESS_MODE_FULL_ACCESS,
     CONF_ACCESS_MODE,
@@ -283,6 +283,7 @@ class GHLIlluminationMasterBrightnessNumber(GHLIdentityMixin,
             reply = await self._api.async_command(
                 command,
                 retry_safe=True,
+                            expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -702,6 +703,7 @@ class GHLSensorSetpointNumber(GHLIdentityMixin,
             reply = await self._api.async_command(
                 command,
                 retry_safe=True,
+                            expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:

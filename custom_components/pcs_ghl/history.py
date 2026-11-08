@@ -31,7 +31,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from .api import GHLAPI, GHLAPIError
+from .api import GHLResponseType, GHLAPI, GHLAPIError
 from .const import (
     CONF_SENSOR_TYPES,
     CONF_SENSOR_UNITS,
@@ -313,7 +313,7 @@ async def _async_read_history(
         command = (
             f"GET {resource_name} DATARECORD[{record_index}]"
         )
-        reply = await api.async_command(command)
+        reply = await api.async_command(command, expected_response=GHLResponseType.ACK_TEXT)
 
         if reply == "NACK (-104)":
             break

@@ -49,12 +49,11 @@ from .const import (
     SENSOR_UNIT_KG_L,
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
-    API_COMMAND_TIMEOUT_SECONDS,
-    API_REPLY_BUFFER_SIZE,
     CONF_INITIAL_HISTORY_PENDING,
     DESCRIPTION_RESOURCE_FALLBACKS,
     DESCRIPTION_RESOURCE_TRANSLATION_KEYS,
 )
+from .api import GHLAPI, GHLConnectionError, GHLResponseType
 from .history import (
     history_resource_key,
     async_import_resource_history,
@@ -70,25 +69,17 @@ _LOGGER = logging.getLogger(__name__)
 async def async_test_connection(host: str, port: int) -> str:
     """Test the connection to the GHL API."""
 
-    reader, writer = await asyncio.wait_for(
-        asyncio.open_connection(host, port),
-        timeout=API_COMMAND_TIMEOUT_SECONDS,
-    )
+    api = GHLAPI(host, port)
 
     try:
-        writer.write(b"GET SYSTEM SERIALNUMBER\n")
-        await writer.drain()
-
-        reply = await asyncio.wait_for(
-            reader.read(API_REPLY_BUFFER_SIZE),
-            timeout=API_COMMAND_TIMEOUT_SECONDS,
+        return await api.async_command(
+            "GET SYSTEM SERIALNUMBER",
+            expected_response=GHLResponseType.ACK_TEXT,
+            attempts=1,
         )
 
-        return reply.decode().strip()
-
     finally:
-        writer.close()
-        await writer.wait_closed()
+        await api.async_close()
 
 
 class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -150,7 +141,7 @@ class GHLConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 try:
                     reply = await async_test_connection(host, port)
 
-                except (OSError, asyncio.TimeoutError):
+                except (OSError, asyncio.TimeoutError, GHLConnectionError):
                     errors["base"] = "cannot_connect"
 
                 else:

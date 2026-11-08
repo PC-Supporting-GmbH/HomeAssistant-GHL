@@ -12,7 +12,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .api import GHLAPI, GHLAPIError, GHLCommandUncertainError
+from .api import GHLResponseType, GHLAPI, GHLAPIError, GHLCommandUncertainError
 from .const import (
     ACCESS_MODE_FULL_ACCESS,
     CONF_ACCESS_MODE,
@@ -312,7 +312,8 @@ class GHLFeedPauseButton(GHLIdentityMixin, ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -403,7 +404,8 @@ class GHLMaintenanceButton(GHLIdentityMixin, ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -494,7 +496,8 @@ class GHLWaterChangeButton(GHLIdentityMixin, ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -587,7 +590,8 @@ class GHLThunderstormButton(GHLIdentityMixin, ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -683,7 +687,8 @@ class GHLLightSceneButton(GHLIdentityMixin, ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -770,7 +775,8 @@ class GHLKHDirectorActionButton(GHLIdentityMixin, ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -858,7 +864,8 @@ class GHLIONDirectorActionButton(GHLIdentityMixin, ButtonEntity):
 
         try:
             reply = await self._api.async_command(
-                command
+                command,
+                expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:
@@ -963,6 +970,7 @@ class GHLDescriptionWriteButton(GHLIdentityMixin, ButtonEntity):
             reply = await self._api.async_command(
                 command,
                 retry_safe=True,
+                            expected_response=GHLResponseType.ACK_ONLY,
             )
 
         except GHLAPIError as err:

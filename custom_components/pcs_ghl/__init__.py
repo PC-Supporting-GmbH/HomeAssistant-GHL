@@ -15,7 +15,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.util import slugify
 from homeassistant.helpers import issue_registry as ir
 
-from .api import GHLAPI, GHLAPIError, GHLConnectionError
+from .api import GHLResponseType, GHLAPI, GHLAPIError, GHLConnectionError
 from .const import (
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
@@ -185,7 +185,7 @@ async def _async_migrate_device_identity(
     identifier = entry.data.get(CONF_DEVICE_IDENTIFIER)
     if not identifier:
         try:
-            serial = await api.async_get("SYSTEM", "SERIALNUMBER")
+            serial = await api.async_get("SYSTEM", "SERIALNUMBER", expected_response=GHLResponseType.ACK_TEXT)
         except GHLAPIError as err:
             raise ConfigEntryNotReady("Unable to read GHL serial number for migration") from err
         if not serial or not str(serial).strip():

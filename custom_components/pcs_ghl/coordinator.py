@@ -15,7 +15,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .api import GHLAPI, GHLAPIError
+from .api import GHLResponseType, GHLAPI, GHLAPIError
 from .functions import device_identifier, parse_pointcount
 from .const import (
     CONF_DEVICE_TYPE,
@@ -244,7 +244,7 @@ class GHLDataUpdateCoordinator(
                 continue
             channel = f"ILLUMINATION[{resource.index}]"
             try:
-                value = await self.api.async_get(channel, "POINTCOUNT")
+                value = await self.api.async_get(channel, "POINTCOUNT", expected_response=GHLResponseType.ACK_VALUE)
                 if value is None:
                     raise ValueError("missing POINTCOUNT")
                 pointcount = parse_pointcount(
@@ -260,10 +260,12 @@ class GHLDataUpdateCoordinator(
                 curve: list[dict[str, float | int]] = []
                 for curvepoint in range(pointcount):
                     time_value = await self.api.async_get(
-                        channel, f"TIME[{curvepoint}]"
+                        channel, f"TIME[{curvepoint}]",
+                        expected_response=GHLResponseType.ACK_VALUE,
                     )
                     brightness_value = await self.api.async_get(
-                        channel, f"BRIGHTNESS[{curvepoint}]"
+                        channel, f"BRIGHTNESS[{curvepoint}]",
+                        expected_response=GHLResponseType.ACK_VALUE,
                     )
                     if time_value is None or brightness_value is None:
                         raise ValueError(f"missing curve point {curvepoint}")
@@ -312,6 +314,7 @@ class GHLDataUpdateCoordinator(
             try:
                 description = await self.api.async_get(
                     f"{resource.resource}[{resource.index}]", "DESCRIPTION",
+                                    expected_response=GHLResponseType.ACK_TEXT,
                 )
             except GHLAPIError as err:
                 errors.append(
@@ -425,6 +428,7 @@ class GHLDataUpdateCoordinator(
                         "SYSTEM",
                         "SERIALNUMBER",
                         attempts=1,
+                                            expected_response=GHLResponseType.ACK_TEXT,
                     )
                 except GHLAPIError:
                     serialnumber = None
@@ -479,6 +483,7 @@ class GHLDataUpdateCoordinator(
                             value = await self.api.async_get(
                                 "SENSOR",
                                 "ACTVALUE",
+                                                            expected_response=GHLResponseType.ACK_VALUE,
                             )
 
                         except GHLAPIError as err:
@@ -543,6 +548,7 @@ class GHLDataUpdateCoordinator(
                         value = await self.api.async_get(
                             f"SENSOR[{resource.index}]",
                             f"ACTVALUE[{value_index}]",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -576,6 +582,7 @@ class GHLDataUpdateCoordinator(
                         desvalue = await self.api.async_get(
                             f"SENSOR[{resource.index}]",
                             "DESVALUE",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -617,6 +624,7 @@ class GHLDataUpdateCoordinator(
                         actvalue = await self.api.async_get(
                             "KHDIRECTOR",
                             "ACTVALUE",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -647,6 +655,7 @@ class GHLDataUpdateCoordinator(
                         desvalue = await self.api.async_get(
                             "KHDIRECTOR",
                             "DESVALUE",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -701,6 +710,7 @@ class GHLDataUpdateCoordinator(
                         actvalue = await self.api.async_get(
                             f"IONDIRECTOR[{resource.index}]",
                             "ACTVALUE",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -731,6 +741,7 @@ class GHLDataUpdateCoordinator(
                         desvalue = await self.api.async_get(
                             f"IONDIRECTOR[{resource.index}]",
                             "DESVALUE",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -782,6 +793,7 @@ class GHLDataUpdateCoordinator(
                         state = await self.api.async_get(
                             f"SWITCHCHANNEL[{resource.index}]",
                             "ACTSTATE",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -809,6 +821,7 @@ class GHLDataUpdateCoordinator(
                         current = await self.api.async_get(
                             f"SWITCHCHANNEL[{resource.index}]",
                             "ACTCURRENT",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -860,6 +873,7 @@ class GHLDataUpdateCoordinator(
                         filllevel = await self.api.async_get(
                             f"DOSER[{resource.index}]",
                             "FILLLEVEL",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -887,6 +901,7 @@ class GHLDataUpdateCoordinator(
                         capacity = await self.api.async_get(
                             f"DOSER[{resource.index}]",
                             "CAPACITY",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -929,6 +944,7 @@ class GHLDataUpdateCoordinator(
                         flow = await self.api.async_get(
                             f"FLOWSENSOR[{resource.index}]",
                             "ACTFLOW",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -971,6 +987,7 @@ class GHLDataUpdateCoordinator(
                         state = await self.api.async_get(
                             f"LEVELSENSOR[{resource.index}]",
                             "ACTSTATE",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -1017,6 +1034,7 @@ class GHLDataUpdateCoordinator(
                             masterbrightness = await self.api.async_get(
                                 "ILLUMINATION",
                                 "MASTERBRIGHTNESS",
+                                                            expected_response=GHLResponseType.ACK_VALUE,
                             )
 
                         except GHLAPIError as err:
@@ -1071,6 +1089,7 @@ class GHLDataUpdateCoordinator(
                         brightness = await self.api.async_get(
                             f"ILLUMINATION[{resource.index}]",
                             "ACTBRIGHTNESS",
+                                                    expected_response=GHLResponseType.ACK_VALUE,
                         )
 
                     except GHLAPIError as err:
@@ -1120,6 +1139,7 @@ class GHLDataUpdateCoordinator(
                         firmware = await self.api.async_get(
                             "SYSTEM",
                             "FIRMWARE",
+                                                    expected_response=GHLResponseType.ACK_TEXT,
                         )
 
                     except GHLAPIError as err:
@@ -1160,6 +1180,7 @@ class GHLDataUpdateCoordinator(
                         unixtime = await self.api.async_get(
                             "SYSTEM",
                             "UNIXTIME",
+                                                    expected_response=GHLResponseType.ACK_TEXT,
                         )
 
                     except GHLAPIError as err:
