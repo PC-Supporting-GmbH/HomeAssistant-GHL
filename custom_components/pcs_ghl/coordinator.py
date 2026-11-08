@@ -1203,6 +1203,8 @@ class GHLDataUpdateCoordinator(
             data[last_update_key()] = datetime.now(
                 timezone.utc
             ).timestamp()
+        elif self.data is not None and last_update_key() in self.data:
+            data[last_update_key()] = self.data[last_update_key()]
 
         entry_data = self.hass.data.get(DOMAIN, {}).get(self.entry.entry_id)
         if entry_data is not None and entry_data.get("coordinator") is self:
