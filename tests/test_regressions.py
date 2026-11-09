@@ -306,7 +306,7 @@ class HistoryTests(unittest.IsolatedAsyncioTestCase):
 
     def api(self, replies):
         replies = iter(replies)
-        return SimpleNamespace(async_command=AsyncMock(side_effect=lambda command: next(replies)))
+        return SimpleNamespace(async_command=AsyncMock(side_effect=lambda command, *, expected_response: next(replies)))
 
     async def test_bad_record_is_skipped_and_next_record_imported(self):
         api = self.api(['ACK <"1700000000,1,2,3,0">', 'ACK <"bad,1,2,3,0">', 'ACK <"1700003600,4,5,6,0">', "NACK (-104)"])
@@ -345,6 +345,7 @@ class SetupTests(unittest.IsolatedAsyncioTestCase):
         # harness invokes callbacks when setup fails, as HA's lifecycle does.
         ns = production_namespace()
         load_definitions("__init__.py", {"_async_setup_entry"}, ns)
+        ns["_async_migrate_device_identity"] = AsyncMock()
         callbacks = []
         clients = []
         writer = SimulatedWriter()
@@ -646,7 +647,7 @@ class DiscoveryReplyTests(unittest.IsolatedAsyncioTestCase):
 
     def api(self, replies):
         replies = iter(replies)
-        return SimpleNamespace(async_command=AsyncMock(side_effect=lambda cmd: next(replies)))
+        return SimpleNamespace(async_command=AsyncMock(side_effect=lambda cmd, *, expected_response: next(replies)))
 
     async def test_normal_two_point_curve(self):
         """A normal curve reads point count and two time/brightness pairs."""
@@ -782,14 +783,14 @@ class HistoricalReplyTests(unittest.IsolatedAsyncioTestCase):
         api = self.api(["NACK (-104)"])
         resource = SimpleNamespace(resource="KHDIRECTOR", index=None)
         self.assertEqual(await self.ns["_async_read_history"](api, resource), [])
-        api.async_command.assert_awaited_once_with("GET KHDIRECTOR DATARECORD[0]")
+        api.async_command.assert_awaited_once_with("GET KHDIRECTOR DATARECORD[0]", expected_response=self.ns["GHLResponseType"].ACK_TEXT)
 
     async def test_indexed_director_command(self):
         """ION Director history retains its resource index."""
         api = self.api(["NACK (-104)"])
         resource = SimpleNamespace(resource="IONDIRECTOR", index=2)
         await self.ns["_async_read_history"](api, resource)
-        api.async_command.assert_awaited_once_with("GET IONDIRECTOR[2] DATARECORD[0]")
+        api.async_command.assert_awaited_once_with("GET IONDIRECTOR[2] DATARECORD[0]", expected_response=self.ns["GHLResponseType"].ACK_TEXT)
 
 
 class HistoryImportResultTests(unittest.IsolatedAsyncioTestCase):
@@ -944,7 +945,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_success_removes_temporary_listener(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.release.set()
         self.assertTrue(await c.task)
         self.assertEqual(c.entry.update_listeners, [])
@@ -952,7 +953,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_host_change_cancels_only_worker_then_schedules_reload(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.data["host"] = "new.example"
         await self.notify(c)
         self.assertFalse(await c.task)
@@ -964,7 +965,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_port_change_cancels_worker(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.data["port"] = 10003
         await self.notify(c)
         self.assertFalse(await c.task)
@@ -972,7 +973,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_unchanged_address_does_not_cancel_or_reload(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         await self.notify(c)
         self.assertFalse(c.tasks[1].done())
         self.assertEqual(c.reloads, [])
@@ -981,7 +982,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_device_name_change_preserves_running_setup(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.title = "Renamed example"
         await self.notify(c)
         self.assertFalse(c.tasks[1].done())
@@ -992,7 +993,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_option_change_preserves_running_setup(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.options = {"show_all_resources": True}
         await self.notify(c)
         self.assertFalse(c.tasks[1].done())
@@ -1003,7 +1004,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_access_mode_change_does_not_cancel_worker(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.data["access_mode"] = "read_only"
         await self.notify(c)
         self.assertFalse(c.tasks[1].done())
@@ -1014,7 +1015,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_internal_history_data_does_not_reload(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.data["history_present_resources"] = ["sensor:0"]
         await self.notify(c)
         self.assertEqual(c.reloads, [])
@@ -1023,7 +1024,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_managed_history_options_do_not_reload(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         options = {"import_historical_data": True}
         c.hass.data["pcs_ghl"] = {c.entry.entry_id: {"history_flow_options": options}}
         c.entry.options = options
@@ -1034,7 +1035,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_partial_setup_is_unloaded_before_reload(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.hass.data["pcs_ghl"] = {c.entry.entry_id: {"api": object()}}
         c.entry.data["host"] = "new.example"
         await self.notify(c)
@@ -1044,7 +1045,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_real_unload_closes_api_before_reload(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         load_definitions("__init__.py", {"async_unload_entry"}, c.ns)
         async def unload_platforms(*args):
             c.events.append("platforms unloaded")
@@ -1061,7 +1062,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_reload_waits_for_partial_cleanup(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.hass.data["pcs_ghl"] = {c.entry.entry_id: {}}
         cleaning, finish_cleanup = asyncio.Event(), asyncio.Event()
         async def cleanup(hass, entry):
@@ -1071,7 +1072,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
         c.ns["async_unload_entry"].side_effect = cleanup
         c.entry.data["host"] = "new.example"
         await self.notify(c)
-        await cleaning.wait()
+        await asyncio.wait_for(cleaning.wait(), timeout=5)
         self.assertEqual(c.reloads, [])
         self.assertFalse(c.task.done())
         finish_cleanup.set()
@@ -1080,7 +1081,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_failed_cleanup_does_not_start_new_setup(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.hass.data["pcs_ghl"] = {c.entry.entry_id: {}}
         c.ns["async_unload_entry"].return_value = False
         c.ns["async_unload_entry"].side_effect = None
@@ -1092,7 +1093,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_rapid_host_changes_schedule_one_reload_with_latest_data(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         for host in ["first.example", "second.example", "third.example"]:
             c.entry.data["host"] = host
             await self.notify(c)
@@ -1102,7 +1103,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_pending_reload_request_is_not_duplicated(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.options = {"show_all_resources": True}
         await self.notify(c)
         c.entry.data["host"] = "new.example"
@@ -1121,7 +1122,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_external_cancellation_is_propagated(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.task.cancel()
         with self.assertRaises(asyncio.CancelledError):
             await c.task
@@ -1130,7 +1131,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_shutdown_wins_over_address_change(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.data["host"] = "new.example"
         await self.notify(c)
         c.task.cancel()
@@ -1140,8 +1141,8 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_other_entry_setup_is_not_cancelled(self):
         first, second = self.make_case(), self.make_case()
-        await first.started.wait()
-        await second.started.wait()
+        await asyncio.wait_for(first.started.wait(), timeout=5)
+        await asyncio.wait_for(second.started.wait(), timeout=5)
         first.entry.data["host"] = "new.example"
         await self.notify(first)
         self.assertFalse(await first.task)
@@ -1152,7 +1153,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_failed_cleanup_overrides_an_earlier_reload_request(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.options = {"show_all_resources": True}
         await self.notify(c)
         c.hass.data["pcs_ghl"] = {c.entry.entry_id: {}}
@@ -1171,7 +1172,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
             await release.wait()
             raise RuntimeError("simulated setup failure")
         c = self.make_case(worker)
-        await started.wait()
+        await asyncio.wait_for(started.wait(), timeout=5)
         c.entry.options = {"show_all_resources": True}
         await self.notify(c)
         release.set()
@@ -1182,6 +1183,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
     async def test_actual_setup_discovery_is_cancelled_and_registered_api_closes(self):
         c = self.make_case()
         load_definitions("__init__.py", {"_async_setup_entry"}, c.ns)
+        c.ns["_async_migrate_device_identity"] = AsyncMock()
         callbacks, clients = [], []
         c.entry.async_on_unload = callbacks.append
         writer = SimulatedWriter()
@@ -1199,7 +1201,12 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
             await asyncio.Future()
         c.ns.update(GHLAPI=Client, async_discover_resources=discover, ConfigEntryNotReady=RuntimeError)
         c.entry.data["device_type"] = "profilux_4"
-        await discovering.wait()
+        try:
+            await asyncio.wait_for(discovering.wait(), timeout=5)
+        except TimeoutError:
+            if c.task.done():
+                await c.task
+            raise
         self.assertEqual(clients[0].host, "old.example")
         c.entry.data["host"] = "new.example"
         await self.notify(c)
@@ -1216,7 +1223,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_history_toggle_during_setup_does_not_reload(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.options = {"import_historical_data": True}
         await self.notify(c)
         self.assertFalse(c.tasks[1].done())
@@ -1226,7 +1233,7 @@ class SetupRestartTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_history_toggle_and_host_change_during_setup_restart(self):
         c = self.make_case()
-        await c.started.wait()
+        await asyncio.wait_for(c.started.wait(), timeout=5)
         c.entry.options = {"import_historical_data": True}
         c.entry.data["host"] = "new.example"
         await self.notify(c)
