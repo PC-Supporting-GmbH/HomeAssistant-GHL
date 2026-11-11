@@ -121,6 +121,25 @@
     }
   },
   "selector": {
+    "display_text": {
+      "options": {
+        "history_records_summary": "{resource_name}: {records_count} Datensätze"
+      }
+    },
+    "manual_rediscovery": {
+      "options": {
+        "title": "GHL – Sensorsuche",
+        "complete": "Die Suche für {device} ist abgeschlossen.",
+        "sensor": "Neue Sensoren",
+        "button": "Neue Aktionen und Wartungsfunktionen",
+        "other": "Weitere neue Funktionen",
+        "configure": "Neue Sensoren mit Konfigurationsbedarf",
+        "repair": "Bitte konfigurieren Sie diese Sensoren über den vorhandenen Reparaturhinweis.",
+        "none": "Keine neuen Sensoren, Aktionen oder weiteren Funktionen gefunden.",
+        "failed": "Die Suche bzw. das erneute Einrichten konnte nicht erfolgreich abgeschlossen werden. Bitte prüfen Sie den Status der Integration und das Home-Assistant-Protokoll.",
+        "disabled": "deaktiviert"
+      }
+    },
     "device_type": {
       "options": {
         "profilux_4": "ProfiLux 4",
@@ -420,6 +439,21 @@
     }
   },
   "exceptions": {
+    "migration_serial_unavailable": {
+      "message": "Die GHL-Seriennummer konnte für die Migration nicht gelesen werden."
+    },
+    "migration_device_collision": {
+      "message": "Bei der Migration wurde ein Konflikt zwischen GHL-Gerätekennungen festgestellt."
+    },
+    "migration_entity_collision": {
+      "message": "Bei der Migration wurde ein Konflikt zwischen GHL-Entitätskennungen festgestellt."
+    },
+    "migration_entity_id_exists": {
+      "message": "Die GHL-Entitätskennung {identifier} ist bereits vorhanden."
+    },
+    "migration_unique_id_exists": {
+      "message": "Die eindeutige GHL-Kennung {identifier} ist bereits vorhanden."
+    },
     "description_display_update_failed": {
       "message": "Die Beschreibung wurde im GHL-Gerät gespeichert. Beim anschließenden Aktualisieren der Anzeige in Home Assistant ist jedoch ein Fehler aufgetreten. Lade die GHL-Integration neu, um die Anzeige zu aktualisieren. Die Beschreibung muss nicht erneut geschrieben werden."
     },

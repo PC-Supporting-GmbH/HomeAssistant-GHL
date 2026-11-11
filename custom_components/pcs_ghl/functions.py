@@ -8,6 +8,7 @@ from unicodedata import category
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.translation import async_get_translations
 
 from .const import CONF_DEVICE_IDENTIFIER, DESCRIPTION_TEXT_MAX_LENGTH, DOMAIN
 
@@ -64,3 +65,16 @@ def parse_pointcount(
     if not numeric_pointcount.is_integer() or numeric_pointcount < 0:
         raise ValueError(invalid_message)
     return int(numeric_pointcount)
+
+
+async def async_sensor_display_name(hass, resource):
+    """Keep device descriptions or resolve the translated default sensor name."""
+    if resource.description is not None:
+        return resource.description
+    key = f"component.{DOMAIN}.entity.select.description_resource_sensor.name"
+    translations = await async_get_translations(
+        hass, hass.config.language, "entity", {DOMAIN},
+    )
+    if key not in translations:
+        translations = await async_get_translations(hass, "en", "entity", {DOMAIN})
+    return translations[key].format(index=resource.index + 1)

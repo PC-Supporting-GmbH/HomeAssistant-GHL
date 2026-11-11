@@ -121,6 +121,25 @@
     }
   },
   "selector": {
+    "display_text": {
+      "options": {
+        "history_records_summary": "{resource_name}: {records_count} records"
+      }
+    },
+    "manual_rediscovery": {
+      "options": {
+        "title": "GHL – Sensor discovery",
+        "complete": "Discovery for {device} has completed.",
+        "sensor": "New sensors",
+        "button": "New actions and maintenance functions",
+        "other": "Other new functions",
+        "configure": "New sensors requiring configuration",
+        "repair": "Please configure these sensors using the existing repair notification.",
+        "none": "No new sensors, actions or other functions were found.",
+        "failed": "Discovery or integration setup could not be completed successfully. Please check the integration status and the Home Assistant log.",
+        "disabled": "disabled"
+      }
+    },
     "device_type": {
       "options": {
         "profilux_4": "ProfiLux 4",
@@ -420,6 +439,21 @@
     }
   },
   "exceptions": {
+    "migration_serial_unavailable": {
+      "message": "Unable to read the GHL serial number for migration."
+    },
+    "migration_device_collision": {
+      "message": "A conflict between GHL device identifiers was detected during migration."
+    },
+    "migration_entity_collision": {
+      "message": "A conflict between GHL entity IDs was detected during migration."
+    },
+    "migration_entity_id_exists": {
+      "message": "The GHL entity ID {identifier} already exists."
+    },
+    "migration_unique_id_exists": {
+      "message": "The GHL unique ID {identifier} already exists."
+    },
     "description_display_update_failed": {
       "message": "The description was saved on the GHL device. However, an error occurred while updating its display in Home Assistant. Reload the GHL integration to update the display. You do not need to write the description again."
     },

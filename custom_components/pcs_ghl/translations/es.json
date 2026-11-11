@@ -121,6 +121,25 @@
     }
   },
   "selector": {
+    "display_text": {
+      "options": {
+        "history_records_summary": "{resource_name}: {records_count} registros"
+      }
+    },
+    "manual_rediscovery": {
+      "options": {
+        "title": "GHL – Búsqueda de sensores",
+        "complete": "La búsqueda de {device} ha finalizado.",
+        "sensor": "Nuevos sensores",
+        "button": "Nuevas acciones y funciones de mantenimiento",
+        "other": "Otras funciones nuevas",
+        "configure": "Nuevos sensores que requieren configuración",
+        "repair": "Configure estos sensores mediante el aviso de reparación existente.",
+        "none": "No se encontraron nuevos sensores, acciones ni otras funciones.",
+        "failed": "No se pudo completar la búsqueda o la configuración de la integración. Revise el estado de la integración y el registro de Home Assistant.",
+        "disabled": "desactivado"
+      }
+    },
     "device_type": {
       "options": {
         "profilux_4": "ProfiLux 4",
@@ -420,6 +439,21 @@
     }
   },
   "exceptions": {
+    "migration_serial_unavailable": {
+      "message": "No se pudo leer el número de serie GHL para la migración."
+    },
+    "migration_device_collision": {
+      "message": "Se detectó un conflicto entre los identificadores de dispositivos GHL durante la migración."
+    },
+    "migration_entity_collision": {
+      "message": "Se detectó un conflicto entre los identificadores de entidades GHL durante la migración."
+    },
+    "migration_entity_id_exists": {
+      "message": "El identificador de entidad GHL {identifier} ya existe."
+    },
+    "migration_unique_id_exists": {
+      "message": "El identificador único GHL {identifier} ya existe."
+    },
     "description_display_update_failed": {
       "message": "La descripción se ha guardado en el dispositivo GHL. Sin embargo, se ha producido un error al actualizar su visualización en Home Assistant. Recarga la integración GHL para actualizarla. No es necesario volver a escribir la descripción."
     },

@@ -121,6 +121,25 @@
     }
   },
   "selector": {
+    "display_text": {
+      "options": {
+        "history_records_summary": "{resource_name}: {records_count} enregistrements"
+      }
+    },
+    "manual_rediscovery": {
+      "options": {
+        "title": "GHL – Recherche de capteurs",
+        "complete": "La recherche pour {device} est terminée.",
+        "sensor": "Nouveaux capteurs",
+        "button": "Nouvelles actions et fonctions de maintenance",
+        "other": "Autres nouvelles fonctions",
+        "configure": "Nouveaux capteurs à configurer",
+        "repair": "Veuillez configurer ces capteurs via la notification de réparation existante.",
+        "none": "Aucun nouveau capteur, action ou autre fonction trouvé.",
+        "failed": "La recherche ou la configuration de l’intégration a échoué. Veuillez consulter l’état de l’intégration et le journal de Home Assistant.",
+        "disabled": "désactivé"
+      }
+    },
     "device_type": {
       "options": {
         "profilux_4": "ProfiLux 4",
@@ -420,6 +439,21 @@
     }
   },
   "exceptions": {
+    "migration_serial_unavailable": {
+      "message": "Impossible de lire le numéro de série GHL pour la migration."
+    },
+    "migration_device_collision": {
+      "message": "Un conflit entre les identifiants des appareils GHL a été détecté pendant la migration."
+    },
+    "migration_entity_collision": {
+      "message": "Un conflit entre les identifiants des entités GHL a été détecté pendant la migration."
+    },
+    "migration_entity_id_exists": {
+      "message": "L’identifiant d’entité GHL {identifier} existe déjà."
+    },
+    "migration_unique_id_exists": {
+      "message": "L’identifiant unique GHL {identifier} existe déjà."
+    },
     "description_display_update_failed": {
       "message": "La description a été enregistrée sur l’appareil GHL. Une erreur est toutefois survenue lors de la mise à jour de son affichage dans Home Assistant. Rechargez l’intégration GHL pour actualiser l’affichage. Il n’est pas nécessaire de réécrire la description."
     },

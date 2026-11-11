@@ -10,11 +10,13 @@ from time import monotonic
 import voluptuous as vol
 
 from homeassistant import config_entries 
+from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigFlowResult, FlowType
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResultType, UnknownFlow
 from homeassistant.helpers import device_registry as dr, selector
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import (
@@ -50,10 +52,10 @@ from .const import (
     SENSOR_UNIT_MS,
     SENSOR_UNIT_PSU,
     CONF_INITIAL_HISTORY_PENDING,
-    DESCRIPTION_RESOURCE_FALLBACKS,
     DESCRIPTION_RESOURCE_TRANSLATION_KEYS,
 )
 from .api import GHLAPI, GHLConnectionError, GHLResponseType
+from .functions import device_identifier
 from .history import (
     history_resource_key,
     async_import_resource_history,
@@ -64,6 +66,7 @@ from .history import (
 
 
 _LOGGER = logging.getLogger(__name__)
+_TASKS_KEY = f"{DOMAIN}_manual_rediscovery"
 
 
 async def async_test_connection(host: str, port: int) -> str:
@@ -375,9 +378,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
     async def async_step_rediscover(self, user_input=None):
         """Reload the entry to discover new sensors and devices."""
 
-        self.hass.config_entries.async_schedule_reload(
-            self.config_entry.entry_id
-        )
+        async_start_manual_rediscovery(self.hass, self.config_entry)
 
         return self.async_abort(
             reason="rediscovery_started",
@@ -622,25 +623,19 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             )
 
         self._history_initial = False
-        translations = await async_get_translations(
-            self.hass, self.hass.config.language, "options", {DOMAIN},
-        )
-        self._history_background_hint = translations.get(
-            f"component.{DOMAIN}.options.step.history_import_progress.description",
-            "You can close this dialog. The import will continue in the background.",
-        )
+        translations = await _async_get_display_translations(self.hass, "options")
+        self._history_background_hint = translations[
+            f"component.{DOMAIN}.options.step.history_import_progress.description"
+        ]
         return await self.async_step_history_import_progress()
 
     async def _async_finish_initial_sensor_setup(self):
         """Continue initial setup without another confirmation."""
         if self._import_historical_data:
-            translations = await async_get_translations(
-                self.hass, self.hass.config.language, "options", {DOMAIN},
-            )
-            self._history_background_hint = translations.get(
-                f"component.{DOMAIN}.options.step.history_import_progress.description",
-                "You can close this dialog. The import will continue in the background.",
-            )
+            translations = await _async_get_display_translations(self.hass, "options")
+            self._history_background_hint = translations[
+                f"component.{DOMAIN}.options.step.history_import_progress.description"
+            ]
             self._history_initial = True
             return await self.async_step_history_import_progress()
 
@@ -783,10 +778,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             translation_key = DESCRIPTION_RESOURCE_TRANSLATION_KEYS[
                 resource.resource
             ]
-            template = translations.get(
-                f"component.{DOMAIN}.entity.select.{translation_key}.name",
-                DESCRIPTION_RESOURCE_FALLBACKS[resource.resource],
-            )
+            template = translations[
+                f"component.{DOMAIN}.entity.select.{translation_key}.name"
+            ]
             resource_name = template.format(index=resource.index + 1)
         else:
             resource_name = (
@@ -829,15 +823,11 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             self._history_abort_reason = "no_history_sources"
             return
 
-        translations = await async_get_translations(
-            self.hass, self.hass.config.language, "entity", {DOMAIN},
-        )
-        records_label = {
-            "de": "Datensätze",
-            "en": "records",
-            "es": "registros",
-            "fr": "enregistrements",
-        }.get(self.hass.config.language, "records")
+        translations = await _async_get_display_translations(self.hass, "entity")
+        summary_translations = await _async_get_display_translations(self.hass, "selector")
+        summary_template = summary_translations[
+            f"component.{DOMAIN}.selector.display_text.options.history_records_summary"
+        ]
         summary_lines = []
         completed_resources = set(
             self.config_entry.data.get(CONF_HISTORY_PRESENT_RESOURCES, [])
@@ -866,7 +856,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                     new_data[CONF_HISTORY_PRESENT_RESOURCES] = sorted(completed_resources)
                     self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
             summary_lines.append(
-                f"{resource_name}: {result.records_found} {records_label}"
+                summary_template.format(
+                    resource_name=resource_name, records_count=result.records_found,
+                )
             )
         self._history_summary = "\n".join(summary_lines)
 
@@ -1015,11 +1007,12 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
 
         sensor_resource = self._sensors[self._sensor_index]
 
-        sensor_name = (
-            sensor_resource.description
-            if sensor_resource.description is not None
-            else f"Sensor {sensor_resource.index + 1}"
-        )
+        sensor_name = sensor_resource.description
+        if sensor_name is None:
+            translations = await _async_get_display_translations(self.hass, "entity")
+            sensor_name = translations[
+                f"component.{DOMAIN}.entity.select.description_resource_sensor.name"
+            ].format(index=sensor_resource.index + 1)
 
         current_sensor_type = self._sensor_types.get(
             str(sensor_resource.index),
@@ -1116,11 +1109,12 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             }
         )
 
-        sensor_name = (
-            sensor_resource.description
-            if sensor_resource.description is not None
-            else f"Sensor {sensor_resource.index + 1}"
-        )
+        sensor_name = sensor_resource.description
+        if sensor_name is None:
+            translations = await _async_get_display_translations(self.hass, "entity")
+            sensor_name = translations[
+                f"component.{DOMAIN}.entity.select.description_resource_sensor.name"
+            ].format(index=sensor_resource.index + 1)
 
         return self.async_show_form(
             step_id="sensor_unit",
@@ -1130,3 +1124,105 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 "sensor_number": str(sensor_resource.index + 1),
             },
         )
+
+def _rediscovery_entries(hass, entry):
+    """Return this integration's registered entities, including disabled ones."""
+    return {
+        (item.domain, item.unique_id): item
+        for item in er.async_entries_for_config_entry(
+            er.async_get(hass), entry.entry_id
+        )
+        if item.platform == DOMAIN
+    }
+
+
+def async_start_manual_rediscovery(hass, entry):
+    """Start one manual search per entry, without reporting initial setup."""
+    if (
+        entry.data.get(CONF_INITIAL_HISTORY_PENDING, False)
+        or entry.entry_id not in hass.data.get(DOMAIN, {})
+    ):
+        hass.config_entries.async_schedule_reload(entry.entry_id)
+        return
+
+    tasks = hass.data.setdefault(_TASKS_KEY, {})
+    if (task := tasks.get(entry.entry_id)) is not None and not task.done():
+        return
+    before = set(_rediscovery_entries(hass, entry))
+    tasks[entry.entry_id] = hass.async_create_task(
+        _async_rediscover(hass, entry, before),
+        f"GHL manual rediscovery {entry.entry_id}",
+    )
+
+
+async def _async_rediscover(hass, entry, before):
+    """Wait for the reload, then publish its result exactly once."""
+    prefix = f"component.{DOMAIN}.selector.manual_rediscovery.options."
+    translations = await async_get_translations(
+        hass, hass.config.language, "selector", {DOMAIN},
+    )
+    keys = ("title", "complete", "sensor", "button", "other", "configure", "repair", "none", "failed", "disabled")
+    if any(prefix + key not in translations for key in keys):
+        translations = await async_get_translations(hass, "en", "selector", {DOMAIN})
+    text = {key: translations[prefix + key] for key in keys}
+    try:
+        try:
+            success = await hass.config_entries.async_reload(entry.entry_id)
+        except Exception:
+            _LOGGER.exception("GHL manual rediscovery [%s] failed", entry.entry_id)
+            success = False
+        message = text["failed"]
+        if success:
+            groups = {key: [] for key in ("sensor", "button", "other", "configure")}
+            configured = entry.options.get(CONF_SENSOR_TYPES, {})
+            unconfigured_ids = {
+                f"{device_identifier(entry)}_sensor_{resource.index}_actvalue"
+                for resource in hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("resources", [])
+                if resource.resource == "SENSOR"
+                and resource.index is not None
+                and str(resource.index) not in configured
+            }
+            for key, item in _rediscovery_entries(hass, entry).items():
+                if key in before:
+                    continue
+                state = hass.states.get(item.entity_id)
+                name = (
+                    item.name
+                    or (state.attributes.get("friendly_name") if state is not None else None)
+                    or item.original_name
+                    or item.entity_id
+                )
+                label = f"{name} (`{item.entity_id}`)"
+                if item.disabled_by is not None:
+                    label += f" – {text['disabled']}"
+                group = item.domain if item.domain in ("sensor", "button") else "other"
+                if item.unique_id in unconfigured_ids:
+                    group = "configure"
+                groups[group].append(label)
+            parts = [text["complete"].format(device=entry.title)]
+            for group, names in groups.items():
+                if names:
+                    parts.append(f"**{text[group]}**\n\n" + "\n".join(f"- {name}" for name in sorted(names)))
+            if groups["configure"]:
+                parts.append(text["repair"])
+            if not any(groups.values()):
+                parts.append(text["none"])
+            message = "\n\n".join(parts)
+        persistent_notification.async_create(
+            hass,
+            message,
+            title=text["title"],
+            notification_id=f"{DOMAIN}_rediscovery_{entry.entry_id}",
+        )
+    finally:
+        hass.data.get(_TASKS_KEY, {}).pop(entry.entry_id, None)
+
+
+async def _async_get_display_translations(hass, category):
+    """Resolve display text with English translations as the fallback."""
+    translations = dict(await async_get_translations(hass, "en", category, {DOMAIN}))
+    if hass.config.language != "en":
+        translations.update(await async_get_translations(
+            hass, hass.config.language, category, {DOMAIN},
+        ))
+    return translations

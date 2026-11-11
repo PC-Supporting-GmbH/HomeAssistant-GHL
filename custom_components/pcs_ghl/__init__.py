@@ -45,7 +45,7 @@ from .discovery import (
     GHLDiscoveredResource,
     async_discover_resources,
 )
-from .functions import device_identifier
+from .functions import async_sensor_display_name, device_identifier
 from .history import (
     async_import_resource_history,
     history_entity_is_registered,
@@ -187,9 +187,9 @@ async def _async_migrate_device_identity(
         try:
             serial = await api.async_get("SYSTEM", "SERIALNUMBER", expected_response=GHLResponseType.ACK_TEXT)
         except GHLAPIError as err:
-            raise ConfigEntryNotReady("Unable to read GHL serial number for migration") from err
+            raise ConfigEntryNotReady(translation_domain=DOMAIN, translation_key="migration_serial_unavailable") from err
         if not serial or not str(serial).strip():
-            raise ConfigEntryNotReady("Unable to read GHL serial number for migration")
+            raise ConfigEntryNotReady(translation_domain=DOMAIN, translation_key="migration_serial_unavailable")
         identifier = f"{entry.data[CONF_DEVICE_TYPE]}_{str(serial).strip()}"
 
     registry = er.async_get(hass)
@@ -201,7 +201,7 @@ async def _async_migrate_device_identity(
         (DOMAIN, identifier), entry.entry_id
     )
     if old_device is not None and current_device is not None and old_device.id != current_device.id:
-        raise ConfigEntryNotReady("GHL device identifier collision during migration")
+        raise ConfigEntryNotReady(translation_domain=DOMAIN, translation_key="migration_device_collision")
 
     entries = list(er.async_entries_for_config_entry(registry, entry.entry_id))
     old_prefixes = [slugify(entry.title)] if entry.title else []
@@ -240,18 +240,18 @@ async def _async_migrate_device_identity(
     old_ids = {registered.entity_id for registered, _, _ in plan}
     target_ids = [target for _, _, target in plan]
     if len(target_ids) != len(set(target_ids)):
-        raise ConfigEntryNotReady("GHL entity ID collision during migration")
+        raise ConfigEntryNotReady(translation_domain=DOMAIN, translation_key="migration_entity_collision")
     for registered, new_unique_id, new_entity_id in plan:
         if new_entity_id != registered.entity_id and (
             new_entity_id in registry.entities
         ):
-            raise ConfigEntryNotReady(f"GHL entity ID already exists: {new_entity_id}")
+            raise ConfigEntryNotReady(translation_domain=DOMAIN, translation_key="migration_entity_id_exists", translation_placeholders={"identifier": new_entity_id})
         if new_unique_id != registered.unique_id:
             conflict = registry.async_get_entity_id(
                 registered.domain, DOMAIN, new_unique_id
             )
             if conflict and conflict != registered.entity_id:
-                raise ConfigEntryNotReady(f"GHL unique ID already exists: {new_unique_id}")
+                raise ConfigEntryNotReady(translation_domain=DOMAIN, translation_key="migration_unique_id_exists", translation_placeholders={"identifier": new_unique_id})
 
     for registered, new_unique_id, new_entity_id in plan:
         kwargs = {}
@@ -393,7 +393,7 @@ async def _async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ),
     }
 
-    _async_check_new_sensors(
+    await _async_check_new_sensors(
         hass=hass,
         entry=entry,
         discovered_resources=discovered_resources,
@@ -1141,7 +1141,7 @@ def _merge_known_sensors(
     return discovered_resources
 
 
-def _async_check_new_sensors(
+async def _async_check_new_sensors(
     hass: HomeAssistant,
     entry: ConfigEntry,
     discovered_resources,
@@ -1184,12 +1184,7 @@ def _async_check_new_sensors(
     sensor_names = []
 
     for resource in unconfigured_sensors:
-        if resource.description is not None:
-            sensor_names.append(resource.description)
-        else:
-            sensor_names.append(
-                f"Sensor {resource.index + 1}"
-            )
+        sensor_names.append(await async_sensor_display_name(hass, resource))
 
     ir.async_create_issue(
         hass,

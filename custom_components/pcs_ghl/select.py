@@ -18,7 +18,6 @@ from .const import (
     CONF_DEVICE_TYPE,
     DEVICE_TYPE_PROFILUX_4,
     DOMAIN,
-    DESCRIPTION_RESOURCE_FALLBACKS,
     DESCRIPTION_RESOURCE_TRANSLATION_KEYS,
 )
 
@@ -52,6 +51,9 @@ async def async_setup_entry(
         {DOMAIN},
     )
 
+    fallback_translations = await async_get_translations(hass, "en", "entity", {DOMAIN})
+    translations = {**fallback_translations, **translations}
+
     entities: list[SelectEntity] = []
 
     if description_editor["resource_order"]:
@@ -66,14 +68,7 @@ async def async_setup_entry(
                 f"{translation_key}.name"
             )
 
-            resource_templates[resource_type] = (
-                translations.get(
-                    full_translation_key,
-                    DESCRIPTION_RESOURCE_FALLBACKS[
-                        resource_type
-                    ],
-                )
-            )
+            resource_templates[resource_type] = translations[full_translation_key]
 
         entities.append(
             GHLDescriptionResourceSelect(

@@ -14,6 +14,8 @@ from homeassistant.components.repairs import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector
 
+from .functions import async_sensor_display_name
+
 from .const import (
     CONF_SENSOR_TYPE,
     CONF_SENSOR_TYPES,
@@ -125,12 +127,7 @@ class GHLNewSensorsRepairFlow(RepairsFlow):
         sensor_names = []
 
         for resource in self._sensors:
-            if resource.description is not None:
-                sensor_names.append(resource.description)
-            else:
-                sensor_names.append(
-                    f"Sensor {resource.index + 1}"
-                )
+            sensor_names.append(await async_sensor_display_name(self.hass, resource))
 
         return self.async_show_form(
             step_id="confirm",
@@ -178,11 +175,7 @@ class GHLNewSensorsRepairFlow(RepairsFlow):
 
         sensor_resource = self._sensors[self._sensor_index]
 
-        sensor_name = (
-            sensor_resource.description
-            if sensor_resource.description is not None
-            else f"Sensor {sensor_resource.index + 1}"
-        )
+        sensor_name = await async_sensor_display_name(self.hass, sensor_resource)
 
         data_schema = vol.Schema(
             {
@@ -252,11 +245,7 @@ class GHLNewSensorsRepairFlow(RepairsFlow):
 
             return await self.async_step_sensor()
 
-        sensor_name = (
-            sensor_resource.description
-            if sensor_resource.description is not None
-            else f"Sensor {sensor_resource.index + 1}"
-        )
+        sensor_name = await async_sensor_display_name(self.hass, sensor_resource)
 
         current_sensor_unit = self._sensor_units.get(
             sensor_key,

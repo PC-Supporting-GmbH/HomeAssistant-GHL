@@ -173,16 +173,6 @@ DESCRIPTION_RESOURCE_TRANSLATION_KEYS = {
     "LEVELSENSOR": "description_resource_levelsensor",
 }
 
-DESCRIPTION_RESOURCE_FALLBACKS = {
-    "SENSOR": "Sensor {index}",
-    "SWITCHCHANNEL": "Switch Channel {index}",
-    "ILLUMINATION": "Illumination {index}",
-    "TIMER": "Timer {index}",
-    "DOSER": "Dosing Pump {index}",
-    "FLOWSENSOR": "Flow Sensor {index}",
-    "LEVELSENSOR": "Level Sensor {index}",
-}
-
 ILLUMINATION_MAX_CURVE_POINTS = 24
 
 KHDIRECTOR_ACTION_COUNT = 5

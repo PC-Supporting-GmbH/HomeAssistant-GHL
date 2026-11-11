@@ -1336,3 +1336,299 @@ class RenameReloadTests(unittest.IsolatedAsyncioTestCase):
         entry.options = {"import_historical_data": True, "show_all_resources": True}
         await listener(hass, entry)
         self.assertEqual(reloads, [entry.entry_id])
+
+
+class RediscoveryTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        from unittest.mock import Mock
+        self.ns = production_namespace()
+        self.ns["_TASKS_KEY"] = f"{self.ns['DOMAIN']}_manual_rediscovery"
+        load_definitions("config_flow.py", {"_rediscovery_entries", "async_start_manual_rediscovery", "_async_rediscover"}, self.ns)
+        async def translations(hass, language, category, integrations):
+            language = language.replace("_", "-").split("-", 1)[0]
+            path = COMPONENT / "translations" / f"{language}.json"
+            if not path.exists():
+                return {}
+            values = json.loads(path.read_text())["selector"]["manual_rediscovery"]["options"]
+            return {f"component.pcs_ghl.selector.manual_rediscovery.options.{key}": value for key, value in values.items()}
+        self.ns["async_get_translations"] = AsyncMock(side_effect=translations)
+        self.rows = []
+        self.notifications = Mock()
+        self.ns.update(
+            er=SimpleNamespace(async_get=lambda hass: None, async_entries_for_config_entry=lambda registry, entry_id: self.rows),
+            persistent_notification=SimpleNamespace(async_create=self.notifications),
+            device_identifier=lambda entry: "profilux_4_123",
+        )
+        self.entry = SimpleNamespace(entry_id="one", title="ProfiLux", data={}, options={})
+        self.tasks = []
+        def create_task(coro, name):
+            task = asyncio.create_task(coro, name=name)
+            self.tasks.append(task)
+            return task
+        self.hass = SimpleNamespace(
+            data={self.ns["DOMAIN"]: {"one": {"resources": []}}},
+            config=SimpleNamespace(language="de"),
+            states=SimpleNamespace(get=lambda entity_id: None),
+            async_create_task=create_task,
+            config_entries=SimpleNamespace(async_reload=AsyncMock(return_value=True), async_schedule_reload=Mock()),
+        )
+
+    def entity(self, domain, unique_id, name, disabled=False, platform="pcs_ghl"):
+        return SimpleNamespace(domain=domain, unique_id=unique_id, entity_id=f"{domain}.{unique_id}", name=None, original_name=name, disabled_by="user" if disabled else None, platform=platform)
+
+    async def run_search(self):
+        self.ns["async_start_manual_rediscovery"](self.hass, self.entry)
+        await asyncio.gather(*self.tasks)
+        return self.notifications.call_args.args[1]
+
+    async def test_sensor_and_director_maintenance_are_reported(self):
+        self.rows = [self.entity("sensor", "old", "Existing")]
+        async def reload(entry_id):
+            self.rows.extend([
+                self.entity("sensor", "calcium", "Calcium"),
+                self.entity("button", "empty", "ION Director Messzelle leeren"),
+                self.entity("button", "kh_empty", "KH Director Messzelle leeren"),
+                self.entity("number", "target", "Sollwert"),
+            ])
+            return True
+        self.hass.config_entries.async_reload.side_effect = reload
+        message = await self.run_search()
+        for name in ("Calcium", "ION Director Messzelle leeren", "KH Director Messzelle leeren", "Sollwert"):
+            self.assertIn(name, message)
+        self.assertNotIn("Existing", message)
+        self.assertIn("Neue Aktionen und Wartungsfunktionen", message)
+
+    async def test_no_new_entities_has_explicit_result(self):
+        self.assertIn("Keine neuen Sensoren", await self.run_search())
+
+    async def test_false_reload_reports_failure(self):
+        self.hass.config_entries.async_reload.return_value = False
+        self.assertIn("nicht erfolgreich", await self.run_search())
+
+    async def test_exception_reports_failure_and_clears_pending_task(self):
+        self.hass.config_entries.async_reload.side_effect = RuntimeError("setup failed")
+        with self.assertLogs("ghl-regression", "ERROR"):
+            self.assertIn("nicht erfolgreich", await self.run_search())
+        self.assertEqual(self.hass.data[self.ns["_TASKS_KEY"]], {})
+
+    async def test_initial_setup_does_not_send_notification(self):
+        self.entry.data[self.ns["CONF_INITIAL_HISTORY_PENDING"]] = True
+        self.ns["async_start_manual_rediscovery"](self.hass, self.entry)
+        self.notifications.assert_not_called()
+        self.hass.config_entries.async_reload.assert_not_awaited()
+        self.hass.config_entries.async_schedule_reload.assert_called_once_with("one")
+
+    async def test_unloaded_entry_does_not_send_notification(self):
+        self.hass.data.clear()
+        self.ns["async_start_manual_rediscovery"](self.hass, self.entry)
+        self.notifications.assert_not_called()
+        self.assertEqual(self.tasks, [])
+
+    async def test_duplicate_request_only_reloads_once(self):
+        self.ns["async_start_manual_rediscovery"](self.hass, self.entry)
+        self.ns["async_start_manual_rediscovery"](self.hass, self.entry)
+        await asyncio.gather(*self.tasks)
+        self.hass.config_entries.async_reload.assert_awaited_once()
+        self.notifications.assert_called_once()
+
+    async def test_unconfigured_sensor_and_disabled_action(self):
+        self.hass.data[self.ns["DOMAIN"]]["one"]["resources"] = [SimpleNamespace(resource="SENSOR", index=1)]
+        async def reload(entry_id):
+            self.rows.extend([
+                self.entity("sensor", "profilux_4_123_sensor_1_actvalue", "Sensor 2"),
+                self.entity("button", "maintenance", "Wartung", disabled=True),
+                self.entity("sensor", "foreign", "Foreign", platform="other"),
+            ])
+            return True
+        self.hass.config_entries.async_reload.side_effect = reload
+        message = await self.run_search()
+        self.assertIn("Konfigurationsbedarf", message)
+        self.assertIn("Reparaturhinweis", message)
+        self.assertIn("deaktiviert", message)
+        self.assertNotIn("Foreign", message)
+
+    async def test_language_fallback_and_stable_notification_id(self):
+        self.hass.config.language = "it"
+        self.assertIn("No new sensors", await self.run_search())
+        self.assertEqual(self.notifications.call_args.kwargs["notification_id"], "pcs_ghl_rediscovery_one")
+
+    async def test_cancelled_search_does_not_report_success(self):
+        self.hass.config_entries.async_reload.side_effect = asyncio.CancelledError()
+        self.ns["async_start_manual_rediscovery"](self.hass, self.entry)
+        with self.assertRaises(asyncio.CancelledError):
+            await asyncio.gather(*self.tasks)
+        self.notifications.assert_not_called()
+        self.assertEqual(self.hass.data[self.ns["_TASKS_KEY"]], {})
+
+
+class DisplayTranslationTests(unittest.IsolatedAsyncioTestCase):
+    """Keep display text in translation files, with an English fallback."""
+
+    def setUp(self):
+        self.ns = production_namespace()
+        load_definitions("config_flow.py", {"_async_get_display_translations"}, self.ns)
+        self.hass = SimpleNamespace(config=SimpleNamespace(language="de"))
+
+    async def test_missing_localized_key_uses_english_text(self):
+        self.ns["async_get_translations"] = AsyncMock(side_effect=[
+            {"sensor": "Sensor {index}", "hint": "English hint"},
+            {"hint": "Deutscher Hinweis"},
+        ])
+        result = await self.ns["_async_get_display_translations"](self.hass, "entity")
+        self.assertEqual(result, {"sensor": "Sensor {index}", "hint": "Deutscher Hinweis"})
+        self.assertEqual(self.ns["async_get_translations"].await_args_list[0].args[1], "en")
+        self.assertEqual(self.ns["async_get_translations"].await_args_list[1].args[1], "de")
+
+    async def test_unsupported_language_uses_english_text(self):
+        self.hass.config.language = "it"
+        self.ns["async_get_translations"] = AsyncMock(side_effect=[{"hint": "English hint"}, {}])
+        self.assertEqual(await self.ns["_async_get_display_translations"](self.hass, "options"), {"hint": "English hint"})
+
+    async def test_english_does_not_load_twice(self):
+        self.hass.config.language = "en"
+        self.ns["async_get_translations"] = AsyncMock(return_value={"hint": "English hint"})
+        self.assertEqual(await self.ns["_async_get_display_translations"](self.hass, "options"), {"hint": "English hint"})
+        self.ns["async_get_translations"].assert_awaited_once()
+
+    async def test_display_templates_exist_in_all_supported_languages(self):
+        for language in ("de", "en", "fr", "es"):
+            with self.subTest(language=language):
+                data = json.loads((COMPONENT / "translations" / f"{language}.json").read_text())
+                self.assertTrue(data["options"]["step"]["history_import_progress"]["description"])
+                for key in self.ns["DESCRIPTION_RESOURCE_TRANSLATION_KEYS"].values():
+                    self.assertIn("4", data["entity"]["select"][key]["name"].format(index=4))
+                template = data["selector"]["display_text"]["options"]["history_records_summary"]
+                result = template.format(resource_name="Example", records_count=27)
+                self.assertIn("Example", result)
+                self.assertIn("27", result)
+
+    async def test_resource_select_uses_english_file_for_missing_labels(self):
+        from unittest.mock import Mock
+        data = json.loads((COMPONENT / "translations" / "en.json").read_text())
+        translations = {
+            f"component.pcs_ghl.entity.select.{key}.name": data["entity"]["select"][key]["name"]
+            for key in self.ns["DESCRIPTION_RESOURCE_TRANSLATION_KEYS"].values()
+        }
+        self.ns.update(
+            async_get_translations=AsyncMock(side_effect=[{}, translations]),
+            GHLDescriptionResourceSelect=Mock(return_value="select"),
+        )
+        load_definitions("select.py", {"async_setup_entry"}, self.ns)
+        entry = SimpleNamespace(entry_id="test", data={
+            self.ns["CONF_ACCESS_MODE"]: self.ns["ACCESS_MODE_FULL_ACCESS"],
+            self.ns["CONF_DEVICE_TYPE"]: self.ns["DEVICE_TYPE_PROFILUX_4"],
+        })
+        self.hass.data = {self.ns["DOMAIN"]: {"test": {"description_editor": {"resource_order": ["SENSOR"]}}}}
+        added = Mock()
+        await self.ns["async_setup_entry"](self.hass, entry, added)
+        templates = self.ns["GHLDescriptionResourceSelect"].call_args.kwargs["resource_templates"]
+        self.assertEqual(templates["SENSOR"], data["entity"]["select"]["description_resource_sensor"]["name"])
+        added.assert_called_once_with(["select"])
+
+
+class RemainingDisplayTextTests(unittest.IsolatedAsyncioTestCase):
+    """Cover translated repair names and migration errors."""
+
+    def setUp(self):
+        self.ns = production_namespace()
+        load_definitions("functions.py", {"async_sensor_display_name"}, self.ns)
+        self.hass = SimpleNamespace(config=SimpleNamespace(language="fr"))
+        self.key = "component.pcs_ghl.entity.select.description_resource_sensor.name"
+
+    async def test_sensor_name_uses_selected_language(self):
+        self.ns["async_get_translations"] = AsyncMock(return_value={self.key: "Capteur {index}"})
+        resource = SimpleNamespace(description=None, index=2)
+        self.assertEqual(await self.ns["async_sensor_display_name"](self.hass, resource), "Capteur 3")
+
+    async def test_missing_sensor_name_uses_english_translation(self):
+        self.ns["async_get_translations"] = AsyncMock(side_effect=[{}, {self.key: "Sensor {index}"}])
+        resource = SimpleNamespace(description=None, index=2)
+        self.assertEqual(await self.ns["async_sensor_display_name"](self.hass, resource), "Sensor 3")
+        self.assertEqual(self.ns["async_get_translations"].await_args_list[1].args[1], "en")
+
+    async def test_device_description_including_empty_string_is_preserved(self):
+        self.ns["async_get_translations"] = AsyncMock()
+        for name in ("Custom name", ""):
+            resource = SimpleNamespace(description=name, index=0)
+            self.assertEqual(await self.ns["async_sensor_display_name"](self.hass, resource), name)
+        self.ns["async_get_translations"].assert_not_awaited()
+
+    async def test_repair_issue_uses_translated_sensor_name(self):
+        from unittest.mock import Mock
+        self.ns["async_sensor_display_name"] = AsyncMock(return_value="Capteur 3")
+        self.ns["ir"] = Mock()
+        self.ns["ir"].IssueSeverity.WARNING = "warning"
+        load_definitions("__init__.py", {"_async_check_new_sensors"}, self.ns)
+        entry = SimpleNamespace(entry_id="entry", options={self.ns["CONF_SENSOR_TYPES"]: {}})
+        resource = SimpleNamespace(resource="SENSOR", index=2, description=None)
+        await self.ns["_async_check_new_sensors"](self.hass, entry, [resource])
+        self.assertEqual(self.ns["ir"].async_create_issue.call_args.kwargs["translation_placeholders"], {"sensor_names": "Capteur 3"})
+        self.ns["async_sensor_display_name"].assert_awaited_once_with(self.hass, resource)
+
+    async def test_initial_or_fully_configured_sensors_do_not_create_issue(self):
+        from unittest.mock import Mock
+        self.ns["async_sensor_display_name"] = AsyncMock()
+        self.ns["ir"] = Mock()
+        load_definitions("__init__.py", {"_async_check_new_sensors"}, self.ns)
+        resource = SimpleNamespace(resource="SENSOR", index=2, description=None)
+        for options in ({}, {self.ns["CONF_SENSOR_TYPES"]: {"2": "ph"}}):
+            entry = SimpleNamespace(entry_id="entry", options=options)
+            await self.ns["_async_check_new_sensors"](self.hass, entry, [resource])
+        self.ns["ir"].async_create_issue.assert_not_called()
+        self.ns["async_sensor_display_name"].assert_not_awaited()
+
+    async def test_migration_errors_use_translation_keys_and_placeholders(self):
+        from unittest.mock import Mock
+        class NotReady(Exception):
+            def __init__(self, **kwargs):
+                self.details = kwargs
+        self.ns.update(ConfigEntryNotReady=NotReady, slugify=lambda value: value)
+        load_definitions("__init__.py", {"_async_migrate_device_identity"}, self.ns)
+        prefix = "profilux_4_123"
+        registered = SimpleNamespace(unique_id="entry_sensor_0", entity_id="sensor.old", domain="sensor")
+        scenarios = (
+            ("serial_error", "migration_serial_unavailable", None),
+            ("serial_empty", "migration_serial_unavailable", None),
+            ("device", "migration_device_collision", None),
+            ("entity_collision", "migration_entity_collision", None),
+            ("entity_exists", "migration_entity_id_exists", "sensor.profilux_4_123_sensor_0"),
+            ("unique_exists", "migration_unique_id_exists", "profilux_4_123_sensor_0"),
+        )
+        for scenario, key, identifier in scenarios:
+            with self.subTest(scenario=scenario):
+                entry = SimpleNamespace(entry_id="entry", title="", data={self.ns["CONF_DEVICE_IDENTIFIER"]: prefix, self.ns["CONF_DEVICE_TYPE"]: "profilux_4"})
+                api = SimpleNamespace(async_get=AsyncMock(return_value=""))
+                registry, devices = Mock(), Mock()
+                devices.async_get_device_by_identifier.side_effect = [None, None]
+                registry.entities = {}
+                registry.async_get_entity_id.return_value = None
+                self.ns["er"] = SimpleNamespace(async_get=lambda hass: registry, async_entries_for_config_entry=lambda registry, entry_id: [registered, registered] if scenario == "entity_collision" else [registered])
+                self.ns["dr"] = SimpleNamespace(async_get=lambda hass: devices)
+                if scenario.startswith("serial_"):
+                    entry.data.pop(self.ns["CONF_DEVICE_IDENTIFIER"])
+                    if scenario == "serial_error":
+                        api.async_get.side_effect = self.ns["GHLAPIError"]("simulated")
+                elif scenario == "device":
+                    devices.async_get_device_by_identifier.side_effect = [SimpleNamespace(id="old"), SimpleNamespace(id="new")]
+                elif scenario == "entity_exists":
+                    registry.entities = {identifier: object()}
+                elif scenario == "unique_exists":
+                    registry.async_get_entity_id.return_value = "sensor.other"
+                with self.assertRaises(NotReady) as raised:
+                    await self.ns["_async_migrate_device_identity"](self.hass, entry, api)
+                self.assertEqual(raised.exception.details["translation_domain"], "pcs_ghl")
+                self.assertEqual(raised.exception.details["translation_key"], key)
+                if identifier is not None:
+                    self.assertEqual(raised.exception.details["translation_placeholders"], {"identifier": identifier})
+                registry.async_update_entity.assert_not_called()
+
+    async def test_migration_messages_exist_in_all_languages(self):
+        keys = {"migration_serial_unavailable", "migration_device_collision", "migration_entity_collision", "migration_entity_id_exists", "migration_unique_id_exists"}
+        for language in ("de", "en", "fr", "es"):
+            data = json.loads((COMPONENT / "translations" / f"{language}.json").read_text())
+            for key in keys:
+                with self.subTest(language=language, key=key):
+                    text = data["exceptions"][key]["message"]
+                    self.assertTrue(text)
+                    if key.endswith("_exists"):
+                        self.assertIn("example", text.format(identifier="example"))
