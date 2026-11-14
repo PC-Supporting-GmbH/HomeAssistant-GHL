@@ -170,6 +170,15 @@ This can be useful if you intentionally want Home Assistant to expose all suppor
 
 Enable this option to automatically import historical data when supported sensors or sources are first discovered and configured. Enabling this option later does not automatically import data for sources that are already present.
 
+#### 7.1.3 Advanced settings
+
+Advanced settings can be enabled once the initial setup is complete and the sensors have been configured.
+
+When enabled, a new **Advanced settings** entry appears in the integration options menu.
+
+> [!WARNING]
+> Unsuitable values may increase system load, delay updates, or cause the integration to stop functioning correctly.
+
 ### 7.2 Sensor configuration
 
 Sensor types assigned during the initial setup can later be changed through the integration options.

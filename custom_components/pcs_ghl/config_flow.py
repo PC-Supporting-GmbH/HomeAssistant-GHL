@@ -23,6 +23,10 @@ from .const import (
     ACCESS_MODE_FULL_ACCESS,
     ACCESS_MODE_READ_ONLY,
     CONF_ACCESS_MODE,
+    CONF_ADVANCED_SETTINGS,
+    CONF_UPDATE_INTERVAL_SECONDS,
+    UPDATE_INTERVAL_SECONDS,
+    MAX_UPDATE_INTERVAL_SECONDS,
     CONF_DEVICE_TYPE,
     CONF_DEVICE_IDENTIFIER,
     CONF_HISTORY_PRESENT_RESOURCES,
@@ -258,6 +262,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
         self._sensor_units = {}
         self._show_all_resources = False
         self._import_historical_data = False
+        self._advanced_settings = False
         self._history_task = None
         self._history_worker = None
         self._history_owner = None
@@ -336,6 +341,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             True,
         )
 
+        self._advanced_settings = self.config_entry.options.get(
+            CONF_ADVANCED_SETTINGS, False
+        )
         self._sensor_index = 0
 
         if entry_data is None:
@@ -358,7 +366,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 "single_sensor",
                 "history_import",
                 "rediscover",
-            ],
+            ] + (["advanced_settings"] if self._advanced_settings else []),
         )
 
     async def async_step_initial_sensor_setup(
@@ -411,6 +419,9 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             import_historical_data = user_input[
                 CONF_IMPORT_HISTORICAL_DATA
             ]
+            advanced_settings = user_input.get(
+                CONF_ADVANCED_SETTINGS, self._advanced_settings
+            )
 
             name = user_input.get(CONF_NAME, "")
             name_changed = name != self.config_entry.title
@@ -494,6 +505,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 self._import_historical_data = (
                     import_historical_data
                 )
+                self._advanced_settings = advanced_settings
 
                 if (
                     (data_changed or options_changed)
@@ -506,6 +518,8 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 return self.async_create_entry(
                     title="",
                     data={
+                        **dict(self.config_entry.options),
+                        CONF_ADVANCED_SETTINGS: self._advanced_settings,
                         CONF_SENSOR_TYPES: self._sensor_types,
                         CONF_SENSOR_UNITS: self._sensor_units,
                         CONF_SHOW_ALL_RESOURCES: (
@@ -558,6 +572,17 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                     CONF_IMPORT_HISTORICAL_DATA,
                     default=self._import_historical_data,
                 ): bool,
+                **({
+                    vol.Required(
+                        CONF_ADVANCED_SETTINGS,
+                        default=self._advanced_settings,
+                    ): bool,
+                } if (
+                    self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+                    is not None
+                    and not self.config_entry.data.get(CONF_INITIAL_HISTORY_PENDING, False)
+                    and (not self._sensors or bool(self._sensor_types))
+                ) else {}),
             }
         )
 
@@ -565,6 +590,36 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
             step_id="general",
             data_schema=data_schema,
             errors=errors,
+        )
+
+    async def async_step_advanced_settings(self, user_input=None):
+        """Configure advanced settings and optionally restore defaults."""
+        if not self._advanced_settings:
+            return await self.async_step_init()
+        if user_input is not None:
+            interval = (
+                UPDATE_INTERVAL_SECONDS
+                if user_input.get("reset_advanced_settings", False)
+                else user_input[CONF_UPDATE_INTERVAL_SECONDS]
+            )
+            return self.async_create_entry(
+                title="",
+                data={
+                    **dict(self.config_entry.options),
+                    CONF_UPDATE_INTERVAL_SECONDS: interval,
+                },
+            )
+        return self.async_show_form(
+            step_id="advanced_settings",
+            data_schema=vol.Schema({
+                vol.Required(
+                    CONF_UPDATE_INTERVAL_SECONDS,
+                    default=self.config_entry.options.get(
+                        CONF_UPDATE_INTERVAL_SECONDS, UPDATE_INTERVAL_SECONDS
+                    ),
+                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=MAX_UPDATE_INTERVAL_SECONDS)),
+                vol.Required("reset_advanced_settings", default=False): bool,
+            }),
         )
 
     async def async_step_history_import(self, user_input=None):
@@ -647,6 +702,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
     def _initial_history_options(self):
         """Return the options selected during initial sensor configuration."""
         return {
+            **dict(self.config_entry.options),
             CONF_SENSOR_TYPES: self._sensor_types,
             CONF_SENSOR_UNITS: self._sensor_units,
             CONF_SHOW_ALL_RESOURCES: self._show_all_resources,
@@ -994,6 +1050,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 return self.async_create_entry(
                     title="",
                     data={
+                        **dict(self.config_entry.options),
                         CONF_SENSOR_TYPES: self._sensor_types,
                         CONF_SENSOR_UNITS: self._sensor_units,
                         CONF_SHOW_ALL_RESOURCES: (
@@ -1072,6 +1129,7 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 return self.async_create_entry(
                     title="",
                     data={
+                        **dict(self.config_entry.options),
                         CONF_SENSOR_TYPES: self._sensor_types,
                         CONF_SENSOR_UNITS: self._sensor_units,
                         CONF_SHOW_ALL_RESOURCES: (

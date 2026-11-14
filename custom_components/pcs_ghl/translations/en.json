@@ -44,7 +44,8 @@
           "single_sensor": "Configure a single sensor",
           "sensors": "Configure all sensors",
           "history_import": "Historical data: import now",
-          "rediscover": "Detect new sensors/devices"
+          "rediscover": "Detect new sensors/devices",
+          "advanced_settings": "Advanced settings"
         }
       },
       "general": {
@@ -56,12 +57,14 @@
           "port": "Port",
           "access_mode": "API access mode",
           "show_all_resources": "Show all available resources",
-          "import_historical_data": "Historical data: import for newly discovered sensors"
+          "import_historical_data": "Historical data: import for newly discovered sensors",
+          "advanced_settings": "Enable advanced settings"
         },
         "data_description": {
           "name": "The device name prefixes automatically generated entity names, e.g. “Aquarium Temperature”. Leave this field empty to omit the device name prefix.",
           "show_all_resources": "Also integrate GHL resources that would normally be detected as unused and hidden based on their configuration.",
-          "import_historical_data": "Historical data is imported automatically when a supported sensor or source is newly discovered. Enabling this option does not retroactively import existing sources; use the separate “Historical data: import now” action for that."
+          "import_historical_data": "Historical data is imported automatically when a supported sensor or source is newly discovered. Enabling this option does not retroactively import existing sources; use the separate “Historical data: import now” action for that.",
+          "advanced_settings": "Shows additional settings for communication with the GHL device. Changes may affect the reliability of the integration."
         }
       },
       "initial_sensor_setup": {
@@ -101,6 +104,18 @@
       "history_import_result": {
         "title": "Historical data: import result",
         "description": "{summary}"
+      },
+      "advanced_settings": {
+        "title": "Advanced settings",
+        "description": "Warning: These settings affect communication with the GHL device. Unsuitable values may increase system load, delay updates, or cause the integration to stop working properly.",
+        "data": {
+          "update_interval_seconds": "Polling interval (seconds)",
+          "reset_advanced_settings": "Restore default settings"
+        },
+        "data_description": {
+          "update_interval_seconds": "Sets the time between data polls. Whole seconds from 1 to 86,400 (24 hours) are allowed. Values below 30 seconds are not recommended due to increased communication load.",
+          "reset_advanced_settings": "Resets all advanced settings to their default values."
+        }
       }
     },
     "error": {

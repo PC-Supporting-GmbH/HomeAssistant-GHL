@@ -44,7 +44,8 @@
           "single_sensor": "Configurer un seul capteur",
           "sensors": "Configurer tous les capteurs",
           "history_import": "Données historiques : importer maintenant",
-          "rediscover": "Détecter de nouveaux capteurs/appareils"
+          "rediscover": "Détecter de nouveaux capteurs/appareils",
+          "advanced_settings": "Paramètres avancés"
         }
       },
       "general": {
@@ -56,12 +57,14 @@
           "port": "Port",
           "access_mode": "Mode d’accès à l’API",
           "show_all_resources": "Afficher toutes les ressources disponibles",
-          "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés"
+          "import_historical_data": "Données historiques : importer pour les capteurs nouvellement détectés",
+          "advanced_settings": "Activer les paramètres avancés"
         },
         "data_description": {
           "name": "Le nom de l’appareil précède les noms d’entités générés automatiquement, par exemple « Aquarium Température ». Laissez ce champ vide pour ne pas ajouter le nom de l’appareil.",
           "show_all_resources": "Intégrer également les ressources GHL qui seraient normalement détectées comme inutilisées et masquées en fonction de leur configuration.",
-          "import_historical_data": "Les données historiques sont importées automatiquement lorsqu’un capteur ou une source pris en charge est nouvellement détecté. L’activation de cette option n’importe pas rétroactivement les sources existantes ; utilisez pour cela l’action séparée « Données historiques : importer maintenant »."
+          "import_historical_data": "Les données historiques sont importées automatiquement lorsqu’un capteur ou une source pris en charge est nouvellement détecté. L’activation de cette option n’importe pas rétroactivement les sources existantes ; utilisez pour cela l’action séparée « Données historiques : importer maintenant ».",
+          "advanced_settings": "Affiche des paramètres supplémentaires de communication avec l’appareil GHL. Les modifications peuvent affecter la fiabilité de l’intégration."
         }
       },
       "initial_sensor_setup": {
@@ -101,6 +104,18 @@
       "history_import_result": {
         "title": "Données historiques : résultat de l’importation",
         "description": "{summary}"
+      },
+      "advanced_settings": {
+        "title": "Paramètres avancés",
+        "description": "Attention : ces paramètres influencent la communication avec l’appareil GHL. Des valeurs inadaptées peuvent augmenter la charge du système, retarder les mises à jour ou empêcher l’intégration de fonctionner correctement.",
+        "data": {
+          "update_interval_seconds": "Intervalle d’interrogation (secondes)",
+          "reset_advanced_settings": "Rétablir les paramètres par défaut"
+        },
+        "data_description": {
+          "update_interval_seconds": "Définit le délai entre les interrogations. Entiers de 1 à 86 400 secondes (24 heures). Les valeurs inférieures à 30 secondes sont déconseillées en raison de la charge accrue.",
+          "reset_advanced_settings": "Réinitialise tous les paramètres avancés à leurs valeurs par défaut."
+        }
       }
     },
     "error": {

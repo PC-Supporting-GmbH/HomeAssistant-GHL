@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import math
 import logging
 from time import perf_counter
@@ -32,7 +32,7 @@ from .const import (
     SENSOR_UNIT_PSU,
     UPDATE_INTERVAL_SECONDS,
     ILLUMINATION_MAX_CURVE_POINTS,
-    UPDATE_INTERVAL,
+    CONF_UPDATE_INTERVAL_SECONDS,
 )
 from .discovery import GHLDiscoveredResource
 
@@ -210,7 +210,11 @@ class GHLDataUpdateCoordinator(
             _LOGGER,
             name=DOMAIN,
             config_entry=entry,
-            update_interval=UPDATE_INTERVAL,
+            update_interval=timedelta(
+                seconds=entry.options.get(
+                    CONF_UPDATE_INTERVAL_SECONDS, UPDATE_INTERVAL_SECONDS
+                )
+            ),
         )
 
         self.api = api

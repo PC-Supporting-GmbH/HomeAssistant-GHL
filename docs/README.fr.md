@@ -170,6 +170,15 @@ Cela peut être utile si vous souhaitez délibérément afficher dans Home Assis
 
 Activez cette option pour importer automatiquement les données historiques lorsque des capteurs ou sources compatibles sont détectés et configurés pour la première fois. L’activation ultérieure de cette option n’importe pas automatiquement les données des sources déjà présentes.
 
+#### 7.1.3 Paramètres avancés
+
+Les paramètres avancés peuvent être activés une fois la configuration initiale terminée et les capteurs configurés.
+
+Une fois activés, une nouvelle entrée **Paramètres avancés** apparaît dans le menu des options de l’intégration.
+
+> [!WARNING]
+> Des valeurs inadaptées peuvent augmenter la charge du système, retarder les mises à jour ou empêcher l’intégration de fonctionner correctement.
+
 ### 7.2 Configuration des capteurs
 
 Les types de capteurs attribués lors de la configuration initiale peuvent être modifiés ultérieurement dans les options de l’intégration.

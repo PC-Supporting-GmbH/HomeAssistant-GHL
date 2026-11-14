@@ -170,6 +170,15 @@ Esto puede resultar útil si quieres mostrar deliberadamente en Home Assistant t
 
 Activa esta opción para importar automáticamente los datos históricos cuando se detectan y configuran por primera vez sensores o fuentes compatibles. Activar esta opción más adelante no importa automáticamente los datos de fuentes que ya están presentes.
 
+#### 7.1.3 Ajustes avanzados
+
+Los ajustes avanzados se pueden activar una vez completada la configuración inicial y configurados los sensores.
+
+Al activarlos, aparece una nueva entrada **Ajustes avanzados** en el menú de opciones de la integración.
+
+> [!WARNING]
+> Los valores inadecuados pueden aumentar la carga del sistema, retrasar las actualizaciones o hacer que la integración deje de funcionar correctamente.
+
 ### 7.2 Configuración de sensores
 
 Los tipos de sensor asignados durante la configuración inicial pueden cambiarse posteriormente desde las opciones de la integración.

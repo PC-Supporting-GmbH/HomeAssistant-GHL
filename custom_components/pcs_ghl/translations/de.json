@@ -44,7 +44,8 @@
           "single_sensor": "Einzelnen Sensor konfigurieren",
           "sensors": "Alle Sensoren konfigurieren",
           "history_import": "Historische Daten jetzt importieren",
-          "rediscover": "Neue Sensoren/Geräte erkennen"
+          "rediscover": "Neue Sensoren/Geräte erkennen",
+          "advanced_settings": "Erweiterte Einstellungen"
         }
       },
       "general": {
@@ -56,12 +57,14 @@
           "port": "Port",
           "access_mode": "API-Zugriffsmodus",
           "show_all_resources": "Alle verfügbaren Ressourcen anzeigen",
-          "import_historical_data": "Historische Daten bei neu entdeckten Sensoren importieren"
+          "import_historical_data": "Historische Daten bei neu entdeckten Sensoren importieren",
+          "advanced_settings": "Erweiterte Einstellungen aktivieren"
         },
         "data_description": {
           "name": "Der Gerätename wird den automatisch gebildeten Entitätsnamen vorangestellt, z. B. „Aquarium Temperatur“. Lass das Feld leer, um keinen Gerätenamen voranzustellen.",
           "show_all_resources": "Auch GHL-Ressourcen integrieren, die anhand ihrer Konfiguration normalerweise als unbenutzt erkannt und ausgeblendet würden.",
-          "import_historical_data": "Historische Daten werden automatisch importiert, wenn ein unterstützter Sensor bzw. eine unterstützte Quelle neu entdeckt wird. Bereits vorhandene Quellen werden durch das Aktivieren dieser Option nicht rückwirkend importiert; dafür steht die separate Aktion „Historische Daten jetzt importieren“ zur Verfügung."
+          "import_historical_data": "Historische Daten werden automatisch importiert, wenn ein unterstützter Sensor bzw. eine unterstützte Quelle neu entdeckt wird. Bereits vorhandene Quellen werden durch das Aktivieren dieser Option nicht rückwirkend importiert; dafür steht die separate Aktion „Historische Daten jetzt importieren“ zur Verfügung.",
+          "advanced_settings": "Blendet zusätzliche Einstellungen für die Kommunikation mit dem GHL-Gerät ein. Änderungen können die Zuverlässigkeit der Integration beeinträchtigen."
         }
       },
       "initial_sensor_setup": {
@@ -101,6 +104,18 @@
       "history_import_result": {
         "title": "Historische Daten: Importergebnis",
         "description": "{summary}"
+      },
+      "advanced_settings": {
+        "title": "Erweiterte Einstellungen",
+        "description": "Achtung: Diese Einstellungen beeinflussen die Kommunikation mit dem GHL-Gerät. Ungeeignete Werte können die Systembelastung erhöhen, Aktualisierungen verzögern oder dazu führen, dass die Integration nicht mehr ordnungsgemäß funktioniert.",
+        "data": {
+          "update_interval_seconds": "Abfrageintervall (Sekunden)",
+          "reset_advanced_settings": "Standardeinstellungen wiederherstellen"
+        },
+        "data_description": {
+          "update_interval_seconds": "Legt den Abstand zwischen Datenabfragen fest. Zulässig sind ganze Sekunden von 1 bis 86.400 (24 Stunden). Werte unter 30 Sekunden werden wegen der höheren Kommunikationslast nicht empfohlen.",
+          "reset_advanced_settings": "Setzt alle erweiterten Einstellungen auf ihre Standardwerte zurück."
+        }
       }
     },
     "error": {

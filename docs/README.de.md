@@ -170,6 +170,15 @@ Das ist hilfreich, wenn du bewusst alle unterstützten Ressourcen, die das GHL-G
 
 Aktiviere diese Option, um historische Daten automatisch zu importieren, wenn unterstützte Sensoren oder Quellen erstmals erkannt und konfiguriert werden. Ein späteres Aktivieren dieser Option importiert nicht automatisch Daten für bereits vorhandene Quellen.
 
+#### 7.1.3 Erweiterte Einstellungen
+
+Die erweiterten Einstellungen können aktiviert werden, sobald die Ersteinrichtung abgeschlossen ist und die Sensoren konfiguriert wurden.
+
+Nach der Aktivierung erscheint im Optionsmenü der Integration ein neuer Eintrag **Erweiterte Einstellungen**.
+
+> [!WARNING]
+> Ungeeignete Werte können die Systembelastung erhöhen, Aktualisierungen verzögern oder dazu führen, dass die Integration nicht mehr ordnungsgemäss funktioniert.
+
 ### 7.2 Sensorkonfiguration
 
 Die bei der Ersteinrichtung zugewiesenen Sensortypen können später über die Integrationsoptionen geändert werden.

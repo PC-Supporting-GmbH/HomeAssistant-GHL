@@ -112,10 +112,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             updated_connection_data == connection_data
             and {
                 key: value for key, value in updated_options.items()
-                if key != CONF_IMPORT_HISTORICAL_DATA
+                if key not in (CONF_IMPORT_HISTORICAL_DATA, "advanced_settings")
             } == {
                 key: value for key, value in entry_options.items()
-                if key != CONF_IMPORT_HISTORICAL_DATA
+                if key not in (CONF_IMPORT_HISTORICAL_DATA, "advanced_settings")
             }
         ):
             entry_title = updated_entry.title
@@ -503,10 +503,10 @@ async def _async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if (
             {
                 key: value for key, value in updated_options.items()
-                if key != CONF_IMPORT_HISTORICAL_DATA
+                if key not in (CONF_IMPORT_HISTORICAL_DATA, "advanced_settings")
             } == {
                 key: value for key, value in entry_options.items()
-                if key != CONF_IMPORT_HISTORICAL_DATA
+                if key not in (CONF_IMPORT_HISTORICAL_DATA, "advanced_settings")
             }
             and updated_connection_data == connection_data
         ):

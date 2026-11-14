@@ -44,7 +44,8 @@
           "single_sensor": "Configurar un solo sensor",
           "sensors": "Configurar todos los sensores",
           "history_import": "Importar datos históricos ahora",
-          "rediscover": "Detectar nuevos sensores/dispositivos"
+          "rediscover": "Detectar nuevos sensores/dispositivos",
+          "advanced_settings": "Ajustes avanzados"
         }
       },
       "general": {
@@ -56,12 +57,14 @@
           "port": "Puerto",
           "access_mode": "Modo de acceso a la API",
           "show_all_resources": "Mostrar todos los recursos disponibles",
-          "import_historical_data": "Importar datos históricos de los sensores recién detectados"
+          "import_historical_data": "Importar datos históricos de los sensores recién detectados",
+          "advanced_settings": "Activar ajustes avanzados"
         },
         "data_description": {
           "name": "El nombre del dispositivo se antepone a los nombres de entidad generados automáticamente, por ejemplo, «Acuario Temperatura». Deja este campo vacío para omitir el nombre del dispositivo.",
           "show_all_resources": "Integrar también los recursos GHL que normalmente se detectarían como no utilizados y se ocultarían según su configuración.",
-          "import_historical_data": "Los datos históricos se importan automáticamente cuando se detecta un nuevo sensor o una nueva fuente compatible. Activar esta opción no importa retroactivamente las fuentes existentes; para ello, utiliza la acción independiente «Importar datos históricos ahora»."
+          "import_historical_data": "Los datos históricos se importan automáticamente cuando se detecta un nuevo sensor o una nueva fuente compatible. Activar esta opción no importa retroactivamente las fuentes existentes; para ello, utiliza la acción independiente «Importar datos históricos ahora».",
+          "advanced_settings": "Muestra ajustes adicionales de comunicación con el dispositivo GHL. Los cambios pueden afectar a la fiabilidad de la integración."
         }
       },
       "initial_sensor_setup": {
@@ -101,6 +104,18 @@
       "history_import_result": {
         "title": "Datos históricos: resultado de la importación",
         "description": "{summary}"
+      },
+      "advanced_settings": {
+        "title": "Ajustes avanzados",
+        "description": "Atención: estos ajustes afectan a la comunicación con el dispositivo GHL. Los valores inadecuados pueden aumentar la carga del sistema, retrasar las actualizaciones o impedir que la integración funcione correctamente.",
+        "data": {
+          "update_interval_seconds": "Intervalo de consulta (segundos)",
+          "reset_advanced_settings": "Restablecer ajustes predeterminados"
+        },
+        "data_description": {
+          "update_interval_seconds": "Establece el tiempo entre consultas. Se permiten enteros de 1 a 86.400 segundos (24 horas). No se recomiendan valores inferiores a 30 segundos debido a la mayor carga de comunicación.",
+          "reset_advanced_settings": "Restablece todos los ajustes avanzados a sus valores predeterminados."
+        }
       }
     },
     "error": {
