@@ -109,10 +109,14 @@
         "title": "Erweiterte Einstellungen",
         "description": "Achtung: Diese Einstellungen beeinflussen die Kommunikation mit dem GHL-Gerät. Ungeeignete Werte können die Systembelastung erhöhen, Aktualisierungen verzögern oder dazu führen, dass die Integration nicht mehr ordnungsgemäß funktioniert.",
         "data": {
+          "description_check_every_n_updates": "Beschreibungsprüfung (Abfragezyklen)",
+          "illumination_curve_check_every_n_updates": "Kurvenprüfung (Abfragezyklen)",
           "update_interval_seconds": "Abfrageintervall (Sekunden)",
           "reset_advanced_settings": "Standardeinstellungen wiederherstellen"
         },
         "data_description": {
+          "description_check_every_n_updates": "Prüft nach dieser Anzahl abgeschlossener Datenabfragen, ob sich Beschreibungen am GHL-Gerät geändert haben. Ganze Zahlen von 1 bis 1000; Standard: 5. Kleinere Werte erhöhen die Kommunikationslast.",
+          "illumination_curve_check_every_n_updates": "Prüft nach dieser Anzahl abgeschlossener Datenabfragen die Beleuchtungskurven auf Änderungen. Ganze Zahlen von 1 bis 1000; Standard: 60. Kleinere Werte erhöhen die Kommunikationslast.",
           "update_interval_seconds": "Legt den Abstand zwischen Datenabfragen fest. Zulässig sind ganze Sekunden von 1 bis 86.400 (24 Stunden). Werte unter 30 Sekunden werden wegen der höheren Kommunikationslast nicht empfohlen.",
           "reset_advanced_settings": "Setzt alle erweiterten Einstellungen auf ihre Standardwerte zurück."
         }

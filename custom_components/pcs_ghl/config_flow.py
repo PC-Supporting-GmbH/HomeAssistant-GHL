@@ -25,6 +25,10 @@ from .const import (
     CONF_ACCESS_MODE,
     CONF_ADVANCED_SETTINGS,
     CONF_UPDATE_INTERVAL_SECONDS,
+    CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES,
+    DESCRIPTION_CHECK_EVERY_N_UPDATES,
+    CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
+    ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
     UPDATE_INTERVAL_SECONDS,
     MAX_UPDATE_INTERVAL_SECONDS,
     CONF_DEVICE_TYPE,
@@ -607,6 +611,16 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                 data={
                     **dict(self.config_entry.options),
                     CONF_UPDATE_INTERVAL_SECONDS: interval,
+                    CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES: (
+                        DESCRIPTION_CHECK_EVERY_N_UPDATES
+                        if user_input.get("reset_advanced_settings", False)
+                        else user_input[CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES]
+                    ),
+                    CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES: (
+                        ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES
+                        if user_input.get("reset_advanced_settings", False)
+                        else user_input[CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES]
+                    ),
                 },
             )
         return self.async_show_form(
@@ -618,6 +632,18 @@ class GHLOptionsFlow(config_entries.OptionsFlow):
                         CONF_UPDATE_INTERVAL_SECONDS, UPDATE_INTERVAL_SECONDS
                     ),
                 ): vol.All(vol.Coerce(int), vol.Range(min=1, max=MAX_UPDATE_INTERVAL_SECONDS)),
+                vol.Required(
+                    CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES,
+                    default=self.config_entry.options.get(
+                        CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES, DESCRIPTION_CHECK_EVERY_N_UPDATES
+                    ),
+                ): vol.All(int, vol.Range(min=1, max=1000)),
+                vol.Required(
+                    CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
+                    default=self.config_entry.options.get(
+                        CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES, ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES
+                    ),
+                ): vol.All(int, vol.Range(min=1, max=1000)),
                 vol.Required("reset_advanced_settings", default=False): bool,
             }),
         )

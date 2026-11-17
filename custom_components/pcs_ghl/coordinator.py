@@ -33,6 +33,8 @@ from .const import (
     UPDATE_INTERVAL_SECONDS,
     ILLUMINATION_MAX_CURVE_POINTS,
     CONF_UPDATE_INTERVAL_SECONDS,
+    CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES,
+    CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
 )
 from .discovery import GHLDiscoveredResource
 
@@ -221,6 +223,13 @@ class GHLDataUpdateCoordinator(
         self.entry = entry
         self.resources = resources
         self._entity_registry = er.async_get(hass)
+        self._curve_check_every_n_updates = entry.options.get(
+            CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
+            ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES,
+        )
+        self._description_check_every_n_updates = entry.options.get(
+            CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES, DESCRIPTION_CHECK_EVERY_N_UPDATES,
+        )
         self._curve_update_count = 0
         self._description_update_count = 0
         self.description_name_translations = None
@@ -229,14 +238,14 @@ class GHLDataUpdateCoordinator(
     def description_updates_remaining(self) -> int:
         """Return completed polling cycles still needed before the next check."""
         return max(
-            0, DESCRIPTION_CHECK_EVERY_N_UPDATES - self._description_update_count,
+            0, self._description_check_every_n_updates - self._description_update_count,
         )
 
     @property
     def curve_updates_remaining(self) -> int:
         """Return polling cycles remaining until the next curve check."""
         return max(
-            0, ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES - self._curve_update_count,
+            0, self._curve_check_every_n_updates - self._curve_update_count,
         )
 
     async def _async_check_illumination_curves(self) -> list[str]:
@@ -1213,11 +1222,11 @@ class GHLDataUpdateCoordinator(
         entry_data = self.hass.data.get(DOMAIN, {}).get(self.entry.entry_id)
         if entry_data is not None and entry_data.get("coordinator") is self:
             self._description_update_count += 1
-            if self._description_update_count >= DESCRIPTION_CHECK_EVERY_N_UPDATES:
+            if self._description_update_count >= self._description_check_every_n_updates:
                 self._description_update_count = 0
                 update_errors.extend(await self._async_check_descriptions())
             self._curve_update_count += 1
-            if self._curve_update_count >= ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES:
+            if self._curve_update_count >= self._curve_check_every_n_updates:
                 self._curve_update_count = 0
                 update_errors.extend(await self._async_check_illumination_curves())
 

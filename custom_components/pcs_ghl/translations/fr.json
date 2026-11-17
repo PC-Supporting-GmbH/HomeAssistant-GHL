@@ -109,10 +109,14 @@
         "title": "Paramètres avancés",
         "description": "Attention : ces paramètres influencent la communication avec l’appareil GHL. Des valeurs inadaptées peuvent augmenter la charge du système, retarder les mises à jour ou empêcher l’intégration de fonctionner correctement.",
         "data": {
+          "description_check_every_n_updates": "Vérification des descriptions (cycles de lecture)",
+          "illumination_curve_check_every_n_updates": "Vérification des courbes (cycles de lecture)",
           "update_interval_seconds": "Intervalle d’interrogation (secondes)",
           "reset_advanced_settings": "Rétablir les paramètres par défaut"
         },
         "data_description": {
+          "description_check_every_n_updates": "Vérifie les modifications des descriptions sur l’appareil GHL après ce nombre de lectures de données terminées. Nombres entiers de 1 à 1000 ; valeur par défaut : 5. Des valeurs plus faibles augmentent la charge de communication.",
+          "illumination_curve_check_every_n_updates": "Vérifie les modifications des courbes d’éclairage après ce nombre de lectures de données terminées. Nombres entiers de 1 à 1000 ; valeur par défaut : 60. Des valeurs plus faibles augmentent la charge de communication.",
           "update_interval_seconds": "Définit le délai entre les interrogations. Entiers de 1 à 86 400 secondes (24 heures). Les valeurs inférieures à 30 secondes sont déconseillées en raison de la charge accrue.",
           "reset_advanced_settings": "Réinitialise tous les paramètres avancés à leurs valeurs par défaut."
         }

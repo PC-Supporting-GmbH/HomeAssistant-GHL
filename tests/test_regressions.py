@@ -1632,3 +1632,82 @@ class RemainingDisplayTextTests(unittest.IsolatedAsyncioTestCase):
                     self.assertTrue(text)
                     if key.endswith("_exists"):
                         self.assertIn("example", text.format(identifier="example"))
+
+
+class AdvancedCheckFrequencyTests(unittest.IsolatedAsyncioTestCase):
+    def method_namespace(self, filename, class_name, method_names):
+        ns = production_namespace()
+        tree = ast.parse((COMPONENT / filename).read_text())
+        cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == class_name)
+        nodes = [node for node in cls.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name in method_names]
+        module = ast.fix_missing_locations(ast.Module(body=[ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0), *nodes], type_ignores=[]))
+        exec(compile(module, filename, "exec"), ns)
+        return ns
+
+    async def test_options_save_and_reset_preserve_other_options(self):
+        ns = self.method_namespace("config_flow.py", "GHLOptionsFlow", {"async_step_advanced_settings"})
+        keys = [ns["CONF_DESCRIPTION_CHECK_EVERY_N_UPDATES"], ns["CONF_ILLUMINATION_CURVE_CHECK_EVERY_N_UPDATES"]]
+        for reset in (False, True):
+            flow = SimpleNamespace(
+                _advanced_settings=True,
+                config_entry=SimpleNamespace(options={"unrelated": "preserved", keys[0]: 17, keys[1]: 23}),
+                async_create_entry=lambda **kwargs: kwargs,
+            )
+            result = await ns["async_step_advanced_settings"](flow, {
+                ns["CONF_UPDATE_INTERVAL_SECONDS"]: 45,
+                keys[0]: 1, keys[1]: 1000, "reset_advanced_settings": reset,
+            })
+            self.assertEqual(result["data"], {
+                "unrelated": "preserved", keys[0]: 5 if reset else 1,
+                keys[1]: 60 if reset else 1000,
+                ns["CONF_UPDATE_INTERVAL_SECONDS"]: 30 if reset else 45,
+            })
+
+    async def test_configured_frequencies_control_checks_and_countdowns(self):
+        ns = self.method_namespace("coordinator.py", "GHLDataUpdateCoordinator", {
+            "_async_update_data", "description_updates_remaining", "curve_updates_remaining",
+        })
+        ns["connection_status_key"] = lambda: "connection_status"
+        ns["last_update_key"] = lambda: "last_update"
+        coordinator = SimpleNamespace(
+            entry=SimpleNamespace(options={}, entry_id="entry", title="GHL"),
+            resources=[], data=None,
+            _description_update_count=0, _curve_update_count=0,
+            _description_check_every_n_updates=2, _curve_check_every_n_updates=3,
+            _async_check_descriptions=AsyncMock(return_value=[]),
+            _async_check_illumination_curves=AsyncMock(return_value=[]),
+        )
+        coordinator.hass = SimpleNamespace(data={ns["DOMAIN"]: {"entry": {"coordinator": coordinator}}})
+        for cycle in range(1, 7):
+            await ns["_async_update_data"](coordinator)
+            self.assertEqual(coordinator._async_check_descriptions.await_count, cycle // 2)
+            self.assertEqual(coordinator._async_check_illumination_curves.await_count, cycle // 3)
+            self.assertEqual(ns["description_updates_remaining"].fget(coordinator), 2 - cycle % 2)
+            self.assertEqual(ns["curve_updates_remaining"].fget(coordinator), 3 - cycle % 3)
+
+    async def test_check_frequency_labels_and_descriptions_in_all_languages(self):
+        for language in ("de", "en", "fr", "es"):
+            data = json.loads((COMPONENT / "translations" / f"{language}.json").read_text())
+            step = data["options"]["step"]["advanced_settings"]
+            for key in ("description_check_every_n_updates", "illumination_curve_check_every_n_updates"):
+                with self.subTest(language=language, key=key):
+                    self.assertTrue(step["data"][key])
+                    self.assertTrue(step["data_description"][key])
+
+    async def test_coordinator_initializes_saved_and_default_frequencies(self):
+        ns = production_namespace()
+        class CoordinatorBase:
+            def __init__(self, hass, logger, **kwargs):
+                self.update_interval = kwargs["update_interval"]
+        ns["CoordinatorBase"] = CoordinatorBase
+        ns["er"] = SimpleNamespace(async_get=lambda hass: None)
+        tree = ast.parse((COMPONENT / "coordinator.py").read_text())
+        cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "GHLDataUpdateCoordinator")
+        cls.bases = [ast.Name(id="CoordinatorBase", ctx=ast.Load())]
+        cls.body = [node for node in cls.body if isinstance(node, ast.FunctionDef) and node.name == "__init__"]
+        module = ast.fix_missing_locations(ast.Module(body=[ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0), cls], type_ignores=[]))
+        exec(compile(module, "coordinator.py", "exec"), ns)
+        for options, expected in [({}, (5, 60)), ({"description_check_every_n_updates": 1, "illumination_curve_check_every_n_updates": 1000}, (1, 1000))]:
+            coordinator = ns["GHLDataUpdateCoordinator"](SimpleNamespace(), SimpleNamespace(options=options), None, [])
+            self.assertEqual((coordinator._description_check_every_n_updates, coordinator._curve_check_every_n_updates), expected)
+            self.assertEqual(coordinator.update_interval.total_seconds(), 30)
